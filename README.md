@@ -198,14 +198,17 @@ This is a real & live QPU device
 ![IBM Quantum](media/q1.png)
 
 ---
-## Authors and Citation
+##  📜 Authors and Citation
 
 Qiskit Connector was inspired, authored and brought about by the research carried out by Dr. Jeffrey Chijioke-Uche(IBM Quantum Ambassador & Research Scientist). This software is expected to continues to grow with the help and work of existing research at different levels in the Information Technology industry. If you use Qiskit for Quantum, please cite as per the provided BibTeX file.
 
 ---
 
 ## 📜 Software Publisher
-Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Research Scientist (All Rights Reserved) 
+Dr. Jeffrey Chijioke-Uche <br>
+IBM Computer Scientist
+IBM Quantum Ambassador & Research Scientist 
+IEEE Senior Menmber (Computational Intelligence)
 
 ---
 
