@@ -206,8 +206,8 @@ Qiskit Connector was inspired, authored and brought about by the research carrie
 
 ## 📜 Software Publisher
 Dr. Jeffrey Chijioke-Uche <br>
-<i>IBM Computer Scientist <br><\i>
-<i>IBM Quantum Ambassador & Research Scientist <br><\i>
+<i>IBM Computer Scientist<\i> <br>
+<i>IBM Quantum Ambassador & Research Scientist<\i> <br>
 <i>IEEE Senior Menmber (Computational Intelligence)
 
 ---
