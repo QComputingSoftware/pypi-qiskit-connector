@@ -2,7 +2,7 @@
 
 ###### Install from Pypi: [https://pypi.org/project/qiskit-connector](https://pypi.org/project/qiskit-connector)
 
-**⚛️Qiskit Connector for IBM Quantum Backends in Realtime**
+**⚛️IBM Quantum Qiskit Connector For Backend RuntimeService**
 
 A Quantum helper package which streamlines authentication, plan detection, and backend selection for Qiskit RuntimeService. This connector prevents repeated writing of runtimeservice instead allows you to directly use the `backend` object all over your quantum application code in realtime. This package performs the following:
 - Loads environment variables from config file (e.g. `.env`) to configure your IBM Quantum account plan and make the `backend` object available within your quantum application code for reuse in real-time.
