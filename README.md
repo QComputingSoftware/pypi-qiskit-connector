@@ -191,7 +191,7 @@ Least Busy QPU:  ibm_torino
 This is a real & live QPU device
 
 #-------- remaining code below ------
-
+![IBM Quantum](_media/q1.png)
 ```
 
 
