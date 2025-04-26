@@ -194,7 +194,6 @@ This is a real & live QPU device
 ```
 
 ![IBM Quantum](media/q1.png)
-<img src="media/q1.png" alt="IBM Quantum Qiskit Software" width="300" height="200">
 
 ---
 ## Authors and Citation
