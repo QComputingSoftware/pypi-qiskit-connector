@@ -1,5 +1,7 @@
 # qiskit-connector
 
+###### [See Pypi](https://pypi.org/project/qiskit-connector)
+
 **⚛️Qiskit Connector for IBM Quantum Backends in Realtime**
 
 A Quantum helper package which streamlines authentication, plan detection, and backend selection for Qiskit RuntimeService. This connector prevents repeated writing of runtimeservice instead allows you to directly use the `backend` object all over your quantum application code in realtime. This package performs the following:
