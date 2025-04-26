@@ -1,6 +1,6 @@
 # qiskit-connector
 
-###### [See Pypi: https://pypi.org/project/qiskit-connector](https://pypi.org/project/qiskit-connector)
+###### See Pypi.org [https://pypi.org/project/qiskit-connector](https://pypi.org/project/qiskit-connector)
 
 **⚛️Qiskit Connector for IBM Quantum Backends in Realtime**
 
