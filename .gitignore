@@ -1,0 +1,31 @@
+# Ignore Python bytecode files
+
+.env
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.egg-info/
+*.egg
+*.log
+*.DS_Store
+*.coverage
+*.cover
+*.hypothesis/
+*.hypothesis/
+*.tox/
+*.coverage.*
+*.coveragerc  
+
+# Ignore Jupyter Notebook checkpoints
+#tools/quantum-account.py
+test.py
+*test.py
+tools/q-account.py
+q-account.py
+commit.sh
+
+unit-test.py
+#quantum-account.py 
