@@ -1,5 +1,5 @@
-# .github/workflows/pytest.yml
-name: Python qiskit-connector package python versions compatibility test
+# .github/workflows/compatibility.yml
+name: Qiskit Python Version Compatibility - v3.8, v3.9, v3.10, v3.11
 
 on:
   push:

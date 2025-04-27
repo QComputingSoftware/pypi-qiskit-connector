@@ -1,4 +1,6 @@
 # qiskit-connector
+[![Qiskit Python Version Compatibility - v3.8, v3.9, v3.10, v3.11](https://github.com/schijioke-uche/pypi-qiskit-connector/actions/workflows/compatibility.yml/badge.svg)](https://github.com/schijioke-uche/qiskit-connector/actions/workflows/compatibility.yml)
+[![Qiskit Connector Quality Check](https://github.com/schijioke-uche/pypi-qiskit-connector/actions/workflows/quality.yml/badge.svg)](https://github.com/schijioke-uche/qiskit-connector/actions/workflows/quality.yml)
 
 ###### Install from Pypi: [https://pypi.org/project/qiskit-connector](https://pypi.org/project/qiskit-connector)
 
