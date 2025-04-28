@@ -25,7 +25,6 @@ test.py
 *test.py
 tools/q-account.py
 q-account.py
-commit.sh
 
 unit-test.py
 #quantum-account.py 
