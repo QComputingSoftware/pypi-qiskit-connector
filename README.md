@@ -11,12 +11,12 @@ A Quantum helper package which streamlines authentication, plan detection, and b
 - Detects your active plan (Open, Standard, Premium, Dedicated) and sets up the correct channel/instance.
 - It has functions to save your account using its (`qiskit_smart`), to verify QPU resources using (`qpu_verify`, `is_verified`), and retrieve a ready-to-use backend using (`connector()`). Presents you with the least-busy backend to run your quantum application code in realtime instead of you using simulators.
 
-###### 🐍 Package built and maintained by Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Research Scientist.
+###### 🐍 Software built and maintained by Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Research Scientist.
 ---
 
 ## 📋 Features & API
 
-All of the following functions are available after you import the module:
+These functions are available after you import the module:
 
 ```python
 from qiskit_connector import (
@@ -24,21 +24,11 @@ from qiskit_connector import (
     plan_type
 )
 ```
-
-- **`qiskit_smart(plan_type: str)`**  
-  Saves your IBM Quantum account into QiskitRuntimeService using the environment variables for the given plan (`"open"`, `"standard"`, `"premium"`, or `"dedicated"`).
-
-- **`qpu_verify()`**  
-  Lists available QPUs for your plan by querying `QiskitRuntimeService.backends()` or falling back to `paid_plans()` for paid plans.
-
-- **`is_verified()`**  
-  Verifies real‐time least-busy QPU for the active plan and prints details (name, qubit count, online date).
-
 - **`connector() -> IBMBackend`**  
   **Main entry point**: Loads your saved account, picks the least busy QPU (or first available for open or paid plans), prints diagnostics, and returns an `IBMBackend` instance ready for circuit execution.
 
 - **`plan_type() -> str`**  
-  Returns either **"Open Plan"** or **"Paid Plan"** depending on your `.env` toggles.
+  Returns either **"Open Plan"** or **"Paid Plan"** depending on your `.env or environment variable config` toggles.
 
 ---
 
@@ -57,17 +47,9 @@ and any other Qiskit dependencies. (Qiskit 1.x is not supported).
 ---
 
 ## 🗂️ Environment Variable Setup
-🔐 Security Practice: Do not check-in `.env` or any environment variable files into version control. Add it to your .gitignore. During development, create a file named `.env` at your project root. The connector will automatically load it.Use the template below as the content of your .env file or variable config file.
+🔐 Security Practice: Do not check-in `.env or environment variable config file` or any environment variable file into version control. Add it to your .gitignore. During development, create a file named `.env` at your project root. The connector will automatically load it.Use the template below as the content of your .env file or variable config file.
 
 ```dotenv
-
-# @author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Researcher
-# This file is used to store environment variables for the Qiskit installation wizard: Update it.
-# The "ibm_quantum" channel option is deprecated and will be sunset on 1 July 2025. 
-# After this date, ibm_cloud will be the only valid channel. 
-# For information on migrating to the new IBM Quantum Platform on the "ibm_cloud" channel, 
-# review the migration guide https://quantum.cloud.ibm.com/docs/migration-guides/classic-iqp-to-cloud-iqp .
-
 
 # GENERAL PURPOSE
 #--------------------------------------------
@@ -120,14 +102,13 @@ PREMIUM_PLAN_NAME="premium"
 DEDICATED_PLAN_NAME="dedicated"
 
 
-# Switch "on" one plan: Use one or the other at a time. You cannot switch both on at the same time.
+# Switch "on" one plan: 
 #--------------------------------------------------------------------------------------------------
-OPEN_PLAN="on"        # [Default & switched on] This plan is free - Signup
-STANDARD_PLAN="off"   # This plan is paid. Switched "Off" by default - Turn it "on" after purchase.   
-PREMIUM_PLAN="off"    # This plan is paid. Switched "Off" by default - Turn it "on" after purchase.   
-DEDICATED_PLAN="off"  # This plan is paid. Switched "Off" by default - Turn it "on" after purchase.   
+OPEN_PLAN="on"        # [Default & switched on]  
+STANDARD_PLAN="off"     
+PREMIUM_PLAN="off"      
+DEDICATED_PLAN="off"    
 ```
-
 > **⚠️ Only one** of `OPEN_PLAN`, `STANDARD_PLAN`, `PREMIUM_PLAN`, or `DEDICATED_PLAN` may be set to **"on"** at a time.
 
 ---
@@ -200,13 +181,13 @@ This is a real & live QPU device
 ![IBM Quantum](media/q1.png)
 
 ---
-##  📜 Authors and Citation
+##  📜 Citation & Reference
 
-Qiskit Connector was inspired, authored and brought about by the research carried out by Dr. Jeffrey Chijioke-Uche(IBM Quantum Ambassador & Research Scientist). This software is expected to continues to grow with the help and work of existing research at different levels in the Information Technology industry. If you use Qiskit for Quantum, please cite as per the provided BibTeX file.
+Qiskit Connector software invention was inspired by IBM Research on Quantum Computing Qiskit Software, which led the authoring, design, development of Qiskit Connector based on the persistent reearch studies and tests carried out by  `Dr. Jeffrey Chijioke-Uche(IBM Quantum Ambassador & Research Scientist)` in the lab. This software is expected to continue to metamorphose with the help and work of existing quantum computing academic scholarly & peer reviewed research at different levels in the Information Technology industry. If you use Qiskit for Quantum, please cite as per the provided ![BibTeX](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/CITATION.bib) file.
 
 ---
 
-## 📜 Software Publisher
+## 📜 Software Author & Publisher
 Dr. Jeffrey Chijioke-Uche <br>
 <i>IBM Computer Scientist</i> <br>
 <i>IBM Quantum Ambassador & Research Scientist</i> <br>
@@ -216,6 +197,4 @@ Dr. Jeffrey Chijioke-Uche <br>
 
 ## 📜 License
 
-This project uses the MIT License
-
-
+This project uses the Open-source ![License](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/LICENSE)
