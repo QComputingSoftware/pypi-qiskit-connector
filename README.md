@@ -6,7 +6,7 @@
 
 **⚛️IBM Quantum Qiskit Connector For Backend RuntimeService**
 
-A Quantum helper package which streamlines authentication, plan detection, and backend selection for Qiskit RuntimeService. This connector prevents repeated writing of runtimeservice instead allows you to directly use the `backend` object all over your quantum application code in realtime. This package performs the following:
+Qiskit Connector automates every step of your IBM Quantum backend connectivity workflow — from seamless authentication and dynamic plan detection to intelligent backend selection for Qiskit RuntimeService. Eliminate repetitive setup code: simply import the package and use the instantaneously available `backend` object throughout your quantum application code. Spend less time on configuration and more time innovating on real quantum solution.  This package performs the following:
 - Loads environment variables from config file (e.g. `.env`) to configure your IBM Quantum account plan and make the `backend` object available within your quantum application code for reuse in real-time.
 - Detects your active plan (Open, Standard, Premium, Dedicated) and sets up the correct channel/instance.
 - It has functions to save your account using its (`qiskit_smart`), to verify QPU resources using (`qpu_verify`, `is_verified`), and retrieve a ready-to-use backend using (`connector()`). Presents you with the least-busy backend to run your quantum application code in realtime instead of you using simulators.
