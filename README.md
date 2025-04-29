@@ -183,7 +183,7 @@ This is a real & live QPU device
 ---
 ##  📜 Citation & Reference
 
-Qiskit Connector software invention was inspired by IBM Research on Quantum Computing Qiskit Software, which led the authoring, design, development of Qiskit Connector based on the persistent reearch studies and tests carried out by  `Dr. Jeffrey Chijioke-Uche(IBM Quantum Ambassador & Research Scientist)` in the lab. This software is expected to continue to metamorphose with the help and work of existing quantum computing academic scholarly & peer reviewed research at different levels in the Information Technology industry. If you use Qiskit for Quantum, please cite as per the provided ![BibTeX](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/CITATION.bib) file.
+Qiskit Connector software invention was inspired by IBM Research on Quantum Computing Qiskit Software, which led the authoring, design, development of Qiskit Connector based on the persistent reearch studies and tests carried out by  `Dr. Jeffrey Chijioke-Uche(IBM Quantum Ambassador & Research Scientist)` in the lab. This software is expected to continue to metamorphose with the help and work of existing quantum computing academic scholarly & peer reviewed research at different levels in the Information Technology industry. If you use Qiskit for Quantum computing, please cite this software as per the provided ![BibTeX](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/CITATION.bib) file.
 
 ---
 
