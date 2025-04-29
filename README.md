@@ -24,11 +24,11 @@ from qiskit_connector import (
     plan_type
 )
 ```
-- **`connector() -> IBMBackend`**  
-  **Main entry point**: Loads your saved account, picks the least busy QPU (or first available for open or paid plans), prints diagnostics, and returns an `IBMBackend` instance ready for circuit execution.
+- **`connector()`**  
+  **Primary Integration Point:** Seamlessly initializes your IBM Quantum account, selects the optimal QPU (or the first available device for open/paid plans), and emits a clear diagnostics summary. It returns a fully configured `backend` object that you can immediately pass to Qiskit’s sampler, estimator, transpiler, or any circuit execution API—so you can focus on your quantum workflows rather than connection boilerplate.
 
-- **`plan_type() -> str`**  
-  Returns either **"Open Plan"** or **"Paid Plan"** depending on your `.env or environment variable config` toggles.
+- **`plan_type()`**  
+  **Subscription Plan Resolver:** Automatically evaluates your environment configuration (via `.env` or system variables) to identify whether you’re operating under the **Open Plan** or a **Paid Plan**. This guarantees that your code consistently targets the correct IBM Quantum service tier, eliminating manual plan management and minimizing configuration drift.
 
 ---
 
