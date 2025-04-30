@@ -1,5 +1,5 @@
 # .github/workflows/compatibility.yml
-name: Qiskit Python Version Compatibility - v3.8, v3.9, v3.10, v3.11
+name: Python Compatibility - v3.8,v3.9,v3.10,v3.11,v3.12,v3.13 
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4

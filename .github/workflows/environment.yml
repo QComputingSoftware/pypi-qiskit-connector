@@ -1,0 +1,22 @@
+name: PyPI Deployment Environment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi  # This creates the 'pypi' environment if it doesn't exist
+      url: https://pypi.org/project/qiskit-connector
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo Deployment Context
+        run: |
+          echo "🧪 Creating deployment environment: pypi"
+          echo "🔗 Target URL: https://pypi.org/project/qiskit-connector"

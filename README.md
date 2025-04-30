@@ -1,6 +1,6 @@
 # qiskit-connector
-[![Qiskit Python Version Compatibility - v3.8, v3.9, v3.10, v3.11](https://github.com/schijioke-uche/pypi-qiskit-connector/actions/workflows/compatibility.yml/badge.svg)](https://github.com/schijioke-uche/qiskit-connector/actions/workflows/compatibility.yml)
-[![Qiskit Connector Quality Check](https://github.com/schijioke-uche/pypi-qiskit-connector/actions/workflows/quality.yml/badge.svg)](https://github.com/schijioke-uche/qiskit-connector/actions/workflows/quality.yml)
+
+[![Python Compatibility - v3.8,v3.9,v3.10,v3.11,v3.12,v3.13 ](https://github.com/schijioke-uche/pypi-qiskit-connector/actions/workflows/compatibility.yml/badge.svg)](https://github.com/schijioke-uche/pypi-qiskit-connector/actions/workflows/compatibility.yml) [![Qiskit Connector Quality Check](https://github.com/schijioke-uche/pypi-qiskit-connector/actions/workflows/quality.yml/badge.svg)](https://github.com/schijioke-uche/pypi-qiskit-connector/actions/workflows/quality.yml) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15304311.svg)](https://doi.org/10.5281/zenodo.15304311) [![Qiskit Connector Code Coverage Analysis of 90%:](https://github.com/schijioke-uche/qiskit-connector/actions/workflows/coverage.yml/badge.svg)](https://github.com/schijioke-uche/pypi-qiskit-connector/actions/workflows/coverage.yml) [![Release](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/docs/badges/release.svg)](https://github.com/schijioke-uche/pypi-qiskit-connector/releases)
 
 ###### Install from Pypi: [https://pypi.org/project/qiskit-connector](https://pypi.org/project/qiskit-connector)
 

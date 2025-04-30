@@ -1,0 +1,50 @@
+name: Qiskit Connector Code Coverage Analysis of 90%
+
+on:
+  push:
+    branches: [ "main", "stable" ]
+  pull_request:
+    branches: [ "main", "stable" ]
+
+jobs:
+  test-and-coverage:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install pytest coverage pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: 🧪 Run tests with coverage
+        run: |
+          coverage run --source=qiskit_connector -m pytest
+
+      - name: 📊 Report coverage
+        run: |
+          coverage report -m
+          coverage html
+
+      - name: 🗂️ Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ matrix.python-version }}
+          path: htmlcov/
+
+      - name: 🛡️ Enforce minimum coverage threshold (optional)
+        run: |
+          coverage report --fail-under=90

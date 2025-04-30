@@ -1,0 +1,29 @@
+name: Sync PyPI Releases to GitHub
+
+on:
+  push:
+    branches:
+      - main
+      - stable
+
+jobs:
+  sync-releases:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Sync PyPI releases to GitHub
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/sync_pypi_releases.py
