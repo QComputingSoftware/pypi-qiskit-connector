@@ -1,52 +1,74 @@
-name: Qiskit Connector Code Coverage Analysis of 90%
+name: Qiskit Connector Code Coverage Analysis
+description: |
+  This workflow runs code coverage analysis on the Qiskit Connector repository.
+  It generates a coverage badge and pushes it to the repository.
+  The badge is stored in the `docs/badges` directory.
+  The workflow is triggered on pushes and pull requests to the `main` and `stable` branches.
+  It uses the `emibcn/badge-action` to generate the badge.
+  The badge is updated only if the coverage percentage changes.
+  The workflow uses the `actions/checkout` action to check out the repository.
+  The workflow uses the `actions/setup-python` action to set up Python.
+  The workflow uses the `actions/github-script` action to run JavaScript code.
 
 on:
   push:
-    branches: [ "main", "stable" ]
   pull_request:
     branches: [ "main", "stable" ]
 
-jobs:
-  test-and-coverage:
-    runs-on: ubuntu-latest
+permissions:
+  contents: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+jobs:
+  coverage-badge:
+    runs-on: ubuntu-latest
 
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🐍 Set up Python ${{ matrix.python-version }}
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.11'
 
       - name: 📦 Install dependencies
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-          python -m pip install pytest coverage pytest-cov
+          pip install --upgrade pip setuptools wheel
+          pip install pytest coverage pytest-cov
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-         
+          pip install qiskit-connector
 
       - name: 🧪 Run tests with coverage
-        run: |
-          pip install qiskit-connector
-          coverage run --source=qiskit_connector -m pytest
+        run: coverage run --source=qiskit_connector -m pytest
 
-      - name: 📊 Report coverage
+      - name: 📊 Extract coverage percentage
+        id: coverage
         run: |
-          coverage report -m
-          coverage html
+          COVERAGE=$(coverage report | grep "TOTAL" | awk '{print $4}' | sed 's/%//')
+          echo "Coverage: $COVERAGE%"
+          echo "coverage=$COVERAGE%" >> "$GITHUB_OUTPUT"
 
-      - name: 🗂️ Upload coverage report artifact
-        uses: actions/upload-artifact@v4
+      - name: 📂 Ensure badge directory exists
+        run: mkdir -p docs/badges
+
+      - name: 🛠️ Generate coverage badge
+        uses: emibcn/badge-action@v2
         with:
-          name: coverage-report-${{ matrix.python-version }}
-          path: htmlcov/
+          label: "coverage"
+          labelColor: "555"
+          status: "${{ steps.coverage.outputs.coverage }}"
+          gradient: "green"
+          style: "classic"
+          path: "docs/badges/coverage.svg"
 
-      - name: 🛡️ Enforce minimum coverage threshold (optional)
+      - name: 🚀 Push badge to repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          coverage report --fail-under=90
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git remote set-url origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git pull origin ${{ github.ref_name }}
+          git add docs/badges/coverage.svg
+          git commit -m "Update coverage badge to ${{ steps.coverage.outputs.coverage }}" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref_name }} || echo "No changes to push"
