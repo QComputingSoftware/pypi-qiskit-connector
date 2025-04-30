@@ -1,20 +1,20 @@
-<svg width="95.3" height="20" viewBox="0 0 953 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="release: v2.1.1">
-  <title>release: v2.1.1</title>
+<svg width="231.1" height="20" viewBox="0 0 2311 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Qiskit Connector Latest Release: v2.1.1">
+  <title>Qiskit Connector Latest Release: v2.1.1</title>
   <linearGradient id="a" x2="0" y2="100%">
     <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
-  <mask id="m"><rect width="953" height="200" rx="30" fill="#FFF"/></mask>
+  <mask id="m"><rect width="2311" height="200" rx="30" fill="#FFF"/></mask>
   <g mask="url(#m)">
-    <rect width="498" height="200" fill="#555"/>
-    <rect width="455" height="200" fill="#08C" x="498"/>
-    <rect width="953" height="200" fill="url(#a)"/>
+    <rect width="1856" height="200" fill="#555"/>
+    <rect width="455" height="200" fill="#08C" x="1856"/>
+    <rect width="2311" height="200" fill="url(#a)"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
-    <text x="60" y="148" textLength="398" fill="#000" opacity="0.25">release</text>
-    <text x="50" y="138" textLength="398">release</text>
-    <text x="553" y="148" textLength="355" fill="#000" opacity="0.25">v2.1.1</text>
-    <text x="543" y="138" textLength="355">v2.1.1</text>
+    <text x="60" y="148" textLength="1756" fill="#000" opacity="0.25">Qiskit Connector Latest Release</text>
+    <text x="50" y="138" textLength="1756">Qiskit Connector Latest Release</text>
+    <text x="1911" y="148" textLength="355" fill="#000" opacity="0.25">v2.1.1</text>
+    <text x="1901" y="138" textLength="355">v2.1.1</text>
   </g>
   
 </svg>
