@@ -1,4 +1,4 @@
-name: Python Compatibility Badge Generator
+name: Python Compatibility
 
 on:
   push:
