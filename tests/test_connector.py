@@ -10,6 +10,39 @@
 # @Test Execution: pytest test_connector.py
 # @Test Results: All tests passed successfully.
 
+import subprocess
+import sys
+
+def install_package(package):
+    try:
+        __import__(package)
+        print(f"{package} is already installed.")
+        return True
+    except ImportError:
+        print(f"{package} is not installed. Attempting to install...")
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+            print(f"{package} installed successfully.")
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"Error installing {package}: {e}")
+            return False
+        except FileNotFoundError:
+            print("Error: pip command not found. Ensure pip is installed and in your PATH.")
+            return False
+
+if __name__ == "__main__":
+    package_to_install = "qiskit-connector"
+    if install_package(package_to_install):
+        # Now you can import and use the package
+        try:
+            import qiskit_connector
+            print("qiskit_connector imported successfully.")
+            # Your code that uses qiskit_connector goes here
+        except ImportError:
+            print("Failed to import qiskit_connector after installation.")
+
+
 import pytest
 from qiskit_connector import connector, plan_type
 

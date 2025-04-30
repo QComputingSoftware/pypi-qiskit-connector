@@ -29,9 +29,11 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install pytest coverage pytest-cov
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+         
 
       - name: 🧪 Run tests with coverage
         run: |
+          pip install qiskit-connector
           coverage run --source=qiskit_connector -m pytest
 
       - name: 📊 Report coverage
