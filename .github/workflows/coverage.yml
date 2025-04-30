@@ -54,7 +54,7 @@ jobs:
       - name: 🛠️ Generate coverage badge
         uses: emibcn/badge-action@v2
         with:
-          label: "coverage"
+          label: "Qiskit Connector Code Coverage Analysis"
           labelColor: "555"
           status: "${{ steps.coverage.outputs.coverage }}"
           gradient: "green"
