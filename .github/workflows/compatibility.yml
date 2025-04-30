@@ -65,9 +65,9 @@ jobs:
       - name: 🏷️ Generate Python compatibility badge
         uses: emibcn/badge-action@v2
         with:
-          label: python
-          status: '🐍 3.8 | 🐍 3.9 | 🐍 3.10 | 🐍 3.11 | 🐍 3.12 | 🐍 3.13'
-          color: lightblue
+          label: '🐍 python'
+          status: '3.8 | 3.9 | 3.10 | 3.11 | 3.12 | 3.13'
+          color: green
           style: flat
           path: docs/badges/python.svg
 
