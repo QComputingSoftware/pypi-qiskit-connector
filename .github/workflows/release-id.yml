@@ -37,7 +37,7 @@ jobs:
       - name: 🛠️ Create badge SVG
         uses: emibcn/badge-action@v2
         with:
-          label: release
+          label: 'Qiskit Connector Latest Release'
           labelColor: 555
           status: v${{ steps.extract_version.outputs.latest }}
           gradient: blue

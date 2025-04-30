@@ -1,4 +1,13 @@
 name: Python Compatibility
+# This workflow checks the compatibility of the code with different Python versions
+# and generates a badge indicating the supported versions.
+# It runs on every push and pull request to the main branch.
+# It uses a matrix strategy to test against multiple Python versions.
+# The badge is generated using the emibcn/badge-action and pushed to the repository.
+# The badge is saved in the docs/badges directory.
+# The workflow consists of two jobs:
+# 1. compatibility: Runs linting and testing on multiple Python versions.
+# 2. generate-badge: Generates a badge indicating the supported Python versions.
 
 on:
   push:
