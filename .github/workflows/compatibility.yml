@@ -80,16 +80,47 @@ jobs:
           style: flat
           path: docs/badges/python.svg
 
-      - name: 🚀 Push badge to repo
+
+      - name: 🚀 Push and sync Python compatibility badge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -e
+
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git add docs/badges/python.svg
-          git commit -m "🔧 Update Python compatibility badge" || echo "No changes to commit"
-          git pull --rebase || echo "No changes to pull"
-          git config pull.rebase true
-          git config pull.ff only
-          git push
 
+          # Determine current branch
+          CURRENT_BRANCH=${GITHUB_REF##*/}
+          echo "🔎 Current branch is: $CURRENT_BRANCH"
+
+          git fetch origin main stable
+
+          # --- Commit to CURRENT BRANCH (main or stable) ---
+          git checkout "$CURRENT_BRANCH"
+          git pull origin "$CURRENT_BRANCH" --rebase --autostash
+
+          git add docs/badges/python.svg
+          git commit -m "🔧 Update Python compatibility badge" || echo "⚠️ No changes to commit"
+          git push origin "$CURRENT_BRANCH" || echo "⚠️ Nothing to push"
+
+          # --- Only sync from MAIN → STABLE if we're on main ---
+          if [[ "$CURRENT_BRANCH" == "main" ]]; then
+            git checkout stable
+            git pull origin stable --rebase
+
+     
+            if git merge --no-ff main -m "🔁 Sync coverage badge from main to stable" --allow-unrelated-histories
+
+              echo "✅ Merge successful. Pushing to stable..."
+              git push origin stable
+              git checkout main
+            else
+              echo "⚠️ Merge conflict detected. Aborting merge to protect stable branch."
+              git merge --abort
+              echo "⚠️ Merge conflict. Please resolve manually."
+              git checkout main 
+            fi
+          fi
+      # end of job
+      # end of workflow
