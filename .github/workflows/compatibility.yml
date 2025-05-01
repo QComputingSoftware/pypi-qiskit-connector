@@ -81,11 +81,15 @@ jobs:
           path: docs/badges/python.svg
 
       - name: 🚀 Push badge to repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add docs/badges/python.svg
           git commit -m "🔧 Update Python compatibility badge" || echo "No changes to commit"
+          git pull --rebase || echo "No changes to pull"
+          git config pull.rebase true
+          git config pull.ff only
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

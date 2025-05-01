@@ -60,7 +60,11 @@ change_management() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
   if [ "$current_branch" != "main" ]; then
     echo -e "${RED}⛔ You must be on the main branch to commit changes.${RESET}"
-    exit 1
+    git checkout main
+    if [ $? -ne 0 ]; then
+      echo -e "${RED}⛔ Failed to switch to the main branch. Please resolve any issues and try again.${RESET}"
+      exit 1
+    fi
     else
       echo -e "${GREEN}✅ You are on the main branch.${RESET}"
   fi
