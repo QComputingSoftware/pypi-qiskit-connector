@@ -67,8 +67,9 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git remote set-url origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-          git pull origin ${{ github.ref_name }}
           git add docs/badges/coverage.svg
           git commit -m "Update coverage badge to ${{ steps.coverage.outputs.coverage }}" || echo "No changes to commit"
-          git push origin HEAD:${{ github.ref_name }} || echo "No changes to push"
+          git pull --rebase || echo "No changes to pull"
+          git config pull.rebase true
+          git config pull.ff only 
+          git push
