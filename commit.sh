@@ -74,7 +74,7 @@ change_management() {
 commit() {
   # Check if the script is run from the root directory of the repository
   change_management
-  git pull
+  git pull origin main
   # Add all changes to version control
   banner "${YELLOW}" "🧹 Adding code to version control..."
   git add -A
@@ -104,6 +104,8 @@ commit() {
   # Switch back to main branch
   banner "${YELLOW}" "🔄 Switching back to main branch..."
   git checkout main
+  git pull origin main
+  echo -e "${GREEN}✅ Successfully switched back to main branch.${RESET}"
 }
 commit
 # -----------------------------------------------------------------------------
