@@ -37,10 +37,17 @@ jobs:
             echo "✅ No failed or cancelled runs found."
           else
             for run_id in $runs; do
-              echo "🗑️ Deleting workflow run ID: $run_id"
-              gh api -X DELETE \
+              echo "🗑️ Attempting to delete run ID: $run_id"
+              response=$(gh api -X DELETE \
                 -H "Accept: application/vnd.github+json" \
-                /repos/${{ github.repository }}/actions/runs/$run_id
+                /repos/${{ github.repository }}/actions/runs/$run_id 2>&1)
+              
+              if echo "$response" | grep -q "404"; then
+                echo "⚠️ Skipping run ID $run_id - Not found or unauthorized."
+              else
+                echo "✅ Successfully deleted run ID $run_id"
+              fi
             done
-            echo "✅ Cleanup complete."
+            echo "✅ Cleanup attempt complete."
           fi
+
