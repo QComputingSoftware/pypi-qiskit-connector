@@ -7,7 +7,8 @@ name: Python Compatibility
 # The badge is saved in the docs/badges directory.
 # The workflow consists of two jobs:
 # 1. compatibility: Runs linting and testing on multiple Python versions.
-# 2. generate-badge: Generates a badge indicating the supported Python versions.
+# 2. generate-badge: Generates a badge indicating the supported Python versions
+
 
 on:
   push:
@@ -109,8 +110,7 @@ jobs:
             git checkout stable
             git pull origin stable --rebase
 
-     
-            if git merge --no-ff main -m "🔁 Sync coverage badge from main to stable" --allow-unrelated-histories
+            if git merge --no-ff main -m "🔁 Sync coverage badge from main to stable" --allow-unrelated-histories; then
 
               echo "✅ Merge successful. Pushing to stable..."
               git push origin stable
