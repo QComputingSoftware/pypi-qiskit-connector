@@ -93,6 +93,7 @@ commit() {
   else
     banner "${YELLOW}" "🔄 Switching to stable branch..."
     git checkout stable
+    git pull origin stable
   fi
   # Merge main to the stable branch & this is the branch that will be used for the stable version
   banner "${MAGENTA}" "🔄 Merging main into stable branch..."
