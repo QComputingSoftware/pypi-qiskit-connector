@@ -60,10 +60,13 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
 
-          git fetch origin
+
+          git fetch all --tags --prune
+
 
           # ✅ Checkout main using full ref to avoid ambiguity with tags
-          git checkout refs/heads/main
+          git fetch origin main
+          git checkout main
           git pull origin main --ff-only
 
           git add docs/badges/coverage.svg
