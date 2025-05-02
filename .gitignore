@@ -1,5 +1,6 @@
 # Ignore Python bytecode files
 
+
 .env
 *.pyc
 __pycache__/
@@ -28,3 +29,17 @@ q-account.py
 
 unit-test.py
 #quantum-account.py 
+# Ignore virtual environment directories
+venv/
+env/
+# Ignore IDE/editor specific files
+.idea/  
+.vscode/
+*.sublime-project
+*.sublime-workspace
+# Ignore backup files
+*~
+*.bak
+*.swp
+# Ignore distribution files
+dist/
