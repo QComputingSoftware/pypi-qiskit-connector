@@ -74,7 +74,7 @@ change_management() {
 commit() {
   # Check if the script is run from the root directory of the repository
   change_management
-
+  git pull
   # Add all changes to version control
   banner "${YELLOW}" "🧹 Adding code to version control..."
   git add -A
