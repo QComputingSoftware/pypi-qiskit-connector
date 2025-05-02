@@ -78,13 +78,13 @@ commit() {
   # Add all changes to version control
   banner "${YELLOW}" "🧹 Adding code to version control..."
   git add -A
-  # Make commit comment with today's date and time
-  # and a message
+  # Make commit comment with today's date and time and a message
   banner "${GREEN}" "📝 Committing changes..."
   git commit -m "Quantum Code Update - $(date +'%Y-%m-%d %H:%M:%S')"
   # Push to the main branch
   banner "${CYAN}" "🚀 Pushing changes to remote repository..."
   git push origin main
+
   # Push to Stable branch in remote & stable does not exist locally
   # If stable branch does not exist locally, create it from main
   if ! git show-ref --verify --quiet refs/heads/stable; then
@@ -95,12 +95,27 @@ commit() {
     git checkout stable
     git pull origin stable
   fi
+
+  #_______________________________________________________________________________________________
   # Merge main to the stable branch & this is the branch that will be used for the stable version
+  #_______________________________________________________________________________________________
   banner "${MAGENTA}" "🔄 Merging main into stable branch..."
-  git merge main
-  # Push to the stable branch
+  git merge main --no-edit
+  # Check if there are any merge conflicts
+
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}⛔ Merge conflicts detected. Please resolve them and try again.${RESET}"
+    exit 1
+  fi
+
+
   banner "${GREEN}" "🚀 Pushing changes to stable branch..."
   git push origin stable
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}⛔ Failed to push changes to the stable branch. Please resolve any issues and try again.${RESET}"
+    exit 1
+  fi
+
   # Switch back to main branch
   banner "${YELLOW}" "🔄 Switching back to main branch..."
   git checkout main
