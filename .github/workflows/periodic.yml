@@ -40,6 +40,8 @@ jobs:
             Qiskit Connector Quality Check
             Qiskit Connector Code Coverage Analysis
             Python Compatibility
+            Sync PyPI Releases to GitHub
+            Sync Tag → GitHub Release 
           repo: ${{ github.repository }}
           token: ${{ secrets.PAT_GITHUB }}
           wait: true
@@ -52,8 +54,22 @@ jobs:
           workflow: release-record.yml
           token: ${{ secrets.PAT_GITHUB }}
 
-      - name: 🏷️ Dispatch release-tag.yml
+      - name: ✅ All workflows succeeded — Dispatch release-tag.yml
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: release-tag.yml
           token: ${{ secrets.PAT_GITHUB }}
+
+      - name: ✅ All workflows succeeded — Dispatch release-id.yml
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: release-id.yml
+          token: ${{ secrets.PAT_GITHUB }}
+
+      - name: ✅ All workflows succeeded — Dispatch quality.yml
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: quality.yml
+          token: ${{ secrets.PAT_GITHUB }}
+
+
