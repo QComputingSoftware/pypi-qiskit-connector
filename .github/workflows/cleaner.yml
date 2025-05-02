@@ -10,6 +10,16 @@ on:
 permissions:
   actions: write
   contents: write
+  checks: write
+  deployments: write
+  pages: write
+  pull-requests: write
+  statuses: write
+  repository-projects: write
+  security-events: write
+  attestations: write
+  metadata: write
+  packages: write
 
 jobs:
   cleanup-failed-and-cancelled:
@@ -24,7 +34,7 @@ jobs:
 
       - name: 🧼 Delete failed and cancelled workflow runs
         env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🔍 Finding failed or cancelled runs..."
           runs=$(gh api \
