@@ -2,7 +2,7 @@ name: Release Latest Badge ID
 
 on:
   push:
-    branches: [ "main", "stable" ]
+    branches: [ "main" ]
 
 permissions:
   contents: write # <-- All Steps
