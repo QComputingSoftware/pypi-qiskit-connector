@@ -1,0 +1,42 @@
+name: 🧹 Delete Failed & Cancelled Workflow Runs
+
+on:
+  push:
+    branches: [ "main", "stable" ]
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  cleanup-failed-and-cancelled:
+    name: 🚫 Clean Up Failed & Cancelled Runs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛠️ Install GitHub CLI
+        uses: cli/gh-action@v2
+
+      - name: 🧼 Find and delete failed/cancelled runs
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          echo "🔍 Scanning for failed and cancelled workflow runs..."
+
+          runs=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/actions/runs \
+            --paginate \
+            -q '.workflow_runs[] | select(.conclusion=="failure" or .conclusion=="cancelled") | .id')
+
+          if [ -z "$runs" ]; then
+            echo "✅ No failed or cancelled runs to delete."
+          else
+            for run_id in $runs; do
+              echo "🗑️ Deleting workflow run ID: $run_id"
+              gh api -X DELETE \
+                -H "Accept: application/vnd.github+json" \
+                /repos/${{ github.repository }}/actions/runs/$run_id
+            done
+            echo "✅ Cleanup complete."
+          fi
