@@ -1,4 +1,13 @@
 name: 🧹 Delete Failed & Cancelled Workflow Runs
+# This workflow deletes failed and cancelled workflow runs to keep the Actions tab clean.
+# It uses the GitHub CLI to authenticate and delete the runs.
+# The workflow is triggered on push to the main and stable branches, and on a daily schedule.
+# It requires a Personal Access Token (PAT) with repo and workflow permissions, stored in the repository secrets as PAT_GITHUB.
+# The workflow runs on the latest Ubuntu environment.
+# The workflow is set to run daily at 6:00 AM EST.
+# The workflow is named "Delete Failed & Cancelled Workflow Runs" and is triggered on push to the main and stable branches, as well as on a daily schedule.
+# The workflow uses the GitHub CLI to authenticate and delete the runs.
+
 
 on:
   push:
