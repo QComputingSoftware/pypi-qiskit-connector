@@ -68,7 +68,7 @@ jobs:
           path: "docs/badges/coverage.svg"
 
       #____________________________________________________
-      # --- Check if the badge has changed ---
+      # --- Check if the badge has changed ---------------
       # --- Commit and push the badge to the repository ---
       #____________________________________________________
       - name: 🚀 Commit badge and safely sync main → stable
