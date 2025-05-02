@@ -4,6 +4,9 @@ on:
   push:
     branches: [ "main", "stable" ]
 
+  schedule:
+    - cron: '0 10 * * *'  # 6:00 AM EST daily
+
 permissions:
   actions: write
   contents: write
@@ -15,14 +18,22 @@ jobs:
 
     steps:
       - name: 🛠️ Install GitHub CLI
-        uses: cli/gh-action@v2
+        run: |
+          sudo apt update
+          sudo apt install -y gh
 
-      - name: 🧼 Find and delete failed/cancelled runs
+      - name: 🔐 Authenticate GitHub CLI with PAT
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
-          echo "🔍 Scanning for failed and cancelled workflow runs..."
+          echo "${GH_TOKEN}" | gh auth login --with-token
+          gh auth status
 
+      - name: 🧼 Delete failed and cancelled workflow runs
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          echo "🔍 Finding workflow runs with status failure or cancelled..."
           runs=$(gh api \
             -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository }}/actions/runs \
