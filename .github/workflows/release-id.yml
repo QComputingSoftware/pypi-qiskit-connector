@@ -1,4 +1,4 @@
-name: Release Latest Badge ID
+name: Qiskit Connector Latest Release
 
 on:
   push:
