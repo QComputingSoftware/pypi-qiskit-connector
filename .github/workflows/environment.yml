@@ -5,6 +5,15 @@ on:
     branches:
       - main
 
+  workflow_dispatch:  # Required for external workflows to trigger this via API
+
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  
 jobs:
   deploy:
     runs-on: ubuntu-latest

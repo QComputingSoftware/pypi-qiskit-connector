@@ -9,13 +9,14 @@ name: Python Compatibility
 # 1. compatibility: Runs linting and testing on multiple Python versions.
 # 2. generate-badge: Generates a badge indicating the supported Python versions
 
-
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
+  workflow_dispatch:  # Required for external workflows to trigger this via API
+  
 permissions:
   contents: write
 

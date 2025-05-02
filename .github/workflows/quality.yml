@@ -7,6 +7,16 @@ on:
   pull_request:
     branches: [ "main" ]
 
+
+  workflow_dispatch:  # Required for external workflows to trigger this via API
+
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+   
 jobs:
   test-connector:
     runs-on: ubuntu-latest

@@ -4,6 +4,8 @@ on:
   push:
     branches: [ "main" ]
 
+  workflow_dispatch:  # Required for external workflows to trigger this via API  workflow_dispatch:
+
 permissions:
   contents: write # <-- All Steps
 

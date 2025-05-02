@@ -1,15 +1,6 @@
-name: Force Sync PyPI Releases Workflow to Update
-
-permissions:
-  contents: write
-  deployments: write
-  pull-requests: write
-  checks: write
-  statuses: write
-
+name: Force Sync Update
 
 on:
-  # 1️⃣ Trigger after core workflows complete
   workflow_run:
     workflows:
       - Qiskit Connector Latest Release
@@ -20,34 +11,49 @@ on:
     types:
       - completed
 
-  # 2️⃣ Scheduled triggers
   schedule:
-    # Nightly sync for PyPI (11 PM EST / 3:00 UTC)
-    - cron: '0 3 * * *'
-    # Morning sync for GitHub Releases (6 AM EST / 10:00 UTC)
-    - cron: '0 10 * * *'
+    - cron: '0 3 * * *'     # 11 PM EST
+    - cron: '0 10 * * *'    # 6 AM EST
 
-  # 3️⃣ On any code push
   push:
-    branches: [ "main", "stable" ]
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
 
 jobs:
-  trigger-release-record:   #[Job 1
-    name: 🔁 Force Sync PyPI Releases to Run
+  wait-and-dispatch:
+    name: 🔄 Conditional Trigger of Release Sync Jobs
     runs-on: ubuntu-latest
+
     steps:
-      - name: ⏳ Trigger release-record.yml
+      - name: ⏳ Wait for all required workflows to complete successfully
+        uses: ahmadnassri/action-workflow-queue@v1
+        with:
+          workflows: |
+            Qiskit Connector Latest Release
+            PyPI Deployment Environment
+            Qiskit Connector Quality Check
+            Qiskit Connector Code Coverage Analysis
+            Python Compatibility
+          repo: ${{ github.repository }}
+          token: ${{ secrets.PAT_GITHUB }}
+          wait: true
+          fail-fast: true
+          required-status: completed
+
+      - name: ✅ All workflows succeeded — Dispatch release-record.yml
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: release-record.yml
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_GITHUB }}
 
-  trigger-release-tag:   #[Job 2
-    name: 🏷️ Force Sync GitHub Releases (Tag)
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🕒 Trigger release-tag.yml
+      - name: 🏷️ Dispatch release-tag.yml
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: release-tag.yml
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_GITHUB }}

@@ -6,6 +6,15 @@ on:
     tags:
       - '[v]?[0-9]+.[0-9]+.[0-9]+*'
 
+  workflow_dispatch: # Required for external workflows to trigger this via API
+
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  
 jobs:
   create_release:
     name: 🏷️ Create GitHub Release
