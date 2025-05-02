@@ -1,0 +1,53 @@
+name: Force Sync PyPI Releases Workflow to Update
+
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+
+
+on:
+  # 1️⃣ Trigger after core workflows complete
+  workflow_run:
+    workflows:
+      - Qiskit Connector Latest Release
+      - PyPI Deployment Environment
+      - Qiskit Connector Quality Check
+      - Qiskit Connector Code Coverage Analysis
+      - Python Compatibility
+    types:
+      - completed
+
+  # 2️⃣ Scheduled triggers
+  schedule:
+    # Nightly sync for PyPI (11 PM EST / 3:00 UTC)
+    - cron: '0 3 * * *'
+    # Morning sync for GitHub Releases (6 AM EST / 10:00 UTC)
+    - cron: '0 10 * * *'
+
+  # 3️⃣ On any code push
+  push:
+    branches: [ "main", "stable" ]
+
+jobs:
+  trigger-release-record:   #[Job 1
+    name: 🔁 Force Sync PyPI Releases to Run
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⏳ Trigger release-record.yml
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: release-record.yml
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  trigger-release-tag:   #[Job 2
+    name: 🏷️ Force Sync GitHub Releases (Tag)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🕒 Trigger release-tag.yml
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: release-tag.yml
+          token: ${{ secrets.GITHUB_TOKEN }}
