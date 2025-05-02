@@ -1,13 +1,4 @@
-name: 🧹 Delete Failed & Cancelled Workflow Runs
-# This workflow deletes failed and cancelled workflow runs to keep the Actions tab clean.
-# It uses the GitHub CLI to authenticate and delete the runs.
-# The workflow is triggered on push to the main and stable branches, and on a daily schedule.
-# It requires a Personal Access Token (PAT) with repo and workflow permissions, stored in the repository secrets as PAT_GITHUB.
-# The workflow runs on the latest Ubuntu environment.
-# The workflow is set to run daily at 6:00 AM EST.
-# The workflow is named "Delete Failed & Cancelled Workflow Runs" and is triggered on push to the main and stable branches, as well as on a daily schedule.
-# The workflow uses the GitHub CLI to authenticate and delete the runs.
-
+name: Delete Failed & Cancelled Workflow Runs
 
 on:
   push:
@@ -31,18 +22,11 @@ jobs:
           sudo apt update
           sudo apt install -y gh
 
-      - name: 🔐 Authenticate GitHub CLI with PAT
-        env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
-        run: |
-          echo "${GH_TOKEN}" | gh auth login --with-token
-          gh auth status
-
       - name: 🧼 Delete failed and cancelled workflow runs
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
-          echo "🔍 Finding workflow runs with status failure or cancelled..."
+          echo "🔍 Finding failed or cancelled runs..."
           runs=$(gh api \
             -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository }}/actions/runs \
@@ -50,7 +34,7 @@ jobs:
             -q '.workflow_runs[] | select(.conclusion=="failure" or .conclusion=="cancelled") | .id')
 
           if [ -z "$runs" ]; then
-            echo "✅ No failed or cancelled runs to delete."
+            echo "✅ No failed or cancelled runs found."
           else
             for run_id in $runs; do
               echo "🗑️ Deleting workflow run ID: $run_id"
