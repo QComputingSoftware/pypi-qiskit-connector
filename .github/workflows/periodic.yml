@@ -13,20 +13,11 @@ on:
         required: false
         default: 'false'
 
-  # Trigger on push to main branch
-  # This is to ensure that the workflow is triggered only when there is a push to the main branch.
-  # This is to ensure that the workflow is triggered only when there is a push to the main branch.
+  # Trigger on push to main branch:
   push:
     branches: [ "main" ]
 
-  workflow_run:
-    workflows:
-      - PyPI Deployment Environment
-      - Qiskit Connector Quality Check
-      - Python Compatibility
-    types:
-      - completed
-
+ # Trigger on schedule:
   schedule:
     - cron: '0 3 * * *'     # 11 PM EST.
     - cron: '0 10 * * *'    # 6 AM EST.
@@ -45,6 +36,15 @@ on:
     - cron: '0 20 * * *'    # 4 AM EST.
     - cron: '0 23 * * *'    # 7 AM EST.
     - cron: '0 2 * * *'     # 10 AM EST.
+
+  workflow_run:
+    workflows:
+      - PyPI Deployment Environment
+      - Qiskit Connector Quality Check
+      - Python Compatibility
+    types:
+      - completed
+
 
 permissions:
   actions: write
