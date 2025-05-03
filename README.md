@@ -39,7 +39,7 @@ from qiskit_connector import (
 ---
 
 ## 🔧 Installation
-
+###### It is recommended that you use `pip` for installation - a common best practice.
 ```bash
 pip install qiskit-connector
 ```
