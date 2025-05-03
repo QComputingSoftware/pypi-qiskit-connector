@@ -8,15 +8,16 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 jobs:
   coverage-badge:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇️ Checkout repository
+      - name: ⬇️ Checkout main branch only
         uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main   # 🔒 Avoid tag/branch ambiguity
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
@@ -53,33 +54,33 @@ jobs:
           style: "classic"
           path: "docs/badges/coverage.svg"
 
-      - name: 🚀 Commit badge and safely sync main → stable
+      - name: 🚀 Commit badge to main and sync to stable
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
+
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
 
-          git fetch --all --tags
+          # 🧼 Clean workspace
+          git reset --hard
+          git clean -fd
+
+          # ✅ Ensure we’re truly on main
+          git fetch origin refs/heads/main:refs/remotes/origin/main
           git checkout -B main origin/main
-          git pull --rebase origin main || echo "⚠️ Rebase issue (handled)"
 
           git add docs/badges/coverage.svg
           git commit -m "🛡️ Update coverage badge to ${{ steps.coverage.outputs.coverage }}" || echo "⚠️ No changes to commit"
-          git push origin main
+          git push origin HEAD:refs/heads/main
 
-          # 🔄 Merge main into stable
-          if git show-ref --verify --quiet refs/remotes/origin/stable; then
-            git fetch origin stable
-            git checkout -B stable origin/stable
-          else
-            git checkout -b stable
-          fi
+          # ✅ Sync to stable
+          git fetch origin refs/heads/stable:refs/remotes/origin/stable || true
+          git checkout -B stable origin/stable || git checkout -b stable
 
           if git merge main -m "🔁 Sync coverage badge from main to stable"; then
-            echo "✅ Merge successful"
-            git push origin stable
+            git push origin HEAD:refs/heads/stable
           else
             echo "⚠️ Merge conflict detected. Skipping push to protect stable."
             git merge --abort || true
