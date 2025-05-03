@@ -44,7 +44,6 @@ permissions:
   pull-requests: write
   checks: write
   statuses: write
-  repositories: write
   issues: write
   discussions: write
   pages: write
