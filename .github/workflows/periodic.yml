@@ -14,8 +14,8 @@ on:
       - completed
 
   schedule:
-    - cron: '0 3 * * *'     # 11 PM EST
-    - cron: '0 10 * * *'    # 6 AM EST
+    - cron: '0 3 * * *'     # 11 PM EST.
+    - cron: '0 10 * * *'    # 6 AM EST.
 
 permissions:
   contents: write
