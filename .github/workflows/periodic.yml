@@ -61,7 +61,7 @@ jobs:
       # VERIFYING: This is to verify that all workflows have succeeded.
       - name: ✅ All workflows succeeded — Dispatch Verify
         run: |
-          echo "✅ All workflows succeeded. This is to verify."
+          echo "✅ All workflows succeeded."
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
 
