@@ -52,7 +52,7 @@ and any other Qiskit dependencies. (Qiskit 1.x is not supported).
 
 ---
 
-## 🗂️ Environment Variable Setup
+## 🗂️ Variable Setup
 🔐 Security Practice: Do not check-in `.env or environment variable config file` or any environment variable file into version control. Add it to your .gitignore. During development, create a file named `.env` at your project root. The connector will automatically load it.Use the template below as the content of your .env file or variable config file.
 
 ```dotenv
