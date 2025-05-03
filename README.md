@@ -193,11 +193,18 @@ Qiskit Connector software invention was inspired by IBM Research on Quantum Comp
 
 ---
 
-## 📜 Software Author & Publisher
+## 📜 Software Author
 Dr. Jeffrey Chijioke-Uche <br>
 <i>IBM Computer Scientist</i> <br>
 <i>IBM Quantum Ambassador & Research Scientist</i> <br>
 <i>IEEE Senior Member (Computational Intelligence)</i>
+
+---
+
+## 📜 Acknowledgment
+The development of the Qiskit Connector has been made possible through the support, inspiration, and technical contributions of several leading institutions and communities. The author would like to express deep gratitude to ![IBM Research](https://research.ibm.com/quantum-computing) and the `IBM Quantum Ambassadors` Team for their pioneering efforts in democratizing quantum computing and providing the infrastructure and collaborative ecosystem that fostered the development of this tool. Their continued support has significantly accelerated progress in real-world quantum application development.
+<br><br>
+Additional appreciation is extended to the ![IEEE Computational Intelligence](https://cis.ieee.org) Society for their thought leadership in intelligent systems, and to the  ![Harvard Program for Research in Science and Engineering](https://www.harvard.edu/) for its role in shaping early research directions. The author also acknowledges ![Walden University Research](https://academicguides.waldenu.edu/research-center) for providing a strong academic and methodological foundation throughout the software development lifecycle. These institutions have collectively influenced the innovation and rigor reflected in this project.
 
 ---
 
