@@ -4,9 +4,18 @@
 #               This is to maintain the quality and fix any issues that may arise. This is quality Control.
 # @ Reference:  This workflow ensures that all necessary checks are performed regularly to maintain software integrity. 
 
-name: Force Sync Update
-
+name: Force Sync - Periodic Quality Control
 on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force sync all workflows'
+        required: false
+        default: 'false'
+
+  # Trigger on push to main branch
+  # This is to ensure that the workflow is triggered only when there is a push to the main branch.
+  # This is to ensure that the workflow is triggered only when there is a push to the main branch.
   push:
     branches: [ "main" ]
 
