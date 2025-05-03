@@ -210,4 +210,4 @@ Additional appreciation is extended to the [IEEE Computational Intelligence](htt
 
 ## 📜 License
 
-This project uses the Open-source ![License](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/LICENSE)
+This project uses the Open-source [License](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/LICENSE)
