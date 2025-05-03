@@ -121,7 +121,7 @@ DEDICATED_PLAN="off"
 
 ## 📖 Usage
 
-### Open Plan (default free tier) and Paid Plan
+##### Open Plan and Paid Plan
 
 ```python
 
