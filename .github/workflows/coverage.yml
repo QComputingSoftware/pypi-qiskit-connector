@@ -1,4 +1,9 @@
 name: Qiskit Connector Code Coverage Analysis
+# This workflow generates a code coverage badge for the Qiskit Connector repository.
+# It runs on every push and pull request to the main branch, ensuring that the badge is always up-to-date.
+# The badge is generated using the emibcn/badge-action and is committed to the main branch.
+# The badge is then synced to the stable branch, ensuring that both branches have the latest coverage information.
+
 
 on:
   push:
