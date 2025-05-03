@@ -20,7 +20,7 @@ This package performs the following:
 ###### 🐍 Software built and maintained by Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Research Scientist.
 ---
 
-## 📋 Features & API
+## 📋 Built-in functions
 
 These functions are available after you import the module:
 
