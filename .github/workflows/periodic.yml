@@ -38,11 +38,20 @@ on:
     - cron: '0 2 * * *'     # 10 AM EST.
 
 permissions:
+  actions: write
   contents: write
   deployments: write
   pull-requests: write
   checks: write
   statuses: write
+  repositories: write
+  issues: write
+  discussions: write
+  pages: write
+  workflows: write
+  secrets: write
+  metadata: write
+  packages: write
 
 jobs:
   wait-and-dispatch:
