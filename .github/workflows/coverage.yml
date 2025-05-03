@@ -2,6 +2,7 @@ name: Qiskit Connector Code Coverage Analysis
 
 on:
   push:
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
@@ -60,16 +61,15 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
 
-          # 🧠 Ensure branch is main, fetch latest refs/tags
           git fetch --all --tags
           git checkout -B main origin/main
-          git pull --rebase origin main || echo "⚠️ Rebase warning"
+          git pull --rebase origin main || echo "⚠️ Rebase issue (handled)"
 
           git add docs/badges/coverage.svg
           git commit -m "🛡️ Update coverage badge to ${{ steps.coverage.outputs.coverage }}" || echo "⚠️ No changes to commit"
           git push origin main
 
-          # 🔁 Sync to stable
+          # 🔄 Merge main into stable
           if git show-ref --verify --quiet refs/remotes/origin/stable; then
             git fetch origin stable
             git checkout -B stable origin/stable
