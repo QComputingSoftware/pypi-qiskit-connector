@@ -1,3 +1,9 @@
+# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
+# @last update: 2025-03-01
+# @Description: This workflow is triggered on a schedule to check the quality of the software. 
+#               This is to maintain the quality and fix any issues that may arise. This is quality Control.
+# @ Reference:  This workflow ensures that all necessary checks are performed regularly to maintain software integrity. 
+
 name: Force Sync Update
 
 on:
@@ -8,7 +14,6 @@ on:
     workflows:
       - PyPI Deployment Environment
       - Qiskit Connector Quality Check
-      - Qiskit Connector Code Coverage Analysis
       - Python Compatibility
     types:
       - completed
@@ -16,6 +21,21 @@ on:
   schedule:
     - cron: '0 3 * * *'     # 11 PM EST.
     - cron: '0 10 * * *'    # 6 AM EST.
+    - cron: '0 15 * * *'    # 3 PM EST.  
+    - cron: '0 20 * * *'    # 8 PM EST.
+    - cron: '0 23 * * *'    # 11 PM EST.
+    - cron: '0 17 * * *'    # 1 AM EST.
+    - cron: '0 20 * * *'    # 4 AM EST.
+    - cron: '0 23 * * *'    # 7 AM EST.
+    - cron: '0 2 * * *'     # 10 AM EST.
+    - cron: '0 5 * * *'     # 1 PM EST.
+    - cron: '0 8 * * *'     # 4 PM EST.
+    - cron: '0 11 * * *'    # 7 PM EST.
+    - cron: '0 14 * * *'    # 10 PM EST.
+    - cron: '0 17 * * *'    # 1 AM EST.
+    - cron: '0 20 * * *'    # 4 AM EST.
+    - cron: '0 23 * * *'    # 7 AM EST.
+    - cron: '0 2 * * *'     # 10 AM EST.
 
 permissions:
   contents: write
@@ -49,7 +69,6 @@ jobs:
           workflows: |
             PyPI Deployment Environment
             Qiskit Connector Quality Check
-            Qiskit Connector Code Coverage Analysis
             Python Compatibility
           repo: ${{ github.repository }}
           token: ${{ secrets.PAT_GITHUB }}
@@ -58,7 +77,10 @@ jobs:
           required-status: completed
 
 
-      # VERIFYING: This is to verify that all workflows have succeeded.
+      #______________________________________________________________________________________________________
+      #   --- Check if all workflows succeeded.
+      #   --- If any workflow failed, exit with an error message.
+      #______________________________________________________________________________________________________
       - name: ✅ All workflows succeeded — Dispatch Verify
         run: |
           echo "✅ All workflows succeeded."
@@ -66,12 +88,33 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
 
 
+      #______________________________________________________________________________________________________
+      #   --- Check if all workflows succeeded.
+      #   --- If any workflow failed, exit gracefully othrerwise continue.
+      #   --- Dispatch the release-record.yml and coverage.yml workflows.
+      #______________________________________________________________________________________________________
+      - name: ✅ All workflows succeeded — Check for failures
+        run: |
+          if [ $? -ne 0 ]; then
+            echo "[x] One or more workflows failed. Exiting."
+            exit 0
+          fi
+
       - name: ✅ All workflows succeeded — Dispatch release-record.yml
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: release-record.yml
           token: ${{ secrets.PAT_GITHUB }}
 
+      - name: ✅ All workflows succeeded — Dispatch coverage.yml
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: coverage.yml
+          token: ${{ secrets.PAT_GITHUB }}
+
+      #______________________________________________________________________________________________________
+      #   --- Optional: Uncomment if you want to dispatch the release-tag.yml and release-id.yml workflows.
+      #______________________________________________________________________________________________________
       # - name: ✅ All workflows succeeded — Dispatch release-tag.yml
       #   uses: benc-uk/workflow-dispatch@v1
       #   with:

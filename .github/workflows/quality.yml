@@ -1,4 +1,6 @@
-# .github/workflows/quality.yml
+# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
+# @last update: 2025-03-01
+
 name: Qiskit Connector Quality Check
 
 on:
