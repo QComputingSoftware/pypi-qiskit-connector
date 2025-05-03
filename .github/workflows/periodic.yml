@@ -66,11 +66,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
 
 
-      # - name: ✅ All workflows succeeded — Dispatch release-record.yml
-      #   uses: benc-uk/workflow-dispatch@v1
-      #   with:
-      #     workflow: release-record.yml
-      #     token: ${{ secrets.PAT_GITHUB }}
+      - name: ✅ All workflows succeeded — Dispatch release-record.yml
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: release-record.yml
+          token: ${{ secrets.PAT_GITHUB }}
 
       # - name: ✅ All workflows succeeded — Dispatch release-tag.yml
       #   uses: benc-uk/workflow-dispatch@v1
