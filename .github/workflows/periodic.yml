@@ -1,0 +1,82 @@
+name: Force Sync Update
+
+on:
+  push:
+    branches: [ "main" ]
+
+  workflow_run:
+    workflows:
+      - Qiskit Connector Latest Release
+      - PyPI Deployment Environment
+      - Qiskit Connector Quality Check
+      - Qiskit Connector Code Coverage Analysis
+      - Python Compatibility
+      - Sync PyPI Releases to GitHub
+      - Sync Tag → GitHub Release
+    types:
+      - completed
+
+  schedule:
+    - cron: '0 3 * * *'     # 11 PM EST
+    - cron: '0 10 * * *'    # 6 AM EST
+
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+
+jobs:
+  wait-and-dispatch:
+    name: 🔄 Conditional Trigger of Release Sync Jobs
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+
+    steps:
+      - name: 🔎 Ensure we're on main (scheduled run)
+        if: github.event_name == 'schedule'
+        run: |
+          DEFAULT_BRANCH=$(curl -s -H "Authorization: token ${{ secrets.PAT_GITHUB }}" https://api.github.com/repos/${{ github.repository }} | jq -r .default_branch)
+          echo "🧠 Default branch is: $DEFAULT_BRANCH"
+          if [ "$DEFAULT_BRANCH" != "main" ]; then
+            echo "✅ Requirements is that the periodic workflow runs only from 'main' which is the source of truth."
+            echo "✅ No job workflow was called. Thank you."
+            exit 0
+          fi
+
+
+      - name: ⏳ Wait for all required workflows to complete successfully
+        uses: ahmadnassri/action-workflow-queue@v1
+        with:
+          workflows: |
+            Qiskit Connector Latest Release
+            PyPI Deployment Environment
+            Qiskit Connector Quality Check
+            Qiskit Connector Code Coverage Analysis
+            Python Compatibility
+            Sync PyPI Releases to GitHub
+            Sync Tag → GitHub Release 
+          repo: ${{ github.repository }}
+          token: ${{ secrets.PAT_GITHUB }}
+          wait: true
+          fail-fast: true
+          required-status: completed
+
+      - name: ✅ All workflows succeeded — Dispatch release-record.yml
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: release-record.yml
+          token: ${{ secrets.PAT_GITHUB }}
+
+      - name: ✅ All workflows succeeded — Dispatch release-tag.yml
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: release-tag.yml
+          token: ${{ secrets.PAT_GITHUB }}
+
+      - name: ✅ All workflows succeeded — Dispatch release-id.yml
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: release-id.yml
+          token: ${{ secrets.PAT_GITHUB }}
