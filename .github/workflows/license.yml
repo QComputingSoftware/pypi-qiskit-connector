@@ -1,0 +1,57 @@
+# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
+# @last update: 2025-03-01
+# @Description: This workflow builds a license badge that show the license type of the software for markdown files.
+# @BadgeLocation:  doc/badges/license-badge.svg
+# @File: .github/workflows/license.yml
+# @License: Apache-2.0
+#___________________________________________________________
+
+name: Software License Badge
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  license-badge:
+    name: 🏷️ License Badge Generator
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
+
+      - name: 📂 Ensure badge directory exists
+        run: mkdir -p doc/badges
+
+      - name: 🛠️ Generate license badge
+        uses: emibcn/badge-action@v2
+        with:
+          label: "license"
+          label-color: "555"
+          status: "Apache-2.0"
+          color: "7DD71D"
+          style: "classic"
+          path: "doc/badges/license-badge.svg"
+
+      - name: 🚀 Commit badge to main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git fetch origin
+          git checkout -B main origin/main
+          git add doc/badges/license-badge.svg
+          git commit -m "🔖 Update license badge" || echo "⚠️ No changes to commit"
+          git push origin HEAD:refs/heads/main
+
+
+

@@ -19,6 +19,7 @@ jobs:
 
     permissions:
       contents: write # <-- Permissions to write to the repository
+      actions: write # <-- Permissions to use actions
 
     steps:
       - name: ⬇️ Checkout repository
