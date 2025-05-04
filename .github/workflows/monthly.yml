@@ -49,7 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           URL: ${{ secrets.URL }}
         run: |
-          echo "🔍 Scraping download data from Pepy.tech public page..."
+          echo "🔍 Getting download data from Pepy.tech public page..."
           python3 - << 'PYCODE'
           import urllib.request
           from bs4 import BeautifulSoup
@@ -74,19 +74,17 @@ jobs:
                     markdown_text = """[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector)"""
                     html_output = markdown.markdown(markdown_text)
                     print(html_output)
-                    exit(0)
             
             # Extract the total downloads from the markdown text display and convert it to a number
             total_downloads = re.search(r'(\d+)', html_output).group(1)
             print(f"Total Downloads: {total_downloads}")
-            exit(0)
-
+            
           except Exception as e:
               print(f"❌ Scraping failed: {e}")
               exit(1)
           PYCODE
 
-
+          exit 0
 
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
