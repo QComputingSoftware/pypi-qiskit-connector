@@ -1,7 +1,6 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-05-04
 # @Description: This workflow scrapes public Pepy.tech stats for the Qiskit Connector package and updates the badge.
-# @File: .github/workflows/m-downloads.yml
 # @Usage: Triggered on schedule or manually; uses Pepy.tech Pro API securely.
 #_________________________________________________________________________________________________________
 
