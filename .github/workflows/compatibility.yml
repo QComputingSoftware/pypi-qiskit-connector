@@ -98,7 +98,7 @@ jobs:
           git pull origin "$CURRENT_BRANCH" --rebase --autostash
 
           git add docs/badges/python.svg
-          git commit -m "🔧 Update Python compatibility badge" || echo "⚠️ No changes to commit"
+          git commit -m "🔧 Qiskit Code Update - Inteli Check" || echo "⚠️ No changes to commit"
           git push origin "$CURRENT_BRANCH" || echo "⚠️ Nothing to push"
 
           # --- Only sync from MAIN → STABLE if we're on main ---
