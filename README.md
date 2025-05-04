@@ -45,7 +45,7 @@ from qiskit_connector import (
 pip install qiskit-connector
 ```
 
-This will also pull in functionalities powered by:
+This will also pull in functionalities powered by Qiskit SDK:
 - `qiskit>=2.0.0`  
   
 
