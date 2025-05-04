@@ -42,7 +42,7 @@ jobs:
         id: fetch_downloads
         run: |
           echo "🔐 Connecting to Pepy Pro API using X-API-Key..."
-          RESPONSE=$(curl -s -H "X-API-Key: ${{ secrets.PEPY_API_TOKEN }}" \
+          RESPONSE=$(curl -s -H "Accept: application/json" -H "X-API-Key: ${{ secrets.PEPY_API_TOKEN }}" \
             "https://pepy.tech/service-api/v1/pro/projects/qiskit-connector/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS")
 
           if [[ -n "$RESPONSE" ]]; then
