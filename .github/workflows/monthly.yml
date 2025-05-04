@@ -34,6 +34,13 @@ jobs:
       - name: 📿 Checkout
         uses: actions/checkout@v4
 
+
+      - name: Install qiskit-connector
+        run: |
+          python -m pip install --upgrade pip
+          pip install qiskit-connector
+          pip install markdown
+
       - name: 🔍 Scrape Pepy Public Page for Downloads
         id: get_downloads
         run: |
@@ -46,6 +53,12 @@ jobs:
           from bs4 import BeautifulSoup
           import re
           import os
+          import markdown
+          import sys
+          import logging
+          import requests
+          from urllib.parse import urlparse
+          import json
 
           URL = "https://pepy.tech/projects/qiskit-connector?timeRange=threeMonths&includeCIDownloads=true"
 
@@ -55,8 +68,10 @@ jobs:
               if not URL.startswith("http"):
                   raise ValueError("Invalid URL")
               else:
-                  markdown_badge = """[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector)"""
-                  print(markdown_badge)
+                  import markdown
+                  markdown_text = """[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector)"""
+                  html_output = markdown.markdown(markdown_text)
+                  print(html_output)
                   exit(0)
           try:
               req = urllib.request.Request(
