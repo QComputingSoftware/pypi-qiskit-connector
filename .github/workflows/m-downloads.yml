@@ -63,25 +63,25 @@ jobs:
                 total = int(data.get("total_downloads", 0))
                 monthly = round(total * 0.4333)
 
-                print(f"::set-output name=total_downloads::{total}")
-                print(f"::set-output name=monthly_downloads::{monthly}")
+                print(f"total_downloads={total}", file=open(os.environ['GITHUB_ENV'], 'a'))
+                print(f"monthly_downloads={monthly}", file=open(os.environ['GITHUB_ENV'], 'a'))
             except Exception as e:
                 print("❌ Failed to fetch or parse API response:", str(e))
                 exit(1)
-            EOF
-                    env:
-                      PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
+                EOF
+            env:
+              PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
 
                   - name: 🛠️ Generate Badge
                     uses: emibcn/badge-action@v2
                     with:
                       label: "Monthly Downloads"
                       label-color: "555"
-                      status: "${{ steps.fetch_downloads.outputs.monthly_downloads }}"
+                      status: "${{ env.monthly_downloads }}"
                       color: "blue"
                       style: "flat"
                       path: "doc/badges/monthly-downloads.svg"
-
+            
                   - name: 🚀 Commit and Push Badge
                     run: |
                       git config --global user.name "github-actions"
