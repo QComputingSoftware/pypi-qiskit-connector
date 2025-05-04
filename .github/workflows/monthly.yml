@@ -102,7 +102,7 @@ jobs:
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
         with:
-          label: "downloads"
+          label: "monthly downloads"
           label-color: "555"
           status: "${{ steps.get_downloads.outputs.monthly_downloads }}"
           color: "7DD71D"
