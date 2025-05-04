@@ -39,7 +39,7 @@ jobs:
           status: "Apache-2.0"
           color: "7DD71D"
           style: "classic"
-          path: "doc/badges/license-badge.svg"
+          path: "docs/badges/license-badge.svg"
 
       - name: 🚀 Commit badge to main
         env:

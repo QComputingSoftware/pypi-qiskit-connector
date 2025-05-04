@@ -107,7 +107,7 @@ jobs:
           status: "${{ steps.get_downloads.outputs.monthly_downloads }}"
           color: "brightgreen"
           style: "flat"
-          path: "doc/badges/monthly-downloads.svg"
+          path: "docs/badges/monthly-downloads.svg"
 
       - name: 🚀 Commit and Push Badge
         run: |
