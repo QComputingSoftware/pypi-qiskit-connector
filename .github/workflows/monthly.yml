@@ -35,19 +35,21 @@ jobs:
         uses: actions/checkout@v4
 
 
-      - name: Install qiskit-connector
+      - name: Install qiskit-connector & markdown
         run: |
           python -m pip install --upgrade pip
           pip install qiskit-connector
           pip install markdown
+          pip install beautifulsoup4 lxml
+          pip install requests
 
-      - name: 🔍 Scrape Pepy Public Page for Downloads
+      - name: 🔍 Pepy Public Page for Downloads
         id: get_downloads
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          URL: ${{ secrets.URL }}
         run: |
           echo "🔍 Scraping download data from Pepy.tech public page..."
-
-          pip install beautifulsoup4 lxml
-
           python3 - << 'PYCODE'
           import urllib.request
           from bs4 import BeautifulSoup
@@ -59,46 +61,23 @@ jobs:
           import requests
           from urllib.parse import urlparse
           import json
-
-          URL = "https://pepy.tech/projects/qiskit-connector?timeRange=threeMonths&includeCIDownloads=true"
-
-
-          if URL:
-          # Check if the URL is valid
-              if not URL.startswith("http"):
-                  raise ValueError("Invalid URL")
-              else:
-                  import markdown
-                  markdown_text = """[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector)"""
-                  html_output = markdown.markdown(markdown_text)
-                  print(html_output)
-                  exit(0)
+          
           try:
-              req = urllib.request.Request(
-                  URL,
-                  headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-              )
-              with urllib.request.urlopen(req) as response:
-                  html = response.read()
-
-              soup = BeautifulSoup(html, "lxml")
-              pattern = re.compile(r'"total_downloads"\s*:\s*(\d+)')
-              total = None
-
-              for script in soup.find_all("script"):
-                  match = pattern.search(script.text)
-                  if match:
-                      total = int(match.group(1))
-                      break
-
-              if total is None:
-                  raise ValueError("Could not extract download stats from HTML")
-
-              monthly = round(total * 0.4333)
-              print(f"✅ Total (3-mo): {total}, Approx. Monthly: {monthly}")
-
-              with open(os.environ['GITHUB_OUTPUT'], 'a') as output_file:
-                  output_file.write(f"monthly_downloads={monthly}\n")
+            if URL:
+            # Check if the URL is valid
+                if not URL.startswith("http"):
+                    raise ValueError("Invalid URL")
+                else:
+                    import markdown
+                    markdown_text = """[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector)"""
+                    html_output = markdown.markdown(markdown_text)
+                    print(html_output)
+                    exit(0)
+            
+            # Extract the total downloads from the markdown text display and convert it to a number
+            total_downloads = re.search(r'(\d+)', html_output).group(1)
+            print(f"Total Downloads: {total_downloads}")
+            exit(0)
 
           except Exception as e:
               print(f"❌ Scraping failed: {e}")
@@ -124,5 +103,4 @@ jobs:
           git add doc/badges/monthly-downloads.svg
           git commit -m "📈 Update monthly downloads badge" || echo "No changes to commit"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
