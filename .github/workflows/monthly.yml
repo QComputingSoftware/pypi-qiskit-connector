@@ -39,43 +39,42 @@ jobs:
         id: fetch_downloads
         run: |
           echo "🔐 Connecting to Pepy Pro API using Python..."
-
           python3 - << 'PYCODE'
-import os
-import json
-import urllib.request
+          import os
+          import json
+          import urllib.request
 
-project = "qiskit-connector"
-api_key = os.environ["PEPY_API_TOKEN"]
-url = f"https://pepy.tech/service-api/v1/pro/projects/{project}/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS"
+          project = "qiskit-connector"
+          api_key = os.environ["PEPY_API_TOKEN"]
+          url = f"https://pepy.tech/service-api/v1/pro/projects/{project}/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS"
+          req = urllib.request.Request(url, method="GET", headers={
+            "X-API-Key": api_key,
+            "Accept": "application/json"
+          })
+          try:
+              with urllib.request.urlopen(req) as response:
+                  if response.status != 200:
+                      raise Exception(f"API responded with status code {response.status}")
+                  data = json.loads(response.read().decode())
 
-req = urllib.request.Request(url, method="GET", headers={
-    "X-API-Key": api_key,
-    "Accept": "application/json"
-})
+              total = int(data.get("total_downloads", 0))
+              monthly = round(total * 0.4333)
 
-try:
-    with urllib.request.urlopen(req) as response:
-        if response.status != 200:
-            raise Exception(f"API responded with status code {response.status}")
-        data = json.loads(response.read().decode())
-
-    total = int(data.get("total_downloads", 0))
-    monthly = round(total * 0.4333)
-
-    with open(os.environ['GITHUB_ENV'], 'a') as env_file:
-        env_file.write(f"total_downloads={total}\n")
-        env_file.write(f"monthly_downloads={monthly}\n")
-    print(f"✅ Total Downloads: {total}, Monthly Downloads: {monthly}")
-    with open(os.environ['GITHUB_OUTPUT'], 'a') as output_file:
-        output_file.write(f"total_downloads={total}\n")
-        output_file.write(f"monthly_downloads={monthly}\n")
-except Exception as e:
-    print("❌ Failed to fetch or parse API response:", str(e))
-    exit(1)
+              with open(os.environ['GITHUB_ENV'], 'a') as env_file:
+                  env_file.write(f"total_downloads={total}\n")
+                  env_file.write(f"monthly_downloads={monthly}\n")
+              print(f"✅ Total Downloads: {total}, Monthly Downloads: {monthly}")
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as output_file:
+                  output_file.write(f"total_downloads={total}\n")
+                  output_file.write(f"monthly_downloads={monthly}\n")
+          except Exception as e:
+              print("❌ Failed to fetch or parse API response:", str(e))
+              exit(1)
           PYCODE
         env:
           PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
+
+
 
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
@@ -93,5 +92,6 @@ except Exception as e:
           git config --global user.email "actions@github.com"
           git add doc/badges/monthly-downloads.svg
           git commit -m "📈 Update monthly downloads badge" || echo "No changes to commit"
+          git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
