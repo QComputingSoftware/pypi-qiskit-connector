@@ -78,7 +78,7 @@ jobs:
           git checkout -B main origin/main
 
           git add docs/badges/coverage.svg
-          git commit -m "🛡️ Update coverage badge to ${{ steps.coverage.outputs.coverage }}" || echo "⚠️ No changes to commit"
+          git commit -m "🛡️ Qiskit Code Update - Inteli Check" || echo "⚠️ No changes to commit"
           git push origin HEAD:refs/heads/main
 
           # ✅ Sync to stable
