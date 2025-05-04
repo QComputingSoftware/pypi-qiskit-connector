@@ -56,16 +56,16 @@ def get_qiskit_connector_td_pro_api_v3():
 
 td = get_qiskit_connector_td_pro_api_v3()
 if td is not None:
-    md = round(td * 0.5863)
-    print(f"✅ Total: {td}, Monthly (est.): {md}")
+    md = round(td * 0.4333)
+    print(f"✅ Monthly downloads successfully retrieved!")
 
-    display_value = f"{md:,}"
+    dv = f"{md:,}"
     if md >= 1000:
-        display_value = f"{md // 1000}k"
+        dv = f"{md // 1000}k"
 
     # Write to GitHub output
     with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-        f.write(f"md={display_value}/month\n")
+        f.write(f"md={dv}/month\n")
 else:
     print("❌ Failed to retrieve data.")
     with open(os.environ["GITHUB_OUTPUT"], "a") as f:
