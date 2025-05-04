@@ -3,10 +3,10 @@
 # @Description: This workflow calculates the monthly downloads of the Qiskit Connector package from PyPI and updates the badge in the README file.
 # @File: .github/workflows/m-downloads.yml
 # @Usage: This workflow is triggered on a schedule and via manual` check-in of code to repository.
-# @Note: The workflow may uses the `pypistats` command-line tool to fetch download statistics from PyPI.
+# @Note: The workflow uses Python to fetch download statistics from Pepy.tech Pro API.
 #_________________________________________________________________________________________________________
 
-name: 🧮 Monthly Downloads
+name: 🧾 Monthly Downloads
 
 on:
   push:
@@ -35,58 +35,59 @@ jobs:
       - name: 🧾 Checkout
         uses: actions/checkout@v4
 
-      - name: 📦 Install JQ
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: 🔐 Connect to Pepy Pro API and Fetch Downloads
+      - name: 🔐 Fetch Pepy Pro API using Python (explicit GET)
         id: fetch_downloads
         run: |
-          echo "🔐 Connecting to Pepy Pro API using X-API-Key..."
-          RESPONSE=$(curl -s -H "Accept: application/json" -H "X-API-Key: ${{ secrets.PEPY_API_TOKEN }}" \
-            "https://pepy.tech/service-api/v1/pro/projects/qiskit-connector/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS")
+          echo "🔐 Connecting to Pepy Pro API using Python..."
 
-          if [[ -n "$RESPONSE" ]]; then
-            echo "✅ Received a non-empty response from Pepy Pro API."
-            # Attempt to parse the JSON
-            if echo "$RESPONSE" | jq -e '.'; then
-              TOTAL=$(echo "$RESPONSE" | jq -r '.total_downloads')
-              if [[ "$TOTAL" =~ ^[0-9]+$ ]]; then
-                MONTHLY=$(awk "BEGIN {printf \"%.0f\", $TOTAL * 0.4333}")
-                echo "total_downloads=$TOTAL" >> "$GITHUB_OUTPUT"
-                echo "monthly_downloads=$MONTHLY" >> "$GITHUB_OUTPUT"
-                echo "✅ Total: $TOTAL → Monthly: $MONTHLY"
-              else
-                echo "❌ Failed to extract a valid total download count from JSON"
-                exit 1
-              fi
-            else
-              echo "❌ Pepy Pro API returned an invalid JSON response."
-              echo "Raw Response (for debugging):"
-              echo "$RESPONSE"
-              exit 1
-            fi
-          else
-            echo "❌ Received an empty response from Pepy Pro API. Connection might have failed."
-            exit 1
-          fi
+          python3 <<EOF
+            import os
+            import json
+            import urllib.request
 
-      - name: 🛠️ Generate Badge
-        uses: emibcn/badge-action@v2
-        with:
-          label: "Monthly Downloads"
-          label-color: "555"
-          status: "${{ steps.fetch_downloads.outputs.monthly_downloads }}"
-          color: "blue"
-          style: "flat"
-          path: "doc/badges/monthly-downloads.svg"
+            project = "qiskit-connector"
+            api_key = os.environ["PEPY_API_TOKEN"]
+            url = f"https://pepy.tech/service-api/v1/pro/projects/{project}/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS"
 
-      - name: 🚀 Commit and Push Badge
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git add doc/badges/monthly-downloads.svg
-          git commit -m "📈 Update monthly downloads badge" || echo "No changes to commit"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#############################################
+            req = urllib.request.Request(url, method="GET", headers={
+                "X-API-Key": api_key,
+                "Accept": "application/json"
+            })
+
+            try:
+                with urllib.request.urlopen(req) as response:
+                    if response.status != 200:
+                        raise Exception(f"API responded with status code {response.status}")
+                    data = json.loads(response.read().decode())
+
+                total = int(data.get("total_downloads", 0))
+                monthly = round(total * 0.4333)
+
+                print(f"::set-output name=total_downloads::{total}")
+                print(f"::set-output name=monthly_downloads::{monthly}")
+            except Exception as e:
+                print("❌ Failed to fetch or parse API response:", str(e))
+                exit(1)
+            EOF
+                    env:
+                      PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
+
+                  - name: 🛠️ Generate Badge
+                    uses: emibcn/badge-action@v2
+                    with:
+                      label: "Monthly Downloads"
+                      label-color: "555"
+                      status: "${{ steps.fetch_downloads.outputs.monthly_downloads }}"
+                      color: "blue"
+                      style: "flat"
+                      path: "doc/badges/monthly-downloads.svg"
+
+                  - name: 🚀 Commit and Push Badge
+                    run: |
+                      git config --global user.name "github-actions"
+                      git config --global user.email "actions@github.com"
+                      git add doc/badges/monthly-downloads.svg
+                      git commit -m "📈 Update monthly downloads badge" || echo "No changes to commit"
+                      git push
+                    env:
+                      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
