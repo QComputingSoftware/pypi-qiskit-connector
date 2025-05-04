@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   build-monthly-downloads-badge:
-    name: 📊 Scrape Monthly Downloads from Pepy
+    name: 📊 Monthly Downloads from Pepy
     runs-on: ubuntu-latest
 
     steps:
@@ -62,22 +62,26 @@ jobs:
           from urllib.parse import urlparse
           import json
 
-          URL = os.environ.get("URL")
-          
-          try:
-            if URL:
-            # Check if the URL is valid
-                if not URL.startswith("http"):
-                    raise ValueError("Invalid URL")
-                else:
-                    import markdown
-                    markdown_text = """[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector)"""
-                    html_output = markdown.markdown(markdown_text)
-                    print(html_output)
+            URL = os.environ.get("URL")
             
-            # Extract the total downloads from the markdown text display and convert it to a number
-            total_downloads = re.search(r'(\d+)', html_output).group(1)
-            print(f"Total Downloads: {total_downloads}")
+            try:
+              if URL:
+                # Check if the URL is valid
+                if not URL.startswith("http"):
+                  raise ValueError("Invalid URL")
+                else:
+                  import markdown
+                  markdown_text = """[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector)"""
+                  html_output = markdown.markdown(markdown_text)
+                  print(html_output)
+              
+              # Extract the numeric value from the HTML output
+              match = re.search(r'\d+', html_output)
+              if match:
+                numeric_value = match.group(0)
+                print(f"Extracted Numeric Value: {numeric_value}")
+              else:
+                raise ValueError("No numeric value found in the HTML output")
             
           except Exception as e:
               print(f"❌ Scraping failed: {e}")
