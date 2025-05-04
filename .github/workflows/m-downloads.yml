@@ -40,7 +40,15 @@ jobs:
       - name: 📥 Get total downloads from pepy.tech and calculate 43.33% estimate
         id: fetch
         run: |
-          TOTAL=$(curl -s https://pepy.tech/api/projects/qiskit-connector | jq '.total_downloads')
+          echo "Fetching raw JSON..."
+          RAW=$(curl -s https://pepy.tech/api/projects/qiskit-connector)
+          TOTAL=$(echo "$RAW" | grep -o '"total_downloads":[0-9]*' | sed 's/[^0-9]*//g')
+
+          if [ -z "$TOTAL" ]; then
+            echo "❌ Failed to extract download count from pepy.tech"
+            exit 1
+          fi
+
           MONTHLY=$(awk "BEGIN { printf \"%'.0f\", $TOTAL * 0.4333 }")
           echo "📦 Estimated Monthly Downloads: $MONTHLY"
           echo "monthly_downloads=$MONTHLY" >> $GITHUB_OUTPUT
@@ -69,3 +77,4 @@ jobs:
           git add doc/badges/monthly-downloads.svg
           git commit -m "📈 Update estimated monthly downloads badge" || echo "⚠️ No changes to commit"
           git push origin main
+
