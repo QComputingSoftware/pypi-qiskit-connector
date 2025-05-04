@@ -1,8 +1,8 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
-# @last update: 2025-05-03
+# @last update: 2025-05-04
 # @Description: This workflow scrapes public Pepy.tech stats for the Qiskit Connector package and updates the badge.
 # @File: .github/workflows/m-downloads.yml
-# @Usage: Triggered on schedule or manually; no API key required now.
+# @Usage: Triggered on schedule or manually; uses Pepy.tech Pro API securely.
 #_________________________________________________________________________________________________________
 
 name: 📿 Monthly Downloads
@@ -41,28 +41,17 @@ jobs:
           pip install requests
 
       #_____________________________________________________________________________ 
-      #  PYTHON EXTRACT DOWNLOADS VIA API
-      #_____________________________________________________________________________   
       - name: 🔍 Extract Downloads
         id: get_downloads
+        env:
+          PEPY_API_TOKEN: ${{ secrets.PEPY_TECH_API_TOKEN }}
         run: |
           echo "🔍 Extracting download record..."
           python3 - << 'PYCODE'
-          #----python starts---------------------------------------------------------DO NOT TOUCH
-          
           import requests
           import os
 
           def get_qiskit_connector_total_downloads_pro_api_v3():
-              """
-              Fetches the total download count for qiskit-connector using the Pepy.tech Pro API
-              with the correct endpoint and query parameters.
-
-              Requires the PEPY_API_TOKEN environment variable to be set.
-
-              Returns:
-                  int: The total download count, or None if an error occurs.
-              """
               project_name = "qiskit-connector"
               base_url = "https://api.pepy.tech"
               endpoint = f"{base_url}/service-api/v1/pro/projects/{project_name}/downloads"
@@ -73,15 +62,13 @@ jobs:
                   return None
 
               headers = {"X-API-Key": api_token, "Accept": "application/json"}
-              params = {"includeCIDownloads": "true", "timeRange": "FOUR_MONTHS"} # Adjust the time range as needed
+              params = {"includeCIDownloads": "true", "timeRange": "FOUR_MONTHS"}
 
               try:
                   response = requests.get(endpoint, headers=headers, params=params)
-                  response.raise_for_status()  # Raise an exception for bad status codes
+                  response.raise_for_status()
                   data = response.json()
 
-                  # The response structure in the doc shows downloads per day/version.
-                  # We need to sum these up to get the total.
                   total_downloads = 0
                   if "downloads" in data:
                       for date_data in data["downloads"].values():
@@ -89,61 +76,36 @@ jobs:
                               total_downloads += count
                   return total_downloads
 
-              except requests.exceptions.RequestException as e:
-                  print(f"Error fetching data from Pepy Pro API: {e}")
-                  return None
-              except json.JSONDecodeError as e:
-                  print(f"Error decoding JSON response from Pepy Pro API: {e}")
-                  return None
               except Exception as e:
-                  print(f"An unexpected error occurred: {e}")
+                  print(f"Error fetching data: {e}")
                   return None
-
-          if __name__ == "__main__":
-              total_downloads = get_qiskit_connector_total_downloads_pro_api_v3()
-
-              if total_downloads is not None:
-                  print(f"Total downloads: {total_downloads}")
-              else:
-                  print("Failed to retrieve total download count for qiskit-connector via Pepy Pro API v3.")
-                  print(f"::set-output name=monthly_downloads::0")
-
-
-          # -- Do other things it needs to do here, like updating the badge or logging the result
-          # -- or whatever else you need to do with the data.
-          # -- For example, you could write the total downloads to a file or print it.
-          # -- This is just a placeholder for whatever you want to do with the data.
-          # -- You can also use the total_downloads variable in your script as needed.
-          # -- For example, you could write the total downloads to a file or print it.
-          # -- This is just a placeholder for whatever you want to do with the data.
-          # -- You can also use the total_downloads variable in your script as needed.
-          # -- For example, you could write the total downloads to a file or print it.
-          # --Calculate monthly downloads with 43.33% of the total downloads & create a badge
 
           total_downloads = get_qiskit_connector_total_downloads_pro_api_v3()
           if total_downloads is not None:
-              monthly_downloads = total_downloads * 0.4333
-              print(f"Monthly downloads: {monthly_downloads}")
-              print(f"::set-output name=monthly_downloads::{monthly_downloads}")
+              monthly_downloads = round(total_downloads * 0.4333)
+              print(f"✅ Total: {total_downloads}, Monthly (est.): {monthly_downloads}")
+
+              display_value = f"{monthly_downloads:,}"
+              if monthly_downloads >= 1000:
+                  display_value = f"{monthly_downloads // 1000}k"
+
+              # Write to GitHub output
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write(f"monthly_downloads={display_value}/month\n")
           else:
-              print("Failed to retrieve total download count for qiskit-connector via Pepy Pro API v3.")
-              print(f"::set-output name=monthly_downloads::0")
-
-
-          #----python ends---------------------------------------------------------DO NOT TOUCH
+              print("❌ Failed to retrieve data.")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write("monthly_downloads=0/month\n")
           PYCODE
       #_____________________________________________________________________________
 
-
-
-      #  GENERATE BADGE
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
         with:
-          label: "Monthly Downloads"
+          label: "downloads"
           label-color: "555"
           status: "${{ steps.get_downloads.outputs.monthly_downloads }}"
-          color: "blue"
+          color: "brightgreen"
           style: "flat"
           path: "doc/badges/monthly-downloads.svg"
 
@@ -152,7 +114,7 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add doc/badges/monthly-downloads.svg
-          git commit -m "📈 Update monthly downloads badge" || echo "No changes to commit"
+          git commit -m "📈 Qiskit Code Update - monthly downloads badge" || echo "No changes to commit"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
