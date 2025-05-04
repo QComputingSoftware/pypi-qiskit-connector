@@ -1,14 +1,14 @@
-<svg width="134.8" height="20" viewBox="0 0 1348 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Monthly Downloads: 0">
-  <title>Monthly Downloads: 0</title>
+<svg width="126.5" height="20" viewBox="0 0 1265 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="downloads: 0/month">
+  <title>downloads: 0/month</title>
   <g>
-    <rect fill="#555" width="1178" height="200"/>
-    <rect fill="#08C" x="1178" width="170" height="200"/>
+    <rect fill="#555" width="685" height="200"/>
+    <rect fill="#brightgreen" x="685" width="580" height="200"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
-    <text x="60" y="148" textLength="1078" fill="#000" opacity="0.1">Monthly Downloads</text>
-    <text x="50" y="138" textLength="1078">Monthly Downloads</text>
-    <text x="1233" y="148" textLength="70" fill="#000" opacity="0.1">0</text>
-    <text x="1223" y="138" textLength="70">0</text>
+    <text x="60" y="148" textLength="585" fill="#000" opacity="0.1">downloads</text>
+    <text x="50" y="138" textLength="585">downloads</text>
+    <text x="740" y="148" textLength="480" fill="#000" opacity="0.1">0/month</text>
+    <text x="730" y="138" textLength="480">0/month</text>
   </g>
   
 </svg>
