@@ -8,14 +8,14 @@
 
 
 
-name: Monthly Downloads
+name: 🧮 Monthly Downloads
 
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: "0 2 * * *"  # Daily
+    - cron: "0 2 * * *"  # Daily at 2 AM UTC
     - cron: "0 2 * * 0"  # Sunday
     - cron: "0 2 * * 1"  # Monday
     - cron: "0 2 * * 2"  # Tuesday
@@ -29,56 +29,52 @@ permissions:
   actions: write
 
 jobs:
-  monthly-download-badge:
-    name: 📥 Generate Monthly Downloads Badge
+  build-monthly-downloads-badge:
+    name: 📊 Generate Monthly Downloads Badge
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇️ Checkout
+      - name: 🧾 Checkout
         uses: actions/checkout@v4
 
-      - name: 📊 Fetch download stats from Pepy Pro API
-        id: fetch
-        env:
-          PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
+      - name: 📦 Install JQ
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: 🔐 Connect to Pepy Pro API and Fetch Downloads
+        id: fetch_downloads
         run: |
           echo "🔐 Connecting to Pepy Pro API using X-API-Key..."
-          RESPONSE=$(curl -s -H "X-API-Key: $PEPY_API_TOKEN" \
+          RESPONSE=$(curl -s -H "X-API-Key: ${{ secrets.PEPY_API_TOKEN }}" \
             "https://pepy.tech/service-api/v1/pro/projects/qiskit-connector/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS")
 
-          echo "$RESPONSE" > response.json
-
-          if jq -e '.downloads' < response.json > /dev/null; then
-            TOTAL=$(jq '[.downloads[][]] | add' < response.json)
-            echo "📦 Total downloads in 4 months: $TOTAL"
-            MONTHLY=$(awk "BEGIN { printf \"%'.0f\", $TOTAL * 0.4333 }")
-            echo "📈 Estimated Monthly Downloads: $MONTHLY"
-            echo "monthly=$MONTHLY" >> "$GITHUB_OUTPUT"
+          TOTAL=$(echo "$RESPONSE" | jq -r '.total_downloads')
+          
+          if [[ "$TOTAL" =~ ^[0-9]+$ ]]; then
+            MONTHLY=$(awk "BEGIN {printf \"%.0f\", $TOTAL * 0.4333}")
+            echo "total_downloads=$TOTAL" >> "$GITHUB_OUTPUT"
+            echo "monthly_downloads=$MONTHLY" >> "$GITHUB_OUTPUT"
+            echo "✅ Total: $TOTAL → Monthly: $MONTHLY"
           else
             echo "❌ Failed to extract download count from Pepy Pro API"
             exit 1
           fi
 
-      - name: 🏷️ Generate badge
+      - name: 🛠️ Generate Badge
         uses: emibcn/badge-action@v2
         with:
           label: "Monthly Downloads"
           label-color: "555"
-          status: "${{ steps.fetch.outputs.monthly }}"
+          status: "${{ steps.fetch_downloads.outputs.monthly_downloads }}"
           color: "blue"
           style: "flat"
           path: "doc/badges/monthly-downloads.svg"
 
-      - name: 🚀 Commit badge update
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 🚀 Commit and Push Badge
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git fetch origin
-          git checkout main
-          git pull origin main --rebase
           git add doc/badges/monthly-downloads.svg
-          git commit -m "📈 Update monthly downloads badge" || echo "⚠️ No changes"
-          git push origin main
-
+          git commit -m "📈 Update monthly downloads badge" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
