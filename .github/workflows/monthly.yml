@@ -40,6 +40,8 @@ jobs:
           pip install qiskit-connector
           pip install markdown beautifulsoup4 lxml requests
 
+      #_____________________________________________________________________________ 
+         
       - name: 🔍 Extract Downloads from Badge Markdown
         id: get_downloads
         run: |
@@ -50,6 +52,7 @@ jobs:
           import re
           import requests
           from bs4 import BeautifulSoup
+          import xml.etree.ElementTree as ET
 
           # Render Markdown badge to HTML
           md = "[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/project/qiskit-connector)"
@@ -68,20 +71,29 @@ jobs:
               raise ValueError(f"Failed to fetch badge: {response.status_code}")
           svg_text = response.text
 
-          # Find download number in SVG text
-          match = re.search(r'>([\d,]+)</text>', svg_text)
-          if not match:
-              raise ValueError("Could not extract download count from badge SVG")
+          # Try XML parsing first
+          try:
+              root = ET.fromstring(svg_text)
+              texts = root.findall('.//{http://www.w3.org/2000/svg}text')
+              numbers = [t.text for t in texts if t.text and re.search(r'\d', t.text)]
+              if not numbers:
+                  raise ValueError("No numeric text found in SVG.")
+              total_downloads = int(numbers[-1].replace(",", ""))
+          except Exception as e:
+              print(f"⚠️ XML parse fallback to regex due to: {e}")
+              match = re.search(r'>([\d,]+)</text>', svg_text)
+              if not match:
+                  raise ValueError("Could not extract download count from badge SVG")
+              total_downloads = int(match.group(1).replace(",", ""))
 
-          total_downloads = int(match.group(1).replace(",", ""))
           monthly_downloads = round(total_downloads * 0.4333)
-
           print(f"✅ Total Downloads (3-mo): {total_downloads}, Monthly Estimate: {monthly_downloads}")
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"monthly_downloads={monthly_downloads}\n")
           PYCODE
 
+      #_____________________________________________________________________________
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
         with:
