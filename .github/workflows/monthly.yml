@@ -46,6 +46,28 @@ jobs:
 
           project = "qiskit-connector"
           api_key = os.environ["PEPY_API_TOKEN"]
+
+          # Spot Check for environment variables:
+          if not api_key:
+              print("❌ PEPY_API_TOKEN is not set. Please set it in the repository secrets.")
+              exit(1)
+          if project == "":
+              print("❌ Project name is empty. Please set it in the script.")
+              exit(1)
+          if not os.environ.get("GITHUB_ENV"):
+              print("❌ GITHUB_ENV is not set. Please set it in the script.")
+              exit(1)
+          if not os.environ.get("PEPY_API_TOKEN"):
+              print("❌ PEPY_API_TOKEN is not set. Please set it in the script.")
+              exit(1)
+          if not project:
+              print("❌ Project name is not set. Please set it in the script.")
+              exit(1)
+          if api_key == "":
+              print("❌ PEPY_API_TOKEN is empty. Please set it in the script.")
+              exit(1)
+
+
           url = f"https://pepy.tech/service-api/v1/pro/projects/{project}/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS"
           req = urllib.request.Request(url, method="GET", headers={
             "X-API-Key": api_key,
