@@ -2,7 +2,7 @@
   <title>downloads: 5k/month</title>
   <g>
     <rect fill="#555" width="685" height="200"/>
-    <rect fill="#3C1" x="685" width="645" height="200"/>
+    <rect fill="#7DD71D" x="685" width="645" height="200"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
     <text x="60" y="148" textLength="585" fill="#000" opacity="0.1">downloads</text>
