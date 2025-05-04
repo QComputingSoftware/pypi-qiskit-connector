@@ -61,6 +61,8 @@ jobs:
           import requests
           from urllib.parse import urlparse
           import json
+
+          URL = os.environ.get("URL")
           
           try:
             if URL:
