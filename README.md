@@ -21,7 +21,7 @@ This package performs the following:
 ###### 🐍 Software built and maintained by Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Research Scientist.
 ---
 
-## 📋 Built-in functions
+#### 📋 Built-in functions
 
 These functions are available after you import the module:
 
@@ -39,7 +39,7 @@ from qiskit_connector import (
 
 ---
 
-## 🔧 Installation
+#### 🔧 Installation
 ###### It is recommended that you use `pip` for installation - a common best practice.
 ```bash
 pip install qiskit-connector
@@ -53,7 +53,7 @@ and any other Qiskit dependencies. (Qiskit 1.x is not supported).
 
 ---
 
-## 🗂️ Variable Setup
+#### 🗂️ Variable Setup
 🔐 Security Practice: Do not check-in `.env or environment variable config file` or any environment variable file into version control. Add it to your .gitignore. During development, create a file named `.env` at your project root. The connector will automatically load it.Use the template below as the content of your .env file or variable config file.
 
 ```dotenv
@@ -120,7 +120,7 @@ DEDICATED_PLAN="off"
 
 ---
 
-## 📖 Usage
+#### 📖 Usage
 
 ##### Open Plan and Paid Plan
 
@@ -159,7 +159,7 @@ else:
 ```
 
 
-## Sample Output
+#### Output Sample
 ```python
 [✓] Quantum environment variables loaded successfully!
 
@@ -188,27 +188,31 @@ This is a real & live QPU device
 ![IBM Quantum](media/q1.png)
 
 ---
-##  📜 Citation & Reference
+####  📜 Citation & Reference
 
 Qiskit Connector software invention was inspired by IBM Research on Quantum Computing Qiskit Software, which led the authoring, design, development of Qiskit Connector based on the persistent reearch studies and tests carried out by  `Dr. Jeffrey Chijioke-Uche(IBM Quantum Ambassador & Research Scientist)` in the lab. This software is expected to continue to metamorphose with the help and work of existing quantum computing academic scholarly & peer reviewed research at different levels in the Information Technology industry. If you use Qiskit for Quantum computing, please cite this software as per the provided ![BibTeX](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/CITATION.bib) file.
 
 ---
 
-## 📜 Software Author
+#### 📜 Software Author
 Dr. Jeffrey Chijioke-Uche <br>
 IBM Computer Scientist <br>
 IBM Quantum Ambassador & Research Scientist <br>
 IEEE Senior Member (Computational Intelligence)
 
 ---
+#### 📜  Copyright
+Qiskit Connector is proprietary software developed by Dr. Jeffrey Chijioke-Uche © 2025 for enhancing quantum computing workflows in IBM Quantum. This software is protected under copyright laws and applicable intellectual property statutes. Unauthorized reproduction, distribution, or derivative use of the software in part or whole is strictly prohibited without express written permission from the author. This software may be used under the terms outlined in the accompanying license file (Apache 2.0 or as otherwise specified). Use of this software signifies your agreement to comply with the license terms and to attribute the original author when incorporating the package into your work or systems. For other question(s), please contact the maintainer directly through the official project repository or email channel provided on PyPI.
+ 
+---
 
-## 📜 Acknowledgment
+#### 📜 Acknowledgment
 The development of the Qiskit Connector has been made possible through the support, inspiration, and technical contributions of several leading institutions and communities. The author would like to express deep gratitude to [IBM Research & IBM Quantum Ambassadors Group](https://research.ibm.com/quantum-computing) for their pioneering efforts in democratizing quantum computing and providing the infrastructure and collaborative ecosystem that fostered the development of this tool. Their continued support has significantly accelerated progress in real-world quantum application development.
 <br><br>
 Additional appreciation is extended to the [IEEE Computational Intelligence](https://cis.ieee.org) Society for their thought leadership in intelligent systems, and to the  [Harvard Program for Research in Science and Engineering](https://www.harvard.edu/) for its role in shaping early research directions. The author also acknowledges [Walden University Research](https://academicguides.waldenu.edu/research-center) for providing a strong academic and methodological foundation throughout the software development lifecycle. These institutions have collectively influenced the innovation and rigor reflected in this project.
 
 ---
 
-## 📜 License
+#### 📜 License
 
 This project uses the Open-source [License](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/LICENSE)
