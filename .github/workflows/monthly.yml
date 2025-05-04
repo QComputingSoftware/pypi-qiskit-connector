@@ -49,6 +49,15 @@ jobs:
 
           URL = "https://pepy.tech/projects/qiskit-connector?timeRange=threeMonths&includeCIDownloads=true"
 
+
+          if URL:
+          # Check if the URL is valid
+              if not URL.startswith("http"):
+                  raise ValueError("Invalid URL")
+              else:
+                  markdown_badge = """[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector)"""
+                  print(markdown_badge)
+                  exit(0)
           try:
               req = urllib.request.Request(
                   URL,
