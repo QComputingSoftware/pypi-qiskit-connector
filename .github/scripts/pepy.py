@@ -5,7 +5,7 @@
 import requests
 import os
 
-def get_qiskit_connector_total_downloads_pro_api_v3():
+def get_qiskit_connector_td_pro_api_v3():
     """
     Fetches the total number of downloads for the "qiskit-connector" project
     from the PEPY API (Pro version) over the last four months, including CI downloads.
@@ -42,31 +42,31 @@ def get_qiskit_connector_total_downloads_pro_api_v3():
         response.raise_for_status()
         data = response.json()
 
-        total_downloads = 0
+        td = 0
         if "downloads" in data:
             for date_data in data["downloads"].values():
                 for count in date_data.values():
-                    total_downloads += count
-        return total_downloads
+                    td += count
+        return td
 
     except Exception as e:
         print(f"Error fetching data: {e}")
         return None
 
 
-total_downloads = get_qiskit_connector_total_downloads_pro_api_v3()
-if total_downloads is not None:
-    monthly_downloads = round(total_downloads * 0.4333)
-    print(f"✅ Total: {total_downloads}, Monthly (est.): {monthly_downloads}")
+td = get_qiskit_connector_td_pro_api_v3()
+if td is not None:
+    md = round(td * 0.5863)
+    print(f"✅ Total: {td}, Monthly (est.): {md}")
 
-    display_value = f"{monthly_downloads:,}"
-    if monthly_downloads >= 1000:
-        display_value = f"{monthly_downloads // 1000}k"
+    display_value = f"{md:,}"
+    if md >= 1000:
+        display_value = f"{md // 1000}k"
 
     # Write to GitHub output
     with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-        f.write(f"monthly_downloads={display_value}/month\n")
+        f.write(f"md={display_value}/month\n")
 else:
     print("❌ Failed to retrieve data.")
     with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-        f.write("monthly_downloads=0/month\n")
+        f.write("md=0/month\n")
