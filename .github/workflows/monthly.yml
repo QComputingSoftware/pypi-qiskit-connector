@@ -41,33 +41,33 @@ jobs:
           echo "🔐 Connecting to Pepy Pro API using Python..."
 
           python3 - << 'PYCODE'
-            import os
-            import json
-            import urllib.request
+          import os
+          import json
+          import urllib.request
 
-            project = "qiskit-connector"
-            api_key = os.environ["PEPY_API_TOKEN"]
-            url = f"https://pepy.tech/service-api/v1/pro/projects/{project}/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS"
+          project = "qiskit-connector"
+          api_key = os.environ["PEPY_API_TOKEN"]
+          url = f"https://pepy.tech/service-api/v1/pro/projects/{project}/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS"
 
-            req = urllib.request.Request(url, method="GET", headers={
+          req = urllib.request.Request(url, method="GET", headers={
                 "X-API-Key": api_key,
                 "Accept": "application/json"
-            })
+          })
 
-            try:
-                with urllib.request.urlopen(req) as response:
-                    if response.status != 200:
-                        raise Exception(f"API responded with status code {response.status}")
-                    data = json.loads(response.read().decode())
+          try:
+              with urllib.request.urlopen(req) as response:
+                  if response.status != 200:
+                      raise Exception(f"API responded with status code {response.status}")
+                  data = json.loads(response.read().decode())
 
-                total = int(data.get("total_downloads", 0))
-                monthly = round(total * 0.4333)
+                  total = int(data.get("total_downloads", 0))
+                  monthly = round(total * 0.4333)
 
-                print(f"::set-output name=total_downloads::{total}")
-                print(f"::set-output name=monthly_downloads::{monthly}")
-            except Exception as e:
-                print("❌ Failed to fetch or parse API response:", str(e))
-                exit(1)
+                  print(f"::set-output name=total_downloads::{total}")
+                  print(f"::set-output name=monthly_downloads::{monthly}")
+          except Exception as e:
+              print("❌ Failed to fetch or parse API response:", str(e))
+              exit(1)
           PYCODE
         env:
           PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
