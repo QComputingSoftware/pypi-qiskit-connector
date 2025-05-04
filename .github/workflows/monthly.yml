@@ -105,7 +105,7 @@ jobs:
           label: "downloads"
           label-color: "555"
           status: "${{ steps.get_downloads.outputs.monthly_downloads }}"
-          color: "green"
+          color: "7DD71D"
           style: "flat"
           path: "docs/badges/monthly-downloads.svg"
 
