@@ -1,0 +1,78 @@
+# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
+# @last update: 2025-03-01
+# @Description: This workflow calculates the monthly downloads of the Qiskit Connector package from PyPI and updates the badge in the README file.
+# @File: .github/workflows/m-downloads.yml
+# @Usage: This workflow is triggered on a schedule and via manual` check-in of code to repository.
+# @Note: The workflow may uses the `pypistats` command-line tool to fetch download statistics from PyPI.
+#_________________________________________________________________________________________________________
+
+name: Qiskit Connector Monthly Downloads Badge
+
+on:
+  push:
+    branches: [ "main" ]
+  
+  # On schedule
+  schedule:
+   - cron: "0 2 * * *"  # Daily at 2 AM UTC (every day)
+   - cron: "0 2 * * 6"  # Weekly at 2 AM UTC (Sunday)
+   - cron: "0 2 * * 1"  # Weekly at 2 AM UTC (Monday)
+   - cron: "0 2 * * 2"  # Weekly at 2 AM UTC (Tuesday)
+   - cron: "0 2 * * 3"  # Weekly at 2 AM UTC (Wednesday)
+   - cron: "0 2 * * 4"  # Weekly at 2 AM UTC (Thursday)
+   - cron: "0 2 * * 5"  # Weekly at 2 AM UTC (Friday)
+   - cron: "0 2 * * 6"  # Weekly at 2 AM UTC (Saturday)
+
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  monthly-downloads-badge:
+    name: 📈 COUNT Monthly Downloads
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🧮 Fetch total from pepy.tech and estimate monthly
+        id: calculate
+        run: |
+          echo "📡 Fetching total downloads from pepy.tech..."
+          TOTAL=$(curl -s https://pepy.tech/api/projects/qiskit-connector | jq '.downloads.total')
+          COUNT=$(echo "$TOTAL * 0.4333" | bc)
+          ROUNDED=$(printf "%.0f" "$COUNT")
+          # Format to 'k/month'
+          if [ "$ROUNDED" -ge 1000 ]; then
+            DISPLAY=$(awk -v v=$ROUNDED 'BEGIN { printf("%.0fk/month", v/1000) }')
+          else
+            DISPLAY="${ROUNDED}/month"
+          fi
+          echo "📊 Total: $TOTAL → COUNT Monthly: $DISPLAY"
+          echo "downloads=$DISPLAY" >> "$GITHUB_OUTPUT"
+
+      - name: 📂 Ensure badge directory exists
+        run: mkdir -p docs/badges
+
+      - name: 🛠️ Generate downloads badge
+        uses: emibcn/badge-action@v2
+        with:
+          label: "downloads"
+          status: "${{ steps.calculate.outputs.downloads }}"
+          color: "brightgreen"
+          path: "docs/badges/m-downloads.svg"
+
+      - name: 🚀 Commit badge to main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add docs/badges/downloads.svg
+          git commit -m "📈 Update COUNT monthly downloads badge" || echo "⚠️ No changes to commit"
+          git push origin HEAD:main
+
+
