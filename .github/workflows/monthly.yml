@@ -1,9 +1,8 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
-# @last update: 2025-03-01
-# @Description: This workflow calculates the monthly downloads of the Qiskit Connector package from PyPI and updates the badge in the README file.
+# @last update: 2025-05-03
+# @Description: This workflow scrapes public Pepy.tech stats for the Qiskit Connector package and updates the badge.
 # @File: .github/workflows/m-downloads.yml
-# @Usage: This workflow is triggered on a schedule and via manual check-in of code to repository.
-# @Note: The workflow uses Python to fetch download statistics from Pepy.tech Pro API.
+# @Usage: Triggered on schedule or manually; no API key required now.
 #_________________________________________________________________________________________________________
 
 name: 📿 Monthly Downloads
@@ -28,82 +27,66 @@ permissions:
 
 jobs:
   build-monthly-downloads-badge:
-    name: 📊 Generate Monthly Downloads Badge
+    name: 📊 Scrape Monthly Downloads from Pepy
     runs-on: ubuntu-latest
 
     steps:
       - name: 📿 Checkout
         uses: actions/checkout@v4
 
-      - name: 🔐 Fetch Pepy Pro API using Python (explicit GET)
-        id: fetch_downloads
+      - name: 🔍 Scrape Pepy Public Page for Downloads
+        id: scrape_downloads
         run: |
-          echo "🔐 Connecting to Pepy Pro API using Python..."
+          echo "🔍 Scraping download data from Pepy.tech public page..."
+
+          pip install beautifulsoup4 lxml
+
           python3 - << 'PYCODE'
-          import os
-          import json
-          import urllib.request
+            import urllib.request
+            from bs4 import BeautifulSoup
+            import re
+            import os
 
-          project = "qiskit-connector"
-          api_key = os.environ["PEPY_API_TOKEN"]
+            URL = "https://pepy.tech/projects/qiskit-connector?timeRange=threeMonths&includeCIDownloads=true"
 
-          # Spot Check for environment variables:
-          if not api_key:
-              print("❌ PEPY_API_TOKEN is not set. Please set it in the repository secrets.")
-              exit(1)
-          if project == "":
-              print("❌ Project name is empty. Please set it in the script.")
-              exit(1)
-          if not os.environ.get("GITHUB_ENV"):
-              print("❌ GITHUB_ENV is not set. Please set it in the script.")
-              exit(1)
-          if not os.environ.get("PEPY_API_TOKEN"):
-              print("❌ PEPY_API_TOKEN is not set. Please set it in the script.")
-              exit(1)
-          if not project:
-              print("❌ Project name is not set. Please set it in the script.")
-              exit(1)
-          if api_key == "":
-              print("❌ PEPY_API_TOKEN is empty. Please set it in the script.")
-              exit(1)
+            try:
+                with urllib.request.urlopen(URL) as response:
+                    html = response.read()
 
+                soup = BeautifulSoup(html, "lxml")
 
-          url = f"https://pepy.tech/service-api/v1/pro/projects/{project}/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS"
-          req = urllib.request.Request(url, method="GET", headers={
-            "X-API-Key": api_key,
-            "Accept": "application/json"
-          })
-          try:
-              with urllib.request.urlopen(req) as response:
-                  if response.status != 200:
-                      raise Exception(f"API responded with status code {response.status}")
-                  data = json.loads(response.read().decode())
+                # Look for JS-injected text with total downloads
+                script_tags = soup.find_all("script")
 
-              total = int(data.get("total_downloads", 0))
-              monthly = round(total * 0.4333)
+                # Heuristic: look in JSON blobs inside script tags
+                pattern = re.compile(r'"total_downloads"\s*:\s*(\d+)')
+                total = None
+                for tag in script_tags:
+                    match = pattern.search(tag.text)
+                    if match:
+                        total = int(match.group(1))
+                        break
 
-              with open(os.environ['GITHUB_ENV'], 'a') as env_file:
-                  env_file.write(f"total_downloads={total}\n")
-                  env_file.write(f"monthly_downloads={monthly}\n")
-              print(f"✅ Total Downloads: {total}, Monthly Downloads: {monthly}")
-              with open(os.environ['GITHUB_OUTPUT'], 'a') as output_file:
-                  output_file.write(f"total_downloads={total}\n")
-                  output_file.write(f"monthly_downloads={monthly}\n")
-          except Exception as e:
-              print("❌ Failed to fetch or parse API response:", str(e))
-              exit(1)
+                if total is None:
+                    raise ValueError("Could not find download stats in HTML")
+
+                monthly = round(total * 0.4333)
+                print(f"✅ Total (3-mo): {total}, Approx. Monthly: {monthly}")
+
+                with open(os.environ['GITHUB_OUTPUT'], 'a') as output_file:
+                    output_file.write(f"monthly_downloads={monthly}\n")
+
+            except Exception as e:
+                print(f"❌ Scraping failed: {e}")
+                exit(1)
           PYCODE
-        env:
-          PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
-
-
 
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
         with:
           label: "Monthly Downloads"
           label-color: "555"
-          status: "${{ steps.fetch_downloads.outputs.monthly_downloads }}"
+          status: "${{ steps.scrape_downloads.outputs.monthly_downloads }}"
           color: "blue"
           style: "flat"
           path: "doc/badges/monthly-downloads.svg"
