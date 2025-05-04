@@ -37,21 +37,24 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 📥 Parse badge image text to get total downloads
+      - name: 📊 Get total downloads via Pepy API
         id: fetch
+        env:
+          PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
         run: |
-          echo "🔍 Scraping badge data..."
-          ALT_TEXT=$(curl -sL https://static.pepy.tech/badge/qiskit-connector | grep -o 'alt="[^"]*"' | sed 's/alt="//;s/"//')
-          RAW_TOTAL=$(echo "$ALT_TEXT" | grep -o '[0-9,]*' | sed 's/,//g')
+          echo "🔐 Using Pepy API Token to fetch download count..."
+          RESPONSE=$(curl -s -H "Authorization: Bearer $PEPY_API_TOKEN" https://pepy.tech/api/projects/qiskit-connector)
+          TOTAL=$(echo "$RESPONSE" | jq '.total_downloads')
 
-          if [ -z "$RAW_TOTAL" ]; then
-            echo "❌ Could not extract total downloads."
+          if [[ -z "$TOTAL" || "$TOTAL" == "null" ]]; then
+            echo "❌ Failed to extract download count from Pepy API."
             exit 1
           fi
 
-          MONTHLY=$(awk "BEGIN { printf \"%'.0f\", $RAW_TOTAL * 0.4333 }")
-          echo "📦 Estimated Monthly Downloads: $MONTHLY"
-          echo "monthly_downloads=$MONTHLY" >> $GITHUB_OUTPUT
+          echo "📦 Total Downloads: $TOTAL"
+          ESTIMATED_MONTHLY=$(awk "BEGIN { printf \"%'.0f\", $TOTAL * 0.4333 }")
+          echo "📈 Estimated Monthly: $ESTIMATED_MONTHLY"
+          echo "monthly_downloads=$ESTIMATED_MONTHLY" >> $GITHUB_OUTPUT
 
       - name: 🛠️ Generate badge
         uses: emibcn/badge-action@v2
