@@ -12,14 +12,14 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: "0 2 * * *"   # Daily at 2 AM UTC
-    - cron: "0 2 * * 0"   # Sunday
-    - cron: "0 2 * * 1"   # Monday
-    - cron: "0 2 * * 2"   # Tuesday
-    - cron: "0 2 * * 3"   # Wednesday
-    - cron: "0 2 * * 4"   # Thursday
-    - cron: "0 2 * * 5"   # Friday
-    - cron: "0 2 * * 6"   # Saturday
+    - cron: "0 2 * * *"
+    - cron: "0 2 * * 0"
+    - cron: "0 2 * * 1"
+    - cron: "0 2 * * 2"
+    - cron: "0 2 * * 3"
+    - cron: "0 2 * * 4"
+    - cron: "0 2 * * 5"
+    - cron: "0 2 * * 6"
 
 permissions:
   contents: write
@@ -34,61 +34,53 @@ jobs:
       - name: 📿 Checkout
         uses: actions/checkout@v4
 
-
-      - name: Install qiskit-connector & markdown
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install qiskit-connector
-          pip install markdown
-          pip install beautifulsoup4 lxml
-          pip install requests
+          pip install markdown beautifulsoup4 lxml requests
 
-      - name: 🔍 Pepy Public Page for Downloads
+      - name: 🔍 Extract Downloads from Badge Markdown
         id: get_downloads
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          URL: ${{ secrets.URL }}
         run: |
-          echo "🔍 Getting download data from Pepy.tech public page..."
+          echo "🔍 Extracting download count from rendered Pepy markdown..."
           python3 - << 'PYCODE'
-          import urllib.request
-          from bs4 import BeautifulSoup
-          import re
           import os
           import markdown
-          import sys
-          import logging
+          import re
           import requests
-          from urllib.parse import urlparse
-          import json
+          from bs4 import BeautifulSoup
 
-            URL = os.environ.get("URL")
-            
-            try:
-              if URL:
-                # Check if the URL is valid
-                if not URL.startswith("http"):
-                  raise ValueError("Invalid URL")
-                else:
-                  import markdown
-                  markdown_text = """[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector)"""
-                  html_output = markdown.markdown(markdown_text)
-                  print(html_output)
-              
-              # Extract the numeric value from the HTML output
-              match = re.search(r'\d+', html_output)
-              if match:
-                numeric_value = match.group(0)
-                print(f"Extracted Numeric Value: {numeric_value}")
-              else:
-                raise ValueError("No numeric value found in the HTML output")
-            
-          except Exception as e:
-              print(f"❌ Scraping failed: {e}")
-              exit(1)
+          # Render Markdown badge to HTML
+          md = "[![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/project/qiskit-connector)"
+          html = markdown.markdown(md)
+
+          # Extract image URL from HTML
+          soup = BeautifulSoup(html, "html.parser")
+          img = soup.find("img")
+          if not img or not img["src"]:
+              raise ValueError("Could not find badge image URL")
+          badge_url = img["src"]
+
+          # Download badge SVG content
+          response = requests.get(badge_url)
+          if response.status_code != 200:
+              raise ValueError(f"Failed to fetch badge: {response.status_code}")
+          svg_text = response.text
+
+          # Find download number in SVG text
+          match = re.search(r'>([\d,]+)</text>', svg_text)
+          if not match:
+              raise ValueError("Could not extract download count from badge SVG")
+
+          total_downloads = int(match.group(1).replace(",", ""))
+          monthly_downloads = round(total_downloads * 0.4333)
+
+          print(f"✅ Total Downloads (3-mo): {total_downloads}, Monthly Estimate: {monthly_downloads}")
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"monthly_downloads={monthly_downloads}\n")
           PYCODE
-
-          exit 0
 
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
@@ -107,4 +99,5 @@ jobs:
           git add doc/badges/monthly-downloads.svg
           git commit -m "📈 Update monthly downloads badge" || echo "No changes to commit"
           git push
-
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
