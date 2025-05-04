@@ -114,7 +114,7 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add docs/badges/monthly-downloads.svg
-          git commit -m "📈 Qiskit Code Update - monthly downloads badge" || echo "No changes to commit"
+          git commit -m "📈 Qiskit Code Update - Inteli Check" || echo "No changes to commit"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
