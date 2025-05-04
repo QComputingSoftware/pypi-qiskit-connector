@@ -6,8 +6,6 @@
 # @Note: The workflow may uses the `pypistats` command-line tool to fetch download statistics from PyPI.
 #_________________________________________________________________________________________________________
 
-
-
 name: 🧮 Monthly Downloads
 
 on:
@@ -15,14 +13,14 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: "0 2 * * *"  # Daily at 2 AM UTC
-    - cron: "0 2 * * 0"  # Sunday
-    - cron: "0 2 * * 1"  # Monday
-    - cron: "0 2 * * 2"  # Tuesday
-    - cron: "0 2 * * 3"  # Wednesday
-    - cron: "0 2 * * 4"  # Thursday
-    - cron: "0 2 * * 5"  # Friday
-    - cron: "0 2 * * 6"  # Saturday
+    - cron: "0 2 * * *"   # Daily at 2 AM UTC
+    - cron: "0 2 * * 0"   # Sunday
+    - cron: "0 2 * * 1"   # Monday
+    - cron: "0 2 * * 2"   # Tuesday
+    - cron: "0 2 * * 3"   # Wednesday
+    - cron: "0 2 * * 4"   # Thursday
+    - cron: "0 2 * * 5"   # Friday
+    - cron: "0 2 * * 6"   # Saturday
 
 permissions:
   contents: write
@@ -47,15 +45,28 @@ jobs:
           RESPONSE=$(curl -s -H "X-API-Key: ${{ secrets.PEPY_API_TOKEN }}" \
             "https://pepy.tech/service-api/v1/pro/projects/qiskit-connector/downloads?includeCIDownloads=true&timeRange=FOUR_MONTHS")
 
-          TOTAL=$(echo "$RESPONSE" | jq -r '.total_downloads')
-          
-          if [[ "$TOTAL" =~ ^[0-9]+$ ]]; then
-            MONTHLY=$(awk "BEGIN {printf \"%.0f\", $TOTAL * 0.4333}")
-            echo "total_downloads=$TOTAL" >> "$GITHUB_OUTPUT"
-            echo "monthly_downloads=$MONTHLY" >> "$GITHUB_OUTPUT"
-            echo "✅ Total: $TOTAL → Monthly: $MONTHLY"
+          if [[ -n "$RESPONSE" ]]; then
+            echo "✅ Received a non-empty response from Pepy Pro API."
+            # Attempt to parse the JSON
+            if echo "$RESPONSE" | jq -e '.'; then
+              TOTAL=$(echo "$RESPONSE" | jq -r '.total_downloads')
+              if [[ "$TOTAL" =~ ^[0-9]+$ ]]; then
+                MONTHLY=$(awk "BEGIN {printf \"%.0f\", $TOTAL * 0.4333}")
+                echo "total_downloads=$TOTAL" >> "$GITHUB_OUTPUT"
+                echo "monthly_downloads=$MONTHLY" >> "$GITHUB_OUTPUT"
+                echo "✅ Total: $TOTAL → Monthly: $MONTHLY"
+              else
+                echo "❌ Failed to extract a valid total download count from JSON"
+                exit 1
+              fi
+            else
+              echo "❌ Pepy Pro API returned an invalid JSON response."
+              echo "Raw Response (for debugging):"
+              echo "$RESPONSE"
+              exit 1
+            fi
           else
-            echo "❌ Failed to extract download count from Pepy Pro API"
+            echo "❌ Received an empty response from Pepy Pro API. Connection might have failed."
             exit 1
           fi
 
@@ -78,3 +89,4 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#############################################
