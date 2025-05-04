@@ -15,14 +15,14 @@ on:
   workflow_dispatch:
 
   schedule:
-    - cron: "0 2 * * *"  # Daily at 2 AM UTC
-    - cron: "0 2 * * 0"  # Sunday
-    - cron: "0 2 * * 1"  # Monday
-    - cron: "0 2 * * 2"  # Tuesday
-    - cron: "0 2 * * 3"  # Wednesday
-    - cron: "0 2 * * 4"  # Thursday
-    - cron: "0 2 * * 5"  # Friday
-    - cron: "0 2 * * 6"  # Saturday
+    - cron: "0 2 * * *"
+    - cron: "0 2 * * 0"
+    - cron: "0 2 * * 1"
+    - cron: "0 2 * * 2"
+    - cron: "0 2 * * 3"
+    - cron: "0 2 * * 4"
+    - cron: "0 2 * * 5"
+    - cron: "0 2 * * 6"
 
 permissions:
   contents: write
@@ -37,29 +37,29 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 📥 Get total downloads from pepy.tech and calculate 43.33% estimate
+      - name: 📥 Parse badge image text to get total downloads
         id: fetch
         run: |
-          echo "Fetching raw JSON..."
-          RAW=$(curl -s https://pepy.tech/api/projects/qiskit-connector)
-          TOTAL=$(echo "$RAW" | grep -o '"total_downloads":[0-9]*' | sed 's/[^0-9]*//g')
+          echo "🔍 Scraping badge data..."
+          ALT_TEXT=$(curl -sL https://static.pepy.tech/badge/qiskit-connector | grep -o 'alt="[^"]*"' | sed 's/alt="//;s/"//')
+          RAW_TOTAL=$(echo "$ALT_TEXT" | grep -o '[0-9,]*' | sed 's/,//g')
 
-          if [ -z "$TOTAL" ]; then
-            echo "❌ Failed to extract download count from pepy.tech"
+          if [ -z "$RAW_TOTAL" ]; then
+            echo "❌ Could not extract total downloads."
             exit 1
           fi
 
-          MONTHLY=$(awk "BEGIN { printf \"%'.0f\", $TOTAL * 0.4333 }")
+          MONTHLY=$(awk "BEGIN { printf \"%'.0f\", $RAW_TOTAL * 0.4333 }")
           echo "📦 Estimated Monthly Downloads: $MONTHLY"
           echo "monthly_downloads=$MONTHLY" >> $GITHUB_OUTPUT
 
-      - name: 🛠️ Generate monthly downloads badge
+      - name: 🛠️ Generate badge
         uses: emibcn/badge-action@v2
         with:
           label: "Monthly Downloads"
           label-color: "555"
           status: "${{ steps.fetch.outputs.monthly_downloads }}"
-          color: "informational"
+          color: "blue"
           style: "flat"
           path: "doc/badges/monthly-downloads.svg"
 
@@ -75,6 +75,6 @@ jobs:
           git pull origin main --rebase
 
           git add doc/badges/monthly-downloads.svg
-          git commit -m "📈 Update estimated monthly downloads badge" || echo "⚠️ No changes to commit"
+          git commit -m "📈 Update monthly downloads badge" || echo "⚠️ No changes to commit"
           git push origin main
 
