@@ -53,21 +53,16 @@ jobs:
                 "X-API-Key": api_key,
                 "Accept": "application/json"
           })
-
+          
           try:
-              with urllib.request.urlopen(req) as response:
-                  if response.status != 200:
-                      raise Exception(f"API responded with status code {response.status}")
-                  data = json.loads(response.read().decode())
-
-                  total = int(data.get("total_downloads", 0))
-                  monthly = round(total * 0.4333)
-
-                  print(f"::set-output name=total_downloads::{total}")
-                  print(f"::set-output name=monthly_downloads::{monthly}")
+              response = urllib.request.urlopen(req)
+              if response.status == 200:
+                  print("🔐 Successfully connected to Pepy Pro API.")
+              else:
+                  print("❌ Failed to connect to Pepy Pro API.")
           except Exception as e:
-              print("❌ Failed to fetch or parse API response:", str(e))
-              exit(1)
+              print(f"❌ Error occurred: {e}")
+
           PYCODE
         env:
           PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
