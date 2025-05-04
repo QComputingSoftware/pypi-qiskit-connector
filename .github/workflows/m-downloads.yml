@@ -63,7 +63,7 @@ jobs:
           label: "downloads"
           status: "${{ steps.calculate.outputs.downloads }}"
           color: "brightgreen"
-          path: "docs/badges/m-downloads.svg"
+          path: "docs/badges/downloads.svg"
 
       - name: 🚀 Commit badge to main
         env:
