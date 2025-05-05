@@ -59,59 +59,59 @@ and any other Qiskit dependencies. (Qiskit 1.x is not supported).
 
 ```dotenv
 
-# GENERAL PURPOSE
-#--------------------------------------------
+# General Purpose:                                            (Required)
+#--------------------------------------------------------------------------------------
 IQP_API_TOKEN="<PROVIDE_YOUR_API_TOKEN>"  
 
 
-# Channels:
-#------------------------------------------
+# Channels:                                                   (Required)
+#--------------------------------------------------------------------------------------
 OPEN_PLAN_CHANNEL="<PROVIDE_YOUR_CHANNEL>"  
 PAID_PLAN_CHANNEL="<PROVIDE PAID PLAN CHANNEL>"  
 
 
-# API Access:
-#-------------------------------------
+# API Access:                                                 (Optional)
+#--------------------------------------------------------------------------------------
 IQP_API_URL=<PROVIDE_YOUR_API_URL>  
 IQP_RUNTIME_API_URL=<PROVIDE_YOUR_RUNTIME_API_URL>  
 
 
-# Quantum Url:
+# Quantum Url:                                                (Optional)
 # The API URL. Defaults to https://cloud.ibm.com (when channel=ibm_cloud) 
 # The API URL:Default to:  https://auth.quantum.ibm.com/api (when channel=ibm_quantum)"
-#-------------------------------------
-CLOUD_API_URL="<PROVIDE_YOUR_CLOUD_API_URL>"  
+#---------------------------------------------------------------------------------------
+CLOUD_API_URL="<PROVIDE_YOUR_CLOUD_API_URL>" 
 QUANTUM_API_URL="<PROVIDE_YOUR_QUANTUM_API_URL>"  
 
 
-# Instance:
-#-------------------------------------
+# Instance:                                                  (Required)
+#---------------------------------------------------------------------------------------
 OPEN_PLAN_INSTANCE="<PROVIDE_YOUR_OPEN_PLAN_INSTANCE>"  
 PAID_PLAN_INSTANCE="<PROVIDE_YOUR_PAID_PLAN_INSTANCE>"  
 
 
-# Default (Open plan) - free
-#----------------------------------------
+# Default (Open plan) - free                                   
+#---------------------------------------------------------------------------------------
 OPEN_PLAN_NAME="open"
 
 
-# Optional (Upgrade) - Standard
-#-----------------------------------------
+# Optional (Upgrade) - Standard                               
+#----------------------------------------------------------------------------------------
 STANDARD_PLAN_NAME="standard"
 
 
-# Optional (Upgrade) - Premium
-#-----------------------------------------
+# Optional (Upgrade) - Premium                                
+#----------------------------------------------------------------------------------------
 PREMIUM_PLAN_NAME="premium"
 
 
-# Optional (Upgrade) - Dedicated
-#-----------------------------------------
+# Optional (Upgrade) - Dedicated                               
+#----------------------------------------------------------------------------------------
 DEDICATED_PLAN_NAME="dedicated"
 
 
-# Switch "on" one plan: 
-#--------------------------------------------------------------------------------------------------
+# Switch "on" only one plan:                                       (Required)
+#----------------------------------------------------------------------------------------
 OPEN_PLAN="on"        # [Default & switched on]  
 STANDARD_PLAN="off"     
 PREMIUM_PLAN="off"      
