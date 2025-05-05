@@ -161,28 +161,32 @@ else:
 
 #### Output Sample
 ```python
-[✓] Quantum environment variables loaded successfully!
 
---------------------------------------------------------------------------------
-[⚛] Connected [Open Plan] -> Realtime Least Busy QPU: ibm_torino
---------------------------------------------------------------------------------
+ ⚛️ Connecting (Open Plan) to least-busy QPU....
+ --------------------------------------------------------------------------------
+ ⚛️ Connected [Open Plan] -> Realtime Least Busy QPU:: [ibm_torino]
+  - ibm_brisbane
+  - ibm_sherbrooke
+  - ibm_torino
 
-Available QPUs (Open Plan):
-  🖥️ibm_brisbane
-  🖥️ibm_sherbrooke
-  🖥️ibm_torino
 
-Default QPU:     ibm_torino
-Qubit Version:   2
-Number Qubits:   133
+🖥️Default QPU:     ibm_torino
+🖥️Qubit Version:   2
+🖥️Number Qubits:   133
+🖥️Backend [ibm_torino] ready for use: Yes
 
---------------------------------------------------------------------------------
 
 Your Plan:       Open Plan
 Least Busy QPU:  ibm_torino
 This is a real & live QPU device
+================================================================================
+
+Your Plan: Open Plan
+Least Busy QPU: ibm_torino
+This is a real & live QPU device
 
 #-------- remaining code below ------
+
 ```
 
 ![IBM Quantum](media/q1.png)
