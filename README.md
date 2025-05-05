@@ -168,9 +168,9 @@ else:
 --------------------------------------------------------------------------------
 
 Available QPUs (Open Plan):
-  - ibm_brisbane
-  - ibm_sherbrooke
-  - ibm_torino
+  🖥️ibm_brisbane
+  🖥️ibm_sherbrooke
+  🖥️ibm_torino
 
 Default QPU:     ibm_torino
 Qubit Version:   2
