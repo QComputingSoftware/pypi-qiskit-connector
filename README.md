@@ -67,7 +67,7 @@ IQP_API_TOKEN="<PROVIDE_YOUR_API_TOKEN>"
 # Channels:
 #------------------------------------------
 OPEN_PLAN_CHANNEL="<PROVIDE_YOUR_CHANNEL>"  
-PAID_PLAN_CHANNEL="<PROVIDE PAID PLAN CHANNEL>"  # After July 1, 2025, use ibm_cloud for Paid Plans.
+PAID_PLAN_CHANNEL="<PROVIDE PAID PLAN CHANNEL>"  
 
 
 # API Access:
