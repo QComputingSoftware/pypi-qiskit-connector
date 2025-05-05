@@ -203,7 +203,7 @@ IEEE Senior Member (Computational Intelligence)
 
 ---
 #### 📜  Copyright
-Qiskit Connector is proprietary software developed by Dr. Jeffrey Chijioke-Uche © 2025 for enhancing development, usability,and workflows in IBM Quantum Computing by customers and global users. This software is protected under copyright laws and applicable intellectual property statutes. Unauthorized reproduction, distribution, or derivative use of the software in part or whole is strictly prohibited without express written permission from the author. This software may be used under the terms outlined in the accompanying license file (Apache 2.0 or as otherwise specified). Use of this software signifies your agreement to comply with the license terms and to attribute the original author when incorporating the package into your work or systems. For other question(s), please contact the maintainer directly through the official project repository or email channel provided on PyPI. All Rights Reserved.
+Qiskit Connector is proprietary software developed by Dr. Jeffrey Chijioke-Uche © 2025 for enhancing development, usability,and workflows in IBM Quantum Computing by customers and global users. This software is protected under copyright laws and applicable intellectual property statutes. Unauthorized reproduction, distribution, or derivative use of the software in part or whole is strictly prohibited without express written permission from the author. This software may be used under the terms outlined in the accompanying <b>licenses</b> by ([Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) and [Creative Commons Attribution 4.0 international](https://creativecommons.org/licenses/by/4.0/legalcode)). Use of this software signifies your agreement to comply with the license terms and to attribute the original author when incorporating the package into your work or systems. For other question(s), please contact the maintainer directly through the official project repository or email channel provided on PyPI. All Rights Reserved.
  
 ---
 
@@ -214,6 +214,8 @@ Additional appreciation is extended to the [IEEE Computational Intelligence](htt
 
 ---
 
-#### 📜 License
+#### 📜 Licenses
 
-This project uses the Open-source [License](https://github.com/schijioke-uche/pypi-qiskit-connector/blob/main/LICENSE)
+This software uses these licenses for distribution:
+- [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+- [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/legalcode)
