@@ -70,7 +70,7 @@ OPEN_PLAN_CHANNEL="<PROVIDE_YOUR_CHANNEL>"
 PAID_PLAN_CHANNEL="<PROVIDE PAID PLAN CHANNEL>"  
 
 
-# API Access:                                                 (Optional)
+# API Url:                                                    (Optional)
 #--------------------------------------------------------------------------------------
 IQP_API_URL=<PROVIDE_YOUR_API_URL>  
 IQP_RUNTIME_API_URL=<PROVIDE_YOUR_RUNTIME_API_URL>  
