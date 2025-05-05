@@ -54,7 +54,8 @@ and any other Qiskit dependencies. (Qiskit 1.x is not supported).
 ---
 
 #### 🗂️ Variable Setup
-🔐 Security Practice: Do not check-in `.env or environment variable config file` or any environment variable file into version control. Add it to your .gitignore. During development, create a file named `.env` at your project root. The connector will automatically load it.Use the template below as the content of your .env file or variable config file.
+🔐 ![Security Practices](https://cloud.ibm.com/docs/security-compliance?topic=security-compliance-best-practices): Do not check-in to version control any `environment variable config file` or any variable setup file. The best security practice is to add it to your `.gitignore` or to a accessible `vault`. During local development, create a file named `.env` at your project root and ensure it is named on your `.gitignore`. The connector will automatically load it. Use the template below as the content of your .env file or variable setup config file. Copy and paste it then supply the values.
+
 
 ```dotenv
 
