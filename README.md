@@ -170,26 +170,22 @@ else:
   - ibm_torino
 
 
-🖥️Default QPU:     ibm_torino
+🖥️Least Busy QPU Now: ibm_torino
 🖥️Qubit Version:   2
-🖥️Number Qubits:   133
+🖥️Qubits Count:   133
 🖥️Backend [ibm_torino] ready for use: Yes
-
+================================================================================
 
 Your Plan:       Open Plan
 Least Busy QPU:  ibm_torino
 This is a real & live QPU device
-================================================================================
 
-Your Plan: Open Plan
-Least Busy QPU: ibm_torino
-This is a real & live QPU device
 
 #-------- remaining code below ------
 
 ```
 
-![IBM Quantum](media/q1.png)
+
 
 ---
 ####  📜 Citation
