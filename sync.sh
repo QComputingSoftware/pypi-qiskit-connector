@@ -12,6 +12,11 @@
 #_________________________________________________________________________________
 
 set -euo pipefail
+git pull
+#-------------------------------------------------------------------------------
+#   Commit Code Update to Github
+#   This script automates the process of committing code changes to a GitHub repository.
+
 
 # ANSI color codes
 RED='\033[0;31m'
@@ -198,7 +203,14 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   git pull
   banner "${GREEN}" "🎉 Release process complete!"
 fi
-
+git pull
+# -----------------------------------------------------------------------------
+# Synchronize with GitHub
+# -----------------------------------------------------------------------------
+banner "${YELLOW}" "🔄 Synchronizing with GitHub..."
+banner "${YELLOW}" "🔄 Pulling latest changes from GitHub..."
+banner "${YELLOW}" "🔄 Pushing local changes to GitHub..."
+banner "${YELLOW}" "🔄 Synchronization complete!"
 exit 0
 #--------------------------------------------------------------------------
 # End of script

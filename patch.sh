@@ -8,6 +8,11 @@
 #   Commit Code Update to Github
 # -----------------------------------------------------------------------------
 set -euo pipefail
+git pull
+# -----------------------------------------------------------------------------
+#   This script is used to commit code updates to a GitHub repository.
+
+
 
 # ANSI color codes
 RED='\033[0;31m'
