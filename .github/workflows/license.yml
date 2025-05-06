@@ -34,9 +34,9 @@ jobs:
       - name: 🛠️ Generate license badge
         uses: emibcn/badge-action@v2
         with:
-          label: "license"
+          label: "licenses"
           label-color: "555"
-          status: "Apache-2.0"
+          status: "Apache-2.0 | Creative Commons Attribution 4.0"
           color: "7DD71D"
           style: "classic"
           path: "docs/badges/license-badge.svg"
