@@ -1,20 +1,20 @@
-<svg width="120.9" height="20" viewBox="0 0 1209 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="license: Apache-2.0">
-  <title>license: Apache-2.0</title>
+<svg width="329.6" height="20" viewBox="0 0 3296 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="licenses: Apache-2.0 | Creative Commons Attribution 4.0">
+  <title>licenses: Apache-2.0 | Creative Commons Attribution 4.0</title>
   <linearGradient id="a" x2="0" y2="100%">
     <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
-  <mask id="m"><rect width="1209" height="200" rx="30" fill="#FFF"/></mask>
+  <mask id="m"><rect width="3296" height="200" rx="30" fill="#FFF"/></mask>
   <g mask="url(#m)">
-    <rect width="476" height="200" fill="#555"/>
-    <rect width="733" height="200" fill="#7DD71D" x="476"/>
-    <rect width="1209" height="200" fill="url(#a)"/>
+    <rect width="533" height="200" fill="#555"/>
+    <rect width="2763" height="200" fill="#7DD71D" x="533"/>
+    <rect width="3296" height="200" fill="url(#a)"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
-    <text x="60" y="148" textLength="376" fill="#000" opacity="0.25">license</text>
-    <text x="50" y="138" textLength="376">license</text>
-    <text x="531" y="148" textLength="633" fill="#000" opacity="0.25">Apache-2.0</text>
-    <text x="521" y="138" textLength="633">Apache-2.0</text>
+    <text x="60" y="148" textLength="433" fill="#000" opacity="0.25">licenses</text>
+    <text x="50" y="138" textLength="433">licenses</text>
+    <text x="588" y="148" textLength="2663" fill="#000" opacity="0.25">Apache-2.0 | Creative Commons Attribution 4.0</text>
+    <text x="578" y="138" textLength="2663">Apache-2.0 | Creative Commons Attribution 4.0</text>
   </g>
   
 </svg>
