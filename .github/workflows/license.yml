@@ -3,7 +3,7 @@
 # @Description: This workflow builds a license badge that show the license type of the software for markdown files.
 # @BadgeLocation:  doc/badges/license-badge.svg
 # @File: .github/workflows/license.yml
-# @License: Apache-2.0
+# @License: Apache-2.0  , Creative Commons Attribution 4.0
 #___________________________________________________________
 
 name: Software License Badge
