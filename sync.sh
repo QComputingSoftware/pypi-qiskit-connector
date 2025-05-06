@@ -195,7 +195,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   git push origin stable
   git checkout main
   git pull origin main
-
+  git pull
   banner "${GREEN}" "🎉 Release process complete!"
 fi
 
