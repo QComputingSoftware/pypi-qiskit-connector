@@ -2,7 +2,7 @@
                               --------------------------------
                          Copyright Protection of Qiskit-Connector
                               Jeffrey Chiijioke-Uche, Ph.D
-
+                                           []
  The __init__.py file constitutes an essential component of the qiskit-connector software package, 
  which is the intellectual property of Jeffrey Chijioke-Uche, Ph.D. This intellectual property is 
  protected under applicable United States and International intellectual property laws, including 
