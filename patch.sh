@@ -123,6 +123,8 @@ commit() {
   echo -e "${GREEN}✅ Successfully switched back to main branch.${RESET}"
 }
 commit
+sleep 3
+git pull
 # -----------------------------------------------------------------------------
 #   End of Commit Code Update to Github
 # -----------------------------------------------------------------------------
