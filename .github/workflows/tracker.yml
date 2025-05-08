@@ -33,6 +33,12 @@ jobs:
       - name: 📿 Checkout
         uses: actions/checkout@v4
 
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip

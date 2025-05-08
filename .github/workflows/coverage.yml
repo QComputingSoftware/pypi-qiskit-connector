@@ -25,6 +25,14 @@ jobs:
         with:
           ref: refs/heads/main   # 🔒 Avoid tag/branch ambiguity
 
+
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+          
+
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
         with:

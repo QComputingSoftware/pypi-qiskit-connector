@@ -27,6 +27,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
