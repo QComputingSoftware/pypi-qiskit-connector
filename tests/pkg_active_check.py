@@ -26,6 +26,6 @@ try:
     print("✅ Test1 Passed: Package is functional.")
     subprocess.check_call(f"{sys.executable} -m pip list | grep qiskit-connector", shell=True)
 except subprocess.CalledProcessError:
-    print("❌ Test1 Failed: Package not found in pip list.")
+    print("❌ Check Failed: Package not found in pip list.")
 except Exception as e:
-    print(f"❌ Test1 Encountered error: {e}")
+    print(f"❌ Check Encountered error: {e}")
