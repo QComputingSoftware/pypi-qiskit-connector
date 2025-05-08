@@ -33,7 +33,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
-          python .github/scripts/pkg_active_check.py
+          python tests/pkg_active_check.py
 
       - name: Echo Deployment Context
         run: |
