@@ -54,3 +54,10 @@ jobs:
               print(f"❌ Qiskit Connection is not compatible: {compatibility_error}")
               exit(1)
           PYCODE
+
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+      

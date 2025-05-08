@@ -65,6 +65,12 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
 
     steps:
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+
       - name: 🔎 Ensure we're on main (scheduled run)
         if: github.event_name == 'schedule'
         run: |

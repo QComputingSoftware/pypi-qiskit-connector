@@ -28,6 +28,12 @@ jobs:
         with:
           ref: refs/heads/main
 
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+          
       - name: 📂 Ensure badge directory exists
         run: mkdir -p doc/badges
 
