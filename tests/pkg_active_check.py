@@ -1,13 +1,11 @@
 # @Author: Dr. Jeffrey Chijioke-Uche
 # @Date: 2025-03-15
-# @Purpose: Code Coverage Analysis
+# @Purpose: Part of Code Coverage Analysis
 # @Major Component: connector, plan_type
 # @Description: This script is designed to test the qiskit_connector module, specifically focusing on the pkg functinal state.
 # @Test Coverage: Ensures that the package is functional and can be installed correctly.
 # @Test Environment: pytest
 # @Test Framework: pytest
-# @Test Execution: pytest test_connector.py
-# @Test Results: All tests passed successfully.
 #
 import subprocess
 import sys
