@@ -32,7 +32,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
-          python .github/scripts/pkg_active_check.py
+          python tests/pkg_active_check.py
           
       - name: 📂 Ensure badge directory exists
         run: mkdir -p doc/badges

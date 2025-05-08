@@ -31,7 +31,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
-          python .github/scripts/pkg_active_check.py
+          python tests/pkg_active_check.py
 
       - name: 🐍 Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
