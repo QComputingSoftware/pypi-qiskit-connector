@@ -16,7 +16,7 @@ By eliminating manual configurations and connection complexities, Qiskit Connect
 This package performs the following:
 - Loads environment variables from config file (e.g. `.env`) to configure your IBM Quantum account plan and make the `backend` object available within your quantum application code for reuse in real-time.
 - Detects your active plan (Open, Standard, Premium, Dedicated) and sets up the correct channel/instance.
-- It has functions to save your account using its (`qiskit_smart`), to verify QPU resources using (`qpu_verify`, `is_verified`), and retrieve a ready-to-use backend using (`connector()`). Presents you with the least-busy backend to run your quantum application code in realtime instead of you using simulators.
+- It has (`qiskit_smart`) to establish connectivity, then to verify QPU resources using (`qpu_verify`, `is_verified`), and retrieve a ready-to-use backend using (`connector()`). Presents you with the least-busy backend to run your quantum application code in realtime instead of you using simulators.
 
 ###### 🐍 Software built and maintained by Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Research Scientist.
 ---
