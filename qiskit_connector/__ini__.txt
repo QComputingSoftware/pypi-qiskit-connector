@@ -20,6 +20,7 @@
               [To cite the software in academic publication, use this APA or any style]
 Chijioke-uche, J. (2025). Quantum Computing Qiskit Connector (2.2.1). Zenodo. https://doi.org/10.5281/zenodo.15349641
 
+
                                    [Copyright & Ownership]
                           Copyrighted by U.S. Copyright Office, 2025
                     Computer Program is Owned by Dr. Jeffrey Chijioke-Uche
