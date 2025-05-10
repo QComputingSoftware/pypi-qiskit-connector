@@ -10,39 +10,6 @@
 # @Test Execution: pytest test_connector.py
 # @Test Results: All tests passed successfully.
 
-import subprocess
-import sys
-
-def install_package(package):
-    try:
-        __import__(package)
-        print(f"{package} is already installed.")
-        return True
-    except ImportError:
-        print(f"{package} is not installed. Attempting to install...")
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-            print(f"{package} installed successfully.")
-            return True
-        except subprocess.CalledProcessError as e:
-            print(f"Error installing {package}: {e}")
-            return False
-        except FileNotFoundError:
-            print("Error: pip command not found. Ensure pip is installed and in your PATH.")
-            return False
-
-if __name__ == "__main__":
-    package_to_install = "qiskit-connector"
-    if install_package(package_to_install):
-        # Now you can import and use the package
-        try:
-            import qiskit_connector
-            print("qiskit_connector imported successfully.")
-            # Your code that uses qiskit_connector goes here
-        except ImportError:
-            print("Failed to import qiskit_connector after installation.")
-
-
 import pytest
 from qiskit_connector import QConnectorV2 as connector
 from qiskit_connector import QPlanV2 as plan
@@ -60,22 +27,20 @@ def test_connector_returns_backend():
     except ValueError as e:
         if "Exactly one of OPEN_PLAN, STANDARD_PLAN, PREMIUM_PLAN or DEDICATED_PLAN" in str(e):
             print("✅ Test1 Passed: PLAN environment variable not set — expected during CI/CD test.")
-            pass  # treat as success
         else:
-            raise e  # re-raise if it's another ValueError
+            raise e
 
 # Test 2: Test if the plan function returns a valid string
-def test_plan_is_string():
+def test_qplan_is_string():
     try:
-        plan = plan()
-        assert isinstance(plan, str)
+        plan_value = plan()
+        assert isinstance(plan_value, str)
         print("🐍 Test2 Completed Successfully")
     except ValueError as e:
         if "Exactly one of OPEN_PLAN, STANDARD_PLAN, PREMIUM_PLAN or DEDICATED_PLAN" in str(e):
             print("✅ Test2 Passed: PLAN environment variable not set — expected during CI/CD test.")
-            pass  # treat as success
         else:
-            raise e  # re-raise if it's another ValueError
+            raise e
 
 # Test 3: Test if the _load_environment function loads the environment correctly
 def test_load_environment():
@@ -90,7 +55,7 @@ def test_load_environment():
 def test_get_credentials():
     try:
         from qiskit_connector import _get_credentials
-        creds = _get_credentials('open')  # even if dummy
+        creds = _get_credentials('open')
         assert isinstance(creds, dict)
         required_keys = {'name', 'channel', 'instance', 'token'}
         assert required_keys.issubset(creds.keys())
@@ -107,118 +72,109 @@ def test_footer():
     except Exception as e:
         assert False, f"Unexpected exception in footer: {e}"
 
-# Test 6: Test if the _get_plan function returns a valid plan
-def test_get_plan_value_error_no_plan(monkeypatch):
+# Test 6: Validate behavior when no plan is defined
+def test_get_plan_value_error_no_plan(env):
     from qiskit_connector import _get_plan
-    monkeypatch.delenv('OPEN_PLAN', raising=False)
-    monkeypatch.delenv('STANDARD_PLAN', raising=False)
-    monkeypatch.delenv('PREMIUM_PLAN', raising=False)
-    monkeypatch.delenv('DEDICATED_PLAN', raising=False)
-    try:
+    env.delenv('OPEN_PLAN', raising=False)
+    env.delenv('STANDARD_PLAN', raising=False)
+    env.delenv('PREMIUM_PLAN', raising=False)
+    env.delenv('DEDICATED_PLAN', raising=False)
+    with pytest.raises(ValueError, match="Exactly one of"):
         _get_plan()
-    except ValueError as e:
-        assert "Exactly one of" in str(e)
 
-# Test 7: Test if the _get_plan function raises ValueError for missing plan name
-def test_get_plan_value_error_missing_name(monkeypatch):
+# Test 7: Validate behavior when plan name is missing
+def test_get_plan_value_error_missing_name(env):
     from qiskit_connector import _get_plan
-    monkeypatch.setenv('OPEN_PLAN', 'on')
-    monkeypatch.delenv('OPEN_PLAN_NAME', raising=False)
-    try:
+    env.setenv('OPEN_PLAN', 'on')
+    env.delenv('OPEN_PLAN_NAME', raising=False)
+    with pytest.raises(ValueError, match="OPEN_PLAN_NAME must be set"):
         _get_plan()
-    except ValueError as e:
-        assert "OPEN_PLAN_NAME must be set" in str(e)
 
-# Test 8: Test if the _get_plan function raises ValueError for missing channel
-def test_save_account_missing_creds(monkeypatch):
+# Test 8: Validate behavior when credentials are incomplete
+def test_save_account_missing_creds(env):
     from qiskit_connector import save_account
-    monkeypatch.setenv("OPEN_PLAN", "on")
-    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
-    monkeypatch.delenv("OPEN_PLAN_CHANNEL", raising=False)
-    monkeypatch.delenv("OPEN_PLAN_INSTANCE", raising=False)
-    monkeypatch.delenv("IQP_API_TOKEN", raising=False)
-    save_account()  # Should not crash
+    env.setenv("OPEN_PLAN", "on")
+    env.setenv("OPEN_PLAN_NAME", "test_open")
+    env.delenv("OPEN_PLAN_CHANNEL", raising=False)
+    env.delenv("OPEN_PLAN_INSTANCE", raising=False)
+    env.delenv("IQP_API_TOKEN", raising=False)
+    save_account()
 
-# Test 9: Test if the _get_plan function raises ValueError for missing instance
-def test_list_backends(monkeypatch):
+# Test 9: Validate backend listing
+def test_list_backends(env):
     from qiskit_connector import list_backends
 
-    class MockBackend:
+    class BackendStub:
         def __init__(self, name): self.name = name
 
-    class MockService:
-        def backends(self): return [MockBackend("ibm_test")]
+    class ServiceStub:
+        def backends(self): return [BackendStub("ibm_test")]
 
-    monkeypatch.setenv("OPEN_PLAN", "on")
-    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
-    monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
-    monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
-    
-    monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", MockService)
-    list_backends()  # Should run and print
+    env.setenv("OPEN_PLAN", "on")
+    env.setenv("OPEN_PLAN_NAME", "test_open")
+    env.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
+    env.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
+    env.setenv("IQP_API_TOKEN", "secure-token")
 
+    env.setattr("qiskit_connector.QiskitRuntimeService", ServiceStub)
+    list_backends()
 
-# Test 10: Test if the _get_plan function raises ValueError for missing token
-def test_connector_no_backend(monkeypatch):
-    from qiskit_connector import connector
+# Test 10: Validate connector error when no backend is available
+def test_connector_no_backend(env):
+    from qiskit_connector import QConnectorV2 as connector
 
-    class MockService:
+    class ServiceStub:
         def least_busy(self, **kwargs): return None
         def backends(self, **kwargs): return []
 
-    monkeypatch.setenv("OPEN_PLAN", "on")
-    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
-    monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
-    monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
+    env.setenv("OPEN_PLAN", "on")
+    env.setenv("OPEN_PLAN_NAME", "test_open")
+    env.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
+    env.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
+    env.setenv("IQP_API_TOKEN", "secure-token")
 
-    monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", lambda: MockService())
-    
-    try:
+    env.setattr("qiskit_connector.QiskitRuntimeService", lambda: ServiceStub())
+    with pytest.raises(RuntimeError, match="No QPU available"):
         connector()
-    except RuntimeError as e:
-        assert "No QPU available" in str(e)
 
-# Test 11: Test if the _get_plan function raises ValueError for missing token
-def test_save_account_success(monkeypatch):
+# Test 11: Confirm account saving when credentials are valid
+def test_save_account_success(env):
     from qiskit_connector import save_account
 
-    class MockQiskitService:
+    class AccountService:
         @staticmethod
         def save_account(**kwargs):
             assert "token" in kwargs
             assert kwargs["set_as_default"] is True
 
-    monkeypatch.setenv("OPEN_PLAN", "on")
-    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
-    monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
-    monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
+    env.setenv("OPEN_PLAN", "on")
+    env.setenv("OPEN_PLAN_NAME", "test_open")
+    env.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
+    env.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
+    env.setenv("IQP_API_TOKEN", "secure-token")
 
-    monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", MockQiskitService)
-    save_account()  # Should print success
+    env.setattr("qiskit_connector.QiskitRuntimeService", AccountService)
+    save_account()
 
-# Test 12: Test if the _get_plan function raises ValueError for missing token
-def test_connector_lists_qpus(monkeypatch):
-    from qiskit_connector import connector
+# Test 12: Validate full QPU listing during connector
+def test_connector_lists_qpus(env):
+    from qiskit_connector import QConnectorV2 as connector
 
-    class MockBackend:
+    class BackendMock:
         def __init__(self, name): self.name = name
         version = "1.0"
         num_qubits = 7
 
-    class MockService:
-        def least_busy(self, **kwargs): return MockBackend("ibm_test")
-        def backends(self, **kwargs): return [MockBackend("ibm_test"), MockBackend("ibm_alternate")]
+    class RuntimeServiceStub:
+        def least_busy(self, **kwargs): return BackendMock("ibm_test")
+        def backends(self, **kwargs): return [BackendMock("ibm_test"), BackendMock("ibm_secondary")]
 
-    monkeypatch.setenv("OPEN_PLAN", "on")
-    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
-    monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
-    monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
+    env.setenv("OPEN_PLAN", "on")
+    env.setenv("OPEN_PLAN_NAME", "test_open")
+    env.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
+    env.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
+    env.setenv("IQP_API_TOKEN", "secure-token")
 
-    monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", lambda: MockService())
+    env.setattr("qiskit_connector.QiskitRuntimeService", lambda: RuntimeServiceStub())
     backend = connector()
     assert backend.name == "ibm_test"
-
