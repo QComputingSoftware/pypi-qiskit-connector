@@ -211,8 +211,8 @@ The Quantum Computing Qiskit Connector is a proprietary software developed by Dr
 
 | Version   | Description                                                                                   | Updated Import Syntax                                                                 |
 |-----------|-----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
-| v2.2.1    | Initial import approach using functional-style interface.                                      | `from qiskit_connector import connector, plan_type`                                   |
-| v2.2.2    | Switched to class-based architecture with aliasing for enhanced flexibility and clarity.      | `from qiskit_connector import QConnectorV2 as connector`<br>`from qiskit_connector import QPlanV2 as plan` |
+| <=v2.2.2    | Initial import approach using functional-style interface.                                      | `from qiskit_connector import connector, plan_type`                                   |
+| >=v2.2.3    | Switched to class-based architecture with aliasing for enhanced flexibility and clarity.      | `from qiskit_connector import QConnectorV2 as connector`<br>`from qiskit_connector import QPlanV2 as plan` |
 
 
 ---
