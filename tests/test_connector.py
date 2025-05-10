@@ -57,7 +57,7 @@ def test_load_environment():
 def test_get_credentials():
     try:
         from qiskit_connector import _get_credentials
-        creds = _get_credentials('open')  # even if is_secure_aes
+        creds = _get_credentials('open')  # even if dummy
         assert isinstance(creds, dict)
         required_keys = {'name', 'channel', 'instance', 'token'}
         assert required_keys.issubset(creds.keys())
@@ -75,39 +75,39 @@ def test_footer():
         assert False, f"Unexpected exception in footer: {e}"
 
 # Test 6: Test if the _get_plan function returns a valid plan
-def test_get_plan_value_error_no_plan(qualityappraisal):
+def test_get_plan_value_error_no_plan(monkeypatch):
     from qiskit_connector import _get_plan
-    qualityappraisal.delenv('OPEN_PLAN', raising=False)
-    qualityappraisal.delenv('STANDARD_PLAN', raising=False)
-    qualityappraisal.delenv('PREMIUM_PLAN', raising=False)
-    qualityappraisal.delenv('DEDICATED_PLAN', raising=False)
+    monkeypatch.delenv('OPEN_PLAN', raising=False)
+    monkeypatch.delenv('STANDARD_PLAN', raising=False)
+    monkeypatch.delenv('PREMIUM_PLAN', raising=False)
+    monkeypatch.delenv('DEDICATED_PLAN', raising=False)
     try:
         _get_plan()
     except ValueError as e:
         assert "Exactly one of" in str(e)
 
 # Test 7: Test if the _get_plan function raises ValueError for missing plan name
-def test_get_plan_value_error_missing_name(qualityappraisal):
+def test_get_plan_value_error_missing_name(monkeypatch):
     from qiskit_connector import _get_plan
-    qualityappraisal.setenv('OPEN_PLAN', 'on')
-    qualityappraisal.delenv('OPEN_PLAN_NAME', raising=False)
+    monkeypatch.setenv('OPEN_PLAN', 'on')
+    monkeypatch.delenv('OPEN_PLAN_NAME', raising=False)
     try:
         _get_plan()
     except ValueError as e:
         assert "OPEN_PLAN_NAME must be set" in str(e)
 
 # Test 8: Test if the _get_plan function raises ValueError for missing channel
-def test_save_account_missing_creds(qualityappraisal):
+def test_save_account_missing_creds(monkeypatch):
     from qiskit_connector import save_account
-    qualityappraisal.setenv("OPEN_PLAN", "on")
-    qualityappraisal.setenv("OPEN_PLAN_NAME", "test-open")
-    qualityappraisal.delenv("OPEN_PLAN_CHANNEL", raising=False)
-    qualityappraisal.delenv("OPEN_PLAN_INSTANCE", raising=False)
-    qualityappraisal.delenv("IQP_API_TOKEN", raising=False)
+    monkeypatch.setenv("OPEN_PLAN", "on")
+    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
+    monkeypatch.delenv("OPEN_PLAN_CHANNEL", raising=False)
+    monkeypatch.delenv("OPEN_PLAN_INSTANCE", raising=False)
+    monkeypatch.delenv("IQP_API_TOKEN", raising=False)
     save_account()  # Should not crash
 
 # Test 9: Test if the _get_plan function raises ValueError for missing instance
-def test_list_backends(qualityappraisal):
+def test_list_backends(monkeypatch):
     from qiskit_connector import list_backends
 
     class MockBackend:
@@ -116,31 +116,31 @@ def test_list_backends(qualityappraisal):
     class MockService:
         def backends(self): return [MockBackend("ibm_test")]
 
-    qualityappraisal.setenv("OPEN_PLAN", "on")
-    qualityappraisal.setenv("OPEN_PLAN_NAME", "test-open")
-    qualityappraisal.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
-    qualityappraisal.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    qualityappraisal.setenv("IQP_API_TOKEN", "is_secure_aes")
+    monkeypatch.setenv("OPEN_PLAN", "on")
+    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
+    monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
+    monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
+    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
     
-    qualityappraisal.setattr("qiskit_connector.QiskitRuntimeService", MockService)
+    monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", MockService)
     list_backends()  # Should run and print
 
 
 # Test 10: Test if the _get_plan function raises ValueError for missing token
-def test_connector_no_backend(qualityappraisal):
+def test_connector_no_backend(monkeypatch):
     from qiskit_connector import QConnectorV2 as connector
 
     class MockService:
         def least_busy(self, **kwargs): return None
         def backends(self, **kwargs): return []
 
-    qualityappraisal.setenv("OPEN_PLAN", "on")
-    qualityappraisal.setenv("OPEN_PLAN_NAME", "test-open")
-    qualityappraisal.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
-    qualityappraisal.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    qualityappraisal.setenv("IQP_API_TOKEN", "is_secure_aes")
+    monkeypatch.setenv("OPEN_PLAN", "on")
+    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
+    monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
+    monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
+    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
 
-    qualityappraisal.setattr("qiskit_connector.QiskitRuntimeService", lambda: MockService())
+    monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", lambda: MockService())
     
     try:
         connector()
@@ -148,7 +148,7 @@ def test_connector_no_backend(qualityappraisal):
         assert "No QPU available" in str(e)
 
 # Test 11: Test if the _get_plan function raises ValueError for missing token
-def test_save_account_success(qualityappraisal):
+def test_save_account_success(monkeypatch):
     from qiskit_connector import save_account
 
     class MockQiskitService:
@@ -157,17 +157,17 @@ def test_save_account_success(qualityappraisal):
             assert "token" in kwargs
             assert kwargs["set_as_default"] is True
 
-    qualityappraisal.setenv("OPEN_PLAN", "on")
-    qualityappraisal.setenv("OPEN_PLAN_NAME", "test-open")
-    qualityappraisal.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
-    qualityappraisal.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    qualityappraisal.setenv("IQP_API_TOKEN", "is_secure_aes")
+    monkeypatch.setenv("OPEN_PLAN", "on")
+    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
+    monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
+    monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
+    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
 
-    qualityappraisal.setattr("qiskit_connector.QiskitRuntimeService", MockQiskitService)
+    monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", MockQiskitService)
     save_account()  # Should print success
 
 # Test 12: Test if the _get_plan function raises ValueError for missing token
-def test_connector_lists_qpus(qualityappraisal):
+def test_connector_lists_qpus(monkeypatch):
     from qiskit_connector import QConnectorV2 as connector
 
     class MockBackend:
@@ -179,13 +179,13 @@ def test_connector_lists_qpus(qualityappraisal):
         def least_busy(self, **kwargs): return MockBackend("ibm_test")
         def backends(self, **kwargs): return [MockBackend("ibm_test"), MockBackend("ibm_alternate")]
 
-    qualityappraisal.setenv("OPEN_PLAN", "on")
-    qualityappraisal.setenv("OPEN_PLAN_NAME", "test-open")
-    qualityappraisal.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
-    qualityappraisal.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    qualityappraisal.setenv("IQP_API_TOKEN", "is_secure_aes")
+    monkeypatch.setenv("OPEN_PLAN", "on")
+    monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
+    monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
+    monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
+    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
 
-    qualityappraisal.setattr("qiskit_connector.QiskitRuntimeService", lambda: MockService())
+    monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", lambda: MockService())
     backend = connector()
     assert backend.name == "ibm_test"
 
