@@ -41,7 +41,7 @@ from qiskit_connector import QPlanV2 as plan
 
 | Version   | Description                                                                                   | Updated Import Syntax                                                                 |
 |-----------|-----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
-| <= v2.2.2    | Initial import approach using functional-style interface for all version equal or below v2.2.2                                      | `from qiskit_connector import connector, plan_type`                                   |
+| <= v2.2.2    | Initial import approach using functional-style interface for all versions equal or below v2.2.2                                      | `from qiskit_connector import connector, plan_type`                                   |
 | >= v2.2.3    | Switched to class-based architecture with aliasing for enhanced flexibility and clarity for all versions equal or above 2.2.3      | `from qiskit_connector import QConnectorV2 as connector`<br>`from qiskit_connector import QPlanV2 as plan` |
 
 ---
