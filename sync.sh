@@ -13,10 +13,26 @@
 
 set -euo pipefail
 git pull
-#-------------------------------------------------------------------------------
-#   Commit Code Update to Github
-#   This script automates the process of committing code changes to a GitHub repository.
+source ./pvars.sh
 
+
+export GPG_TTY=$(tty)
+export GPG_AGENT_INFO=$(gpgconf --list-dirs agent-socket)
+
+# -----------------------------------------------------------------------------
+#   GPG Configuration for Non-Interactive Signing
+# -----------------------------------------------------------------------------
+mkdir -p ~/.gnupg
+chmod 700 ~/.gnupg
+echo "allow-loopback-pinentry" >> ~/.gnupg/gpg.conf
+echo "use-agent" >> ~/.gnupg/gpg.conf
+echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+gpgconf --kill gpg-agent
+gpgconf --launch gpg-agent
+
+export GPG_TTY=$(tty)
+export GIT_COMMITTER_DATE="$(date -R)"
 
 # ANSI color codes
 RED='\033[0;31m'
@@ -182,7 +198,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   git pull
   banner "${BLUE}" "💾 Committing & pushing version bump..."
   git add -A
-  git commit -m "Release $(grep -m1 -E 'version\s*=\s*\"' pyproject.toml |
+  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $(grep -m1 -E 'version\s*=\s*\"' pyproject.toml |
                       sed -E 's/.*\"([0-9]+\.[0-9]+\.[0-9]+)\".*/\1/')"
   git push
 

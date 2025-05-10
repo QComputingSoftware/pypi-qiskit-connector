@@ -9,9 +9,26 @@
 # -----------------------------------------------------------------------------
 set -euo pipefail
 git pull
-# -----------------------------------------------------------------------------
-#   This script is used to commit code updates to a GitHub repository.
+source ./pvars.sh
 
+
+export GPG_TTY=$(tty)
+export GPG_AGENT_INFO=$(gpgconf --list-dirs agent-socket)
+
+# -----------------------------------------------------------------------------
+#   GPG Configuration for Non-Interactive Signing
+# -----------------------------------------------------------------------------
+mkdir -p ~/.gnupg
+chmod 700 ~/.gnupg
+echo "allow-loopback-pinentry" >> ~/.gnupg/gpg.conf
+echo "use-agent" >> ~/.gnupg/gpg.conf
+echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+gpgconf --kill gpg-agent
+gpgconf --launch gpg-agent
+
+export GPG_TTY=$(tty)
+export GIT_COMMITTER_DATE="$(date -R)"
 
 
 # ANSI color codes
@@ -85,7 +102,9 @@ commit() {
   git add -A
   # Make commit comment with today's date and time and a message
   banner "${GREEN}" "📝 Committing changes..."
-  git commit -m "Quantum Code Update - $(date +'%Y-%m-%d %H:%M:%S')"
+  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Quantum Connector Update - $(date +'%Y-%m-%d %H:%M:%S')"
+
+  
   # Push to the main branch
   banner "${CYAN}" "🚀 Pushing changes to remote repository..."
   git push origin main
