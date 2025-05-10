@@ -1,8 +1,8 @@
 # @Author: Dr. Jeffrey Chijioke-Uche
 # @Date: 2025-03-15
 # @Purpose: Code Coverage Analysis
-# @Major Component: connector, plan_type
-# @Description: This script is designed to test the qiskit_connector module, specifically focusing on the connector and plan_type functions.
+# @Major Component: connector, plan
+# @Description: This script is designed to test the qiskit_connector module, specifically focusing on the connector and plan functions.
 # It includes a series of unit tests that check the functionality and error handling of these functions.
 # @Test Coverage: 100%
 # @Test Environment: pytest
@@ -44,7 +44,8 @@ if __name__ == "__main__":
 
 
 import pytest
-from qiskit_connector import connector, plan_type
+from qiskit_connector import QConnectorV2 as connector
+from qiskit_connector import QPlanV2 as plan
 
 #_______________________________________________________________________
 # Tests
@@ -63,10 +64,10 @@ def test_connector_returns_backend():
         else:
             raise e  # re-raise if it's another ValueError
 
-# Test 2: Test if the plan_type function returns a valid string
-def test_plan_type_is_string():
+# Test 2: Test if the plan function returns a valid string
+def test_plan_is_string():
     try:
-        plan = plan_type()
+        plan = plan()
         assert isinstance(plan, str)
         print("🐍 Test2 Completed Successfully")
     except ValueError as e:
