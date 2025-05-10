@@ -46,8 +46,10 @@ jobs:
           python3 - << 'PYCODE'
           # Test if qiskit_connector is installed and importable on the Quantum Algorithm Code.
           try:
-              from qiskit_connector import connector, plan_type
-              print("✅ Successfully imported connector and plan_type")
+              from qiskit_connector import QConnectorV2 as connector
+              from qiskit_connector import QPlanV2 as plan
+
+              print("✅ Successfully imported connector and plan")
               print("✅ Qiskit  Connector is Compatible - Plan is available") 
               print("✅ Qiskit Connector is Compatible with these Quantum Algoritms - Connector is available for Qiskit")
           except ImportError as compatibility_error:
