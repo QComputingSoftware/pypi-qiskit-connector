@@ -10,39 +10,6 @@
 # @Test Execution: pytest test_connector.py
 # @Test Results: All tests passed successfully.
 
-import subprocess
-import sys
-
-def install_package(package):
-    try:
-        __import__(package)
-        print(f"{package} is already installed.")
-        return True
-    except ImportError:
-        print(f"{package} is not installed. Attempting to install...")
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-            print(f"{package} installed successfully.")
-            return True
-        except subprocess.CalledProcessError as e:
-            print(f"Error installing {package}: {e}")
-            return False
-        except FileNotFoundError:
-            print("Error: pip command not found. Ensure pip is installed and in your PATH.")
-            return False
-
-if __name__ == "__main__":
-    package_to_install = "qiskit-connector"
-    if install_package(package_to_install):
-        # Now you can import and use the package
-        try:
-            import qiskit_connector
-            print("qiskit_connector imported successfully.")
-            # Your code that uses qiskit_connector goes here
-        except ImportError:
-            print("Failed to import qiskit_connector after installation.")
-
-
 import pytest
 from qiskit_connector import QConnectorV2 as connector
 from qiskit_connector import QPlanV2 as plan
@@ -65,10 +32,10 @@ def test_connector_returns_backend():
             raise e  # re-raise if it's another ValueError
 
 # Test 2: Test if the plan function returns a valid string
-def test_plan_is_string():
+def test_qplan_is_string():
     try:
-        plan = plan()
-        assert isinstance(plan, str)
+        plan_value = plan()
+        assert isinstance(plan_value, str)
         print("🐍 Test2 Completed Successfully")
     except ValueError as e:
         if "Exactly one of OPEN_PLAN, STANDARD_PLAN, PREMIUM_PLAN or DEDICATED_PLAN" in str(e):
@@ -161,7 +128,7 @@ def test_list_backends(monkeypatch):
 
 # Test 10: Test if the _get_plan function raises ValueError for missing token
 def test_connector_no_backend(monkeypatch):
-    from qiskit_connector import connector
+    from qiskit_connector import QConnectorV2 as connector
 
     class MockService:
         def least_busy(self, **kwargs): return None
@@ -201,7 +168,7 @@ def test_save_account_success(monkeypatch):
 
 # Test 12: Test if the _get_plan function raises ValueError for missing token
 def test_connector_lists_qpus(monkeypatch):
-    from qiskit_connector import connector
+    from qiskit_connector import QConnectorV2 as connector
 
     class MockBackend:
         def __init__(self, name): self.name = name
