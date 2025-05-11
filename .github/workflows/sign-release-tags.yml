@@ -1,0 +1,94 @@
+# @Author: Dr. Jeffrey Chijioke-Uche
+# @Last Modified: 2025-05-10
+# @Purpose: Automatically sign all unsigned GitHub release tags using GPG and secret identity
+
+name: 🔐 Sign & Verify All Release Tags
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 */2 * * *'  # every 2 hours
+
+permissions:
+  contents: write
+  actions: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  issues: write
+  discussions: write
+  pages: write
+  packages: write
+
+jobs:
+  sign-release-tags:
+    runs-on: ubuntu-latest
+
+    env:
+      GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+      GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+      GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔐 Generate GPG Key Pair
+        run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+
+          cat > genkey <<EOF
+          Key-Type: RSA
+          Key-Length: 4096
+          Subkey-Type: RSA
+          Subkey-Length: 4096
+          Name-Real: $GPG_NAME_REAL
+          Name-Email: $GPG_NAME_EMAIL
+          Name-Comment: $GPG_NAME_COMMENT
+          Expire-Date: 0
+          %no-protection
+          %commit
+          EOF
+
+          gpg --batch --generate-key genkey
+
+          echo "🔍 GPG Key generated successfully"
+          gpg --list-secret-keys --keyid-format=long
+
+          GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format=long | grep '^sec' | awk '{print $2}' | cut -d'/' -f2)
+          echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
+
+      - name: ⚙️ Configure Git Identity and Signing
+        run: |
+          git config --global user.name "$GPG_NAME_REAL"
+          git config --global user.email "$GPG_NAME_EMAIL"
+          git config --global user.signingkey $GPG_KEY_ID
+          git config --global commit.gpgsign true
+          git config --global tag.gpgSign true
+
+      - name: 🏷️ Sign All Unsigned Release Tags
+        run: |
+          for tag in $(git tag --sort=creatordate); do
+            echo "🔍 Checking tag: $tag"
+            if ! git tag -v "$tag" 2>&1 | grep -q "Good signature"; then
+              echo "🔄 Re-signing tag: $tag"
+              commit_sha=$(git rev-list -n 1 "$tag")
+              tag_message=$(git for-each-ref --format="%(contents)" refs/tags/$tag)
+
+              git tag -d "$tag"
+              GIT_COMMITTER_DATE="$(git show -s --format=%ci "$commit_sha")" \
+              GIT_AUTHOR_DATE="$(git show -s --format=%ci "$commit_sha")" \
+              # git tag -s "$tag" -m "$tag_message" "$tag" "$commit_sha"
+              git tag -s "$tag" "$commit_sha" -m "$tag_message"
+
+
+              git push --force origin "$tag"
+            else
+              echo "✅ Tag $tag already signed. Skipping."
+            fi
+          done
