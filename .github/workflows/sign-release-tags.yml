@@ -1,6 +1,8 @@
 # @Author: Dr. Jeffrey Chijioke-Uche
 # @Last Modified: 2025-05-10
-# @Purpose: Automatically sign all unsigned GitHub release tags using GPG and secret identity
+# @Purpose: Automatically sign all unsigned GitHub release tags/commits using GPG and verified secret identity.
+# @Signer: Dr. Jeffrey Chijioke-Uche
+#_______________________________________________________________________________________________________________
 
 name: 🔐 Sign & Verify All Release Tags
 
@@ -8,7 +10,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '0 */2 * * *'  # every 2 hours
+    - cron: '0 * * * *' 
 
 permissions:
   contents: write
@@ -36,6 +38,33 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install qiskit-connector from PyPI
+        run: |
+          python -m pip install --upgrade pip
+          # if your connector is published on PyPI:
+          pip install qiskit-connector
+
+      - name: Qiskit Connector sanity check
+        run: |
+          python3 - << 'PYCODE'
+          # Test if qiskit_connector is installed and importable on any Quantum Algorithm Code.
+          try:
+              from qiskit_connector import QConnectorV2 as connector
+              from qiskit_connector import QPlanV2 as plan
+
+              print("✅ Successfully imported connector and plan")
+              print("✅ Qiskit  Connector is Compatible - Plan is available") 
+              print("✅ Qiskit Connector is Compatible with these Quantum Algoritms - Connector is available for Qiskit")
+          except ImportError as compatibility_error:
+              print(f"❌ Qiskit Connection is not compatible: {compatibility_error}")
+              exit(1)
+          PYCODE
 
       - name: 🔐 Generate GPG Key Pair
         run: |
@@ -83,12 +112,27 @@ jobs:
               git tag -d "$tag"
               GIT_COMMITTER_DATE="$(git show -s --format=%ci "$commit_sha")" \
               GIT_AUTHOR_DATE="$(git show -s --format=%ci "$commit_sha")" \
-              # git tag -s "$tag" -m "$tag_message" "$tag" "$commit_sha"
               git tag -s "$tag" "$commit_sha" -m "$tag_message"
-
 
               git push --force origin "$tag"
             else
               echo "✅ Tag $tag already signed. Skipping."
+            fi
+          done
+
+      - name: 🖊️ Sign All Unsigned Commits
+        run: |
+          for commit in $(git rev-list --all); do
+            if ! git verify-commit $commit &>/dev/null; then
+              echo "🔄 Re-signing commit: $commit"
+              GIT_COMMITTER_DATE="$(git show -s --format=%ci $commit)" \
+              GIT_AUTHOR_DATE="$(git show -s --format=%ci $commit)" \
+              GIT_AUTHOR_NAME="$GPG_NAME_REAL" \
+              GIT_AUTHOR_EMAIL="$GPG_NAME_EMAIL" \
+              GIT_COMMITTER_NAME="$GPG_NAME_REAL" \
+              GIT_COMMITTER_EMAIL="$GPG_NAME_EMAIL" \
+              git commit --amend --no-edit --gpg-sign=$GPG_KEY_ID || true
+            else
+              echo "✅ Commit $commit already signed. Skipping."
             fi
           done
