@@ -10,7 +10,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '0 * * * *' 
+    - cron: '0 * * * *'  # Every hour
 
 permissions:
   contents: write
@@ -23,6 +23,8 @@ permissions:
   discussions: write
   pages: write
   packages: write
+  security-events: write
+  repository-projects: write
 
 jobs:
   sign-release-tags:
@@ -32,39 +34,13 @@ jobs:
       GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
       GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
       GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+      GPG_GITHUB_TOKEN: ${{ secrets.GPG_GITHUB_OPERATOR }}
 
     steps:
       - name: 📦 Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install qiskit-connector from PyPI
-        run: |
-          python -m pip install --upgrade pip
-          # if your connector is published on PyPI:
-          pip install qiskit-connector
-
-      - name: Qiskit Connector sanity check
-        run: |
-          python3 - << 'PYCODE'
-          # Test if qiskit_connector is installed and importable on any Quantum Algorithm Code.
-          try:
-              from qiskit_connector import QConnectorV2 as connector
-              from qiskit_connector import QPlanV2 as plan
-
-              print("✅ Successfully imported connector and plan")
-              print("✅ Qiskit  Connector is Compatible - Plan is available") 
-              print("✅ Qiskit Connector is Compatible with these Quantum Algoritms - Connector is available for Qiskit")
-          except ImportError as compatibility_error:
-              print(f"❌ Qiskit Connection is not compatible: {compatibility_error}")
-              exit(1)
-          PYCODE
 
       - name: 🔐 Generate GPG Key Pair
         run: |
@@ -84,13 +60,20 @@ jobs:
           %commit
           EOF
 
-          gpg --batch --generate-key genkey
+          echo "🔐 Generating GPG Key..."
+          gpg --batch --generate-key genkey 2>/dev/null
 
-          echo "🔍 GPG Key generated successfully"
-          gpg --list-secret-keys --keyid-format=long
+          if [ $? -eq 0 ]; then
+            echo "🔐 GPG Key generated successfully ✅"
+          else
+            echo "❌ GPG Key generation failed"
+            exit 1
+          fi
 
-          GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format=long | grep '^sec' | awk '{print $2}' | cut -d'/' -f2)
+          # Extract but do NOT display full key details
+          export GPG_KEY_ID=$(gpg --list-secret-keys --with-colons "$GPG_NAME_EMAIL" | grep '^sec' | cut -d':' -f5)
           echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
+          #==============================================================================
 
       - name: ⚙️ Configure Git Identity and Signing
         run: |
@@ -99,6 +82,29 @@ jobs:
           git config --global user.signingkey $GPG_KEY_ID
           git config --global commit.gpgsign true
           git config --global tag.gpgSign true
+
+      - name: ☁️ Upload GPG Public Key to GitHub (overwrite dynamic)
+        run: |
+          echo "🔐 Exporting GPG public key..."
+          PUB_KEY=$(gpg --armor --export "$GPG_NAME_EMAIL")
+          TITLE="GPG PUBLIC KEY - DYNAMIC"
+          
+          echo "🔐 Uploading GPG public key to GitHub..."
+          PAYLOAD=$(jq -n --arg key "$PUB_KEY" --arg title "$TITLE" '{armored_public_key: $key, name: $title}')
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: token $GPG_GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/user/gpg_keys \
+            -d "$PAYLOAD")
+
+          echo "✅ GPG key uploaded. ID: $(echo "$RESPONSE" | jq -r .id)"
+
+          echo "🧹 Sanitizing GPG key content..."
+          unset PUB_KEY
+          echo "PUB_KEY=***REDACTED***"
+
+          echo "🔒 GPG key export wiped from memory."
+
 
       - name: 🏷️ Sign All Unsigned Release Tags
         run: |
@@ -131,7 +137,7 @@ jobs:
               GIT_AUTHOR_EMAIL="$GPG_NAME_EMAIL" \
               GIT_COMMITTER_NAME="$GPG_NAME_REAL" \
               GIT_COMMITTER_EMAIL="$GPG_NAME_EMAIL" \
-              git commit --amend --no-edit --gpg-sign=$GPG_KEY_ID || true
+              git commit --amend -S --no-edit || true
             else
               echo "✅ Commit $commit already signed. Skipping."
             fi

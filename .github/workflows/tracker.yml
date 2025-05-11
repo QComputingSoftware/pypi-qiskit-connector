@@ -23,11 +23,27 @@ on:
 permissions:
   contents: write
   actions: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  issues: write
+  discussions: write
+  pages: write
+  packages: write
+  security-events: write
+  repository-projects: write
 
 jobs:
   build-monthly-downloads-badge:
     name: 📊 Monthly Downloads from Pepy
     runs-on: ubuntu-latest
+    
+    env:
+      GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+      GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+      GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+      GPG_GITHUB_TOKEN: ${{ secrets.GPG_GITHUB_OPERATOR }}
 
     steps:
       - name: 📿 Checkout
@@ -66,12 +82,53 @@ jobs:
           style: "flat"
           path: "docs/badges/monthly-downloads.svg"
 
+      - name: 🔐 Generate GPG Key Pair
+        run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+
+          cat > genkey <<EOF
+          Key-Type: RSA
+          Key-Length: 4096
+          Subkey-Type: RSA
+          Subkey-Length: 4096
+          Name-Real: $GPG_NAME_REAL
+          Name-Email: $GPG_NAME_EMAIL
+          Name-Comment: $GPG_NAME_COMMENT
+          Expire-Date: 0
+          %no-protection
+          %commit
+          EOF
+
+          echo "🔐 Generating GPG Key..."
+          gpg --batch --generate-key genkey 2>/dev/null
+
+          if [ $? -eq 0 ]; then
+            echo "🔐 GPG Key generated successfully ✅"
+          else
+            echo "❌ GPG Key generation failed"
+            exit 1
+          fi
+
+          # Extract but do NOT display full key details
+          export GPG_KEY_ID=$(gpg --list-secret-keys --with-colons "$GPG_NAME_EMAIL" | grep '^sec' | cut -d':' -f5)
+          echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
+          #==============================================================================
+
+      - name: ⚙️ Configure Git Identity and Signing
+        run: |
+          git config --global user.name "$GPG_NAME_REAL"
+          git config --global user.email "$GPG_NAME_EMAIL"
+          git config --global user.signingkey $GPG_KEY_ID
+          git config --global commit.gpgsign true
+          git config --global tag.gpgSign true
+
       - name: 🚀 Commit and Push Badge
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add docs/badges/monthly-downloads.svg
-          git commit -m "📈 Qiskit Code Update - Inteli Check" || echo "No changes to commit"
+          git commit -S -m "📈 Qiskit Code Update - Inteli Check" || echo "No changes to commit"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
