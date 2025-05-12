@@ -117,18 +117,22 @@ jobs:
 
       - name: ⚙️ Configure Git Identity and Signing
         run: |
+          git pull
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
           git config --global user.signingkey $GPG_KEY_ID
           git config --global commit.gpgsign true
           git config --global tag.gpgSign true
+          git pull
 
       - name: 🚀 Commit and Push Badge
         run: |
+          git pull
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add docs/badges/monthly-downloads.svg
           git commit -S -m "📈 Qiskit Code Update - Inteli Check" || echo "No changes to commit"
           git push
+          git pull
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

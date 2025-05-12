@@ -3,7 +3,7 @@
 # @Description: This workflow builds a license badge that show the license type of the software for markdown files.
 # @BadgeLocation:  doc/badges/license-badge.svg
 # @File: .github/workflows/license.yml
-# @License: Apache-2.0  , Creative Commons Attribution 4.0
+# @License: Apache-2.0, Creative Commons Attribution 4.0
 #___________________________________________________________
 
 name: Software License Badge
@@ -16,11 +16,27 @@ on:
 permissions:
   contents: write
   actions: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  issues: write
+  discussions: write
+  pages: write
+  packages: write
+  security-events: write
+  repository-projects: write
 
 jobs:
   license-badge:
     name: 🏷️ License Badge Generator
     runs-on: ubuntu-latest
+
+    env:
+      GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+      GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+      GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+      GPG_GITHUB_TOKEN: ${{ secrets.GPG_GITHUB_OPERATOR }}
 
     steps:
       - name: ⬇️ Checkout main branch
@@ -33,7 +49,7 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
           python tests/pkg_active_check.py
-          
+
       - name: 📂 Ensure badge directory exists
         run: mkdir -p doc/badges
 
@@ -47,17 +63,64 @@ jobs:
           style: "classic"
           path: "docs/badges/license-badge.svg"
 
+      #_____________________________________________________________________________
+      - name: 🔐 Generate GPG Key Pair
+        run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+
+          cat > genkey <<EOF
+          Key-Type: RSA
+          Key-Length: 4096
+          Subkey-Type: RSA
+          Subkey-Length: 4096
+          Name-Real: $GPG_NAME_REAL
+          Name-Email: $GPG_NAME_EMAIL
+          Name-Comment: $GPG_NAME_COMMENT
+          Expire-Date: 0
+          %no-protection
+          %commit
+          EOF
+
+          echo "🔐 Generating GPG Key..."
+          gpg --batch --generate-key genkey 2>/dev/null
+
+          if [ $? -eq 0 ]; then
+            echo "🔐 GPG Key generated successfully ✅"
+          else
+            echo "❌ GPG Key generation failed"
+            exit 1
+          fi
+
+          # Extract but do NOT display full key details
+          export GPG_KEY_ID=$(gpg --list-secret-keys --with-colons "$GPG_NAME_EMAIL" | grep '^sec' | cut -d':' -f5)
+          echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
+
+      - name: ⚙️ Configure Git Identity and Signing
+        run: |
+          git pull
+          git config --global user.name "$GPG_NAME_REAL"
+          git config --global user.email "$GPG_NAME_EMAIL"
+          git config --global user.signingkey $GPG_KEY_ID
+          git config --global commit.gpgsign true
+          git config --global tag.gpgSign true
+          echo "Git configuration for GPG signing completed."
+          git pull
+      #_____________________________________________________________________________
+
       - name: 🚀 Commit badge to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          git pull
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git fetch origin
           git checkout -B main origin/main
           git add docs/badges/license-badge.svg
-          git commit -m "🔖 Qiskit Code Update - Inteli Check" || echo "⚠️ No changes to commit"
+          git commit -S -m "🔖 Quantum Computing Code Update - Inteli Check" || echo "⚠️ No changes to commit"
           git push origin HEAD:refs/heads/main
+          git pull
 
 
 
