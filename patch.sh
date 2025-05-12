@@ -125,7 +125,7 @@ commit() {
   #_______________________________________________________________________________________________
   banner "${MAGENTA}" "🔄 Merging main into stable branch..."
   git merge main --no-edit
-  # Check if there are any merge conflicts
+  # Check if there are any merge conflicts....................................................
 
   if [ $? -ne 0 ]; then
     echo -e "${RED}⛔ Merge conflicts detected. Please resolve them and try again.${RESET}"
