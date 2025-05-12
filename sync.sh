@@ -198,7 +198,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   git pull
   banner "${BLUE}" "💾 Committing & pushing version bump..."
   git add -A
-  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $(grep -m1 -E 'version\s*=\s*\"' pyproject.toml |
+  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $(grep -m1 -E 'version\s*=\s*\"' CITATION.bib |
                       sed -E 's/.*\"([0-9]+\.[0-9]+\.[0-9]+)\".*/\1/')"
   git push
 
