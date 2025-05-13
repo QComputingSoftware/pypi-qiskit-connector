@@ -84,14 +84,12 @@ IQP_RUNTIME_API_URL=<PROVIDE_YOUR_RUNTIME_API_URL>
 
 
 # Quantum Url:                                                (Optional)
-# The API URL. Defaults to https://cloud.ibm.com (when channel=ibm_cloud) 
-# The API URL:Default to:  https://auth.quantum.ibm.com/api (when channel=ibm_quantum)"
 #---------------------------------------------------------------------------------------
 CLOUD_API_URL="<PROVIDE_YOUR_CLOUD_API_URL>" 
 QUANTUM_API_URL="<PROVIDE_YOUR_QUANTUM_API_URL>"  
 
 
-# Instance:                                                  (Required)
+# Instance:                                                   (Required)
 #---------------------------------------------------------------------------------------
 OPEN_PLAN_INSTANCE="<PROVIDE_YOUR_OPEN_PLAN_INSTANCE>"  
 PAID_PLAN_INSTANCE="<PROVIDE_YOUR_PAID_PLAN_INSTANCE>"  
