@@ -102,9 +102,14 @@ PAID_PLAN_INSTANCE="<PROVIDE_YOUR_PAID_PLAN_INSTANCE>"
 OPEN_PLAN_NAME="open"
 
 
-# Optional (Upgrade) - Standard                               
+# Optional (Upgrade) - Pay as you go                             
 #----------------------------------------------------------------------------------------
-STANDARD_PLAN_NAME="standard"
+PAYGO_PLAN_NAME="pay-as-you-go"
+
+
+# Optional (Upgrade) - Flex                              
+#----------------------------------------------------------------------------------------
+FLEX_PLAN_NAME="flex"
 
 
 # Optional (Upgrade) - Premium                                
@@ -117,20 +122,21 @@ PREMIUM_PLAN_NAME="premium"
 DEDICATED_PLAN_NAME="dedicated"
 
 
-# Switch "on" only one plan:                                       (Required)
+# Switch "on" plan:                                       (Required)
 #----------------------------------------------------------------------------------------
-OPEN_PLAN="on"        # [Default & switched on]  
-STANDARD_PLAN="off"     
+OPEN_PLAN="on"        # [Default & switched on] [Free] 
+PAYGO_PLAN="off"
+FLEX_PLAN="off"      
 PREMIUM_PLAN="off"      
 DEDICATED_PLAN="off"    
 ```
-> **⚠️ Only one** of `OPEN_PLAN`, `STANDARD_PLAN`, `PREMIUM_PLAN`, or `DEDICATED_PLAN` may be set to **"on"** at a time.
+> **⚠️ Only one** of the plans can be set to **"on"** at a time.
 
 ---
 
-#### 📖 Usage
+#### 👤 Usage
 
-##### With Open or Paid Plans
+###### 📦 With Open or Paid Plans
 
 ```python
 
@@ -184,6 +190,7 @@ else:
 🖥️Qubit Version:   2
 🖥️Qubits Count:   133
 🖥️Backend [ibm_torino] ready for use: Yes
+🖥️Operational: Open Plan
 ================================================================================
 
 Your Plan:       Open Plan
@@ -191,7 +198,7 @@ Least Busy QPU:  ibm_torino
 This is a real & live QPU device
 
 
-#-------- remaining code below ------
+#-------- remaining output below ------
 
 ```
 
