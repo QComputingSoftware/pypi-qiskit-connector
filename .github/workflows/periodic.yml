@@ -19,23 +19,23 @@ on:
 
  # Trigger on schedule:
   schedule:
-    - cron: '0 3 * * *'     # 11 PM EST.
-    - cron: '0 10 * * *'    # 6 AM EST.
-    - cron: '0 15 * * *'    # 3 PM EST.  
-    - cron: '0 20 * * *'    # 8 PM EST.
-    - cron: '0 23 * * *'    # 11 PM EST.
-    - cron: '0 17 * * *'    # 1 AM EST.
-    - cron: '0 20 * * *'    # 4 AM EST.
-    - cron: '0 23 * * *'    # 7 AM EST.
-    - cron: '0 2 * * *'     # 10 AM EST.
-    - cron: '0 5 * * *'     # 1 PM EST.
-    - cron: '0 8 * * *'     # 4 PM EST.
-    - cron: '0 11 * * *'    # 7 PM EST.
-    - cron: '0 14 * * *'    # 10 PM EST.
-    - cron: '0 17 * * *'    # 1 AM EST.
-    - cron: '0 20 * * *'    # 4 AM EST.
-    - cron: '0 23 * * *'    # 7 AM EST.
-    - cron: '0 2 * * *'     # 10 AM EST.
+    - cron: '0 3 * * *'      
+    - cron: '0 10 * * *'     
+    - cron: '0 15 * * *'      
+    - cron: '0 20 * * *'    
+    - cron: '0 23 * * *'     
+    - cron: '0 17 * * *'     
+    - cron: '0 20 * * *'     
+    - cron: '0 23 * * *'     
+    - cron: '0 2 * * *'      
+    - cron: '0 5 * * *'      
+    - cron: '0 8 * * *'      
+    - cron: '0 11 * * *'     
+    - cron: '0 14 * * *'     
+    - cron: '0 17 * * *'     
+    - cron: '0 20 * * *'     
+    - cron: '0 23 * * *'     
+    - cron: '0 2 * * *'      
 
   workflow_run:
     workflows:
@@ -44,7 +44,6 @@ on:
       - Python Compatibility
     types:
       - completed
-
 
 permissions:
   actions: write
@@ -57,6 +56,17 @@ permissions:
   discussions: write
   pages: write
   packages: write
+
+env:
+  GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+  GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+  GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+  GPG_GITHUB_OPERATOR: ${{ secrets.GPG_GITHUB_OPERATOR }}
+  EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
+  UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
+  UNAME_CONTRIBUTOR_03: ${{ secrets.UNAME_CONTRIBUTOR_03 }}
+  EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
+  EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
 
 jobs:
   wait-and-dispatch:

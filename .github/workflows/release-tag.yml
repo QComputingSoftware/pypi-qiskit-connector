@@ -7,8 +7,9 @@ on:
   push:
     tags:
       - '[v]?[0-9]+.[0-9]+.[0-9]+*'
-
-  workflow_dispatch: # Required for external workflows to trigger this via API
+    branches:
+      - main
+  workflow_dispatch: 
 
 permissions:
   contents: write
@@ -17,6 +18,17 @@ permissions:
   pull-requests: write
   checks: write
   statuses: write
+
+env:
+  GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+  GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+  GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+  GPG_GITHUB_OPERATOR: ${{ secrets.GPG_GITHUB_OPERATOR }}
+  EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
+  UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
+  UNAME_CONTRIBUTOR_03: ${{ secrets.UNAME_CONTRIBUTOR_03 }}
+  EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
+  EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
   
 jobs:
   create_release:

@@ -27,16 +27,21 @@ permissions:
   security-events: write
   repository-projects: write
 
+env:
+  GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+  GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+  GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+  GPG_GITHUB_OPERATOR: ${{ secrets.GPG_GITHUB_OPERATOR }}
+  EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
+  UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
+  UNAME_CONTRIBUTOR_03: ${{ secrets.UNAME_CONTRIBUTOR_03 }}
+  EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
+  EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
+
 jobs:
   license-badge:
     name: 🏷️ License Badge Generator
     runs-on: ubuntu-latest
-
-    env:
-      GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
-      GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
-      GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
-      GPG_GITHUB_TOKEN: ${{ secrets.GPG_GITHUB_OPERATOR }}
 
     steps:
       - name: ⬇️ Checkout main branch
@@ -63,49 +68,126 @@ jobs:
           style: "classic"
           path: "docs/badges/license-badge.svg"
 
-      #_____________________________________________________________________________
-      - name: 🔐 Generate GPG Key Pair
+     #_____________________________________________________
+      - name: Install jq (JSON processor)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Fetch GitHub GPG Keys and Find Matching Key ID
+        id: find_key
         run: |
-          mkdir -p ~/.gnupg
-          chmod 700 ~/.gnupg
+          # EXPECTED_GPG_KEY_ID from secrets should be the 16-character GPG Key ID.
+          echo "Searching for GPG key on GitHub with Key ID: $EXPECTED_GPG_KEY_ID"
+          
+          GPG_KEY_ID_MATCHED="" # Variable to store the matched API key_id
+          key_found=false
 
-          cat > genkey <<EOF
-          Key-Type: RSA
-          Key-Length: 4096
-          Subkey-Type: RSA
-          Subkey-Length: 4096
-          Name-Real: $GPG_NAME_REAL
-          Name-Email: $GPG_NAME_EMAIL
-          Name-Comment: $GPG_NAME_COMMENT
-          Expire-Date: 0
-          %no-protection
-          %commit
-          EOF
+          next_page_url="https://api.github.com/user/gpg_keys?per_page=100"
 
-          echo "🔐 Generating GPG Key..."
-          gpg --batch --generate-key genkey 2>/dev/null
+          while [[ -n "$next_page_url" ]]; do
+              echo "Fetching GPG keys from: $next_page_url"
+              header_file=$(mktemp)
 
-          if [ $? -eq 0 ]; then
-            echo "🔐 GPG Key generated successfully ✅"
+              response_body=$(curl -s -L \
+                                   -H "Authorization: token $GPG_GITHUB_OPERATOR" \
+                                   -H "Accept: application/vnd.github+json" \
+                                   -H "X-GitHub-Api-Version: 2022-11-28" \
+                                   -D "$header_file" \
+                                   "$next_page_url")
+              curl_exit_status=$?
+
+              if [ $curl_exit_status -ne 0 ]; then
+                  echo "::error::Curl command failed with exit status $curl_exit_status for URL: $next_page_url"
+                  rm -f "$header_file"
+                  break
+              fi
+
+              if ! echo "$response_body" | jq -e '. | type == "array"' > /dev/null; then
+                  echo "::warning::Response from $next_page_url was not a JSON array or was empty. Body: $response_body"
+              fi
+
+              # The API's 'key_id' field provides a 16-character ID.
+              api_provided_key_ids=$(echo "$response_body" | jq -r '.[]? | .key_id // empty')
+
+              if [[ -n "$api_provided_key_ids" ]]; then
+                while IFS= read -r current_api_key_id; do # This is the 16-character ID from API
+                    if [[ -z "$current_api_key_id" ]]; then
+                        continue
+                    fi
+                    echo "Checking API provided key_id: $current_api_key_id"
+                    
+                    # Direct comparison: Does the API's 16-char key_id exactly match the 16-char EXPECTED_GPG_KEY_ID from secrets?
+                    if [[ "$current_api_key_id" == "$EXPECTED_GPG_KEY_ID" ]]; then
+                        echo "::notice::Match found! API Key ID '$current_api_key_id' matches Expected Key ID '$EXPECTED_GPG_KEY_ID'."
+                        GPG_KEY_ID_MATCHED="$current_api_key_id"
+                        key_found=true
+                        break 2 # Exit both loops
+                    fi
+                done <<< "$api_provided_key_ids"
+              fi
+
+              link_header=$(grep -i '^Link:' "$header_file")
+              if echo "$link_header" | grep -q 'rel="next"'; then
+                  next_page_url=$(echo "$link_header" | sed -n 's/.*<\([^>]*\)>; rel="next".*/\1/p')
+                  if [[ -z "$next_page_url" ]]; then
+                      echo "::debug::'rel=\"next\"' found, but sed failed to extract URL. Link: $link_header"
+                      next_page_url=""
+                  fi
+              else
+                  next_page_url=""
+              fi
+              rm -f "$header_file"
+          done
+
+          if [[ "$key_found" == "true" ]]; then
+            echo "Successfully matched API Key ID: $GPG_KEY_ID_MATCHED"
+            echo "GPG_KEY_ID=$GPG_KEY_ID_MATCHED" >> $GITHUB_ENV
           else
-            echo "❌ GPG Key generation failed"
+            # This error message now clearly states what was being looked for.
+            echo "::error::Expected GPG Key ID '$EXPECTED_GPG_KEY_ID' (from secrets) not found directly in any of the 'key_id' fields returned by the GitHub API after checking all pages."
             exit 1
           fi
 
-          # Extract but do NOT display full key details
-          export GPG_KEY_ID=$(gpg --list-secret-keys --with-colons "$GPG_NAME_EMAIL" | grep '^sec' | cut -d':' -f5)
-          echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
-
-      - name: ⚙️ Configure Git Identity and Signing
+      - name: Verify Found Key ID in Environment
         run: |
-          git pull
+          if [[ -z "$GPG_KEY_ID" ]]; then
+            echo "::error::GPG_KEY_ID environment variable was not set."
+            exit 1
+          else
+            echo "Verified: GPG Key ID '$GPG_KEY_ID'."
+            echo "GPG_KEY_ID is ready for use in subsequent GPG operations."
+          fi
+
+      - name: Import GPG Key, Configure Git, and Prepare for Signing
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "Setting GPG_TTY..."
+          export GPG_TTY=$(tty)
+
+          echo "Importing GPG key..."
+          echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import <(echo "${GPG_PRIVATE_KEY}")
+          if [ $? -ne 0 ]; then
+              echo "::error::GPG key import failed."
+              exit 1
+          fi
+          echo "✅ GPG key imported."
+
+          echo "Testing GPG key with a simple sign operation using GPG_KEY_ID: ${GPG_KEY_ID}"
+          echo "test data" | echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --clearsign --default-key "${GPG_KEY_ID}" > /dev/null
+          if [ $? -ne 0 ]; then
+              echo "::error::GPG sign test failed. Passphrase might not be available or key ID ('${GPG_KEY_ID}') is incorrect/ambiguous for GPG."
+              exit 1
+          fi
+          echo "✅ GPG key test successful."
+
+          echo "🚀 Configuring git with GPG key details..."
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
-          git config --global user.signingkey $GPG_KEY_ID
+          git config --global user.signingkey "$GPG_KEY_ID" 
           git config --global commit.gpgsign true
-          git config --global tag.gpgSign true
-          echo "Git configuration for GPG signing completed."
-          git pull
+
+          echo "✅ Git and GPG configured. Commits and tags will be signed using key."
       #_____________________________________________________________________________
 
       - name: 🚀 Commit badge to main
@@ -113,12 +195,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git pull
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
           git fetch origin
           git checkout -B main origin/main
           git add docs/badges/license-badge.svg
-          git commit -S -m "🔖 Quantum Computing Code Update - Inteli Check" || echo "⚠️ No changes to commit"
+          git commit --gpg-sign="$GPG_KEY_ID" -m "🔖 Quantum Computing Code Update - Inteli Check" || echo "⚠️ No changes to commit"
           git push origin HEAD:refs/heads/main
           git pull
 

@@ -7,19 +7,37 @@ on:
   push:
     branches: [ "main" ]
 
-  workflow_dispatch:  # Required for external workflows to trigger this via API  workflow_dispatch:
+  workflow_dispatch:  
 
 permissions:
-  contents: write # <-- All Steps
+  contents: write
+  actions: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  issues: write
+  discussions: write
+  pages: write
+  packages: write
+  security-events: write
+  repository-projects: write
+
+env:
+  GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+  GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+  GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+  GPG_GITHUB_OPERATOR: ${{ secrets.GPG_GITHUB_OPERATOR }}
+  EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
+  UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
+  UNAME_CONTRIBUTOR_03: ${{ secrets.UNAME_CONTRIBUTOR_03 }}
+  EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
+  EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
 
 jobs:
   update-badge:
 
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write # <-- Permissions to write to the repository
-      actions: write # <-- Permissions to use actions
 
     steps:
       - name: ⬇️ Checkout repository
@@ -56,16 +74,141 @@ jobs:
           style: classic
           path: docs/badges/release.svg
 
+     #_____________________________________________________
+      - name: Install jq (JSON processor)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Fetch GitHub GPG Keys and Find Matching Key ID
+        id: find_key
+        run: |
+          # EXPECTED_GPG_KEY_ID from secrets should be the 16-character GPG Key ID.
+          echo "Searching for GPG key on GitHub with Key ID: $EXPECTED_GPG_KEY_ID"
+          
+          GPG_KEY_ID_MATCHED="" # Variable to store the matched API key_id
+          key_found=false
+
+          next_page_url="https://api.github.com/user/gpg_keys?per_page=100"
+
+          while [[ -n "$next_page_url" ]]; do
+              echo "Fetching GPG keys from: $next_page_url"
+              header_file=$(mktemp)
+
+              response_body=$(curl -s -L \
+                                   -H "Authorization: token $GPG_GITHUB_OPERATOR" \
+                                   -H "Accept: application/vnd.github+json" \
+                                   -H "X-GitHub-Api-Version: 2022-11-28" \
+                                   -D "$header_file" \
+                                   "$next_page_url")
+              curl_exit_status=$?
+
+              if [ $curl_exit_status -ne 0 ]; then
+                  echo "::error::Curl command failed with exit status $curl_exit_status for URL: $next_page_url"
+                  rm -f "$header_file"
+                  break
+              fi
+
+              if ! echo "$response_body" | jq -e '. | type == "array"' > /dev/null; then
+                  echo "::warning::Response from $next_page_url was not a JSON array or was empty. Body: $response_body"
+              fi
+
+              # The API's 'key_id' field provides a 16-character ID.
+              api_provided_key_ids=$(echo "$response_body" | jq -r '.[]? | .key_id // empty')
+
+              if [[ -n "$api_provided_key_ids" ]]; then
+                while IFS= read -r current_api_key_id; do # This is the 16-character ID from API
+                    if [[ -z "$current_api_key_id" ]]; then
+                        continue
+                    fi
+                    echo "Checking API provided key_id: $current_api_key_id"
+                    
+                    # Direct comparison: Does the API's 16-char key_id exactly match the 16-char EXPECTED_GPG_KEY_ID from secrets?
+                    if [[ "$current_api_key_id" == "$EXPECTED_GPG_KEY_ID" ]]; then
+                        echo "::notice::Match found! API Key ID '$current_api_key_id' matches Expected Key ID '$EXPECTED_GPG_KEY_ID'."
+                        GPG_KEY_ID_MATCHED="$current_api_key_id"
+                        key_found=true
+                        break 2 # Exit both loops
+                    fi
+                done <<< "$api_provided_key_ids"
+              fi
+
+              link_header=$(grep -i '^Link:' "$header_file")
+              if echo "$link_header" | grep -q 'rel="next"'; then
+                  next_page_url=$(echo "$link_header" | sed -n 's/.*<\([^>]*\)>; rel="next".*/\1/p')
+                  if [[ -z "$next_page_url" ]]; then
+                      echo "::debug::'rel=\"next\"' found, but sed failed to extract URL. Link: $link_header"
+                      next_page_url=""
+                  fi
+              else
+                  next_page_url=""
+              fi
+              rm -f "$header_file"
+          done
+
+          if [[ "$key_found" == "true" ]]; then
+            echo "Successfully matched API Key ID: $GPG_KEY_ID_MATCHED"
+            echo "GPG_KEY_ID=$GPG_KEY_ID_MATCHED" >> $GITHUB_ENV
+          else
+            # This error message now clearly states what was being looked for.
+            echo "::error::Expected GPG Key ID '$EXPECTED_GPG_KEY_ID' (from secrets) not found directly in any of the 'key_id' fields returned by the GitHub API after checking all pages."
+            exit 1
+          fi
+
+      - name: Verify Found Key ID in Environment
+        run: |
+          if [[ -z "$GPG_KEY_ID" ]]; then
+            echo "::error::GPG_KEY_ID environment variable was not set."
+            exit 1
+          else
+            echo "Verified: GPG Key ID '$GPG_KEY_ID'."
+            echo "GPG_KEY_ID is ready for use in subsequent GPG operations."
+          fi
+
+      - name: Import GPG Key, Configure Git, and Prepare for Signing
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "Setting GPG_TTY..."
+          export GPG_TTY=$(tty)
+
+          echo "Importing GPG key..."
+          echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import <(echo "${GPG_PRIVATE_KEY}")
+          if [ $? -ne 0 ]; then
+              echo "::error::GPG key import failed."
+              exit 1
+          fi
+          echo "✅ GPG key imported."
+
+          echo "Testing GPG key with a simple sign operation using GPG_KEY_ID: ${GPG_KEY_ID}"
+          echo "test data" | echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --clearsign --default-key "${GPG_KEY_ID}" > /dev/null
+          if [ $? -ne 0 ]; then
+              echo "::error::GPG sign test failed. Passphrase might not be available or key ID ('${GPG_KEY_ID}') is incorrect/ambiguous for GPG."
+              exit 1
+          fi
+          echo "✅ GPG key test successful."
+
+          echo "Configuring git with GPG key details..."
+          git config --global user.name "$GPG_NAME_REAL"
+          git config --global user.email "$GPG_NAME_EMAIL"
+          git config --global user.signingkey "$GPG_KEY_ID" 
+          git config --global commit.gpgsign true
+
+          echo "✅ Git and GPG configured. Commits and tags will be signed using key."
+      #_____________________________________________________________________________
+
+
       - name: 🚀 Push badge to repo using  GITHUB_TOKEN - (Recommended)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name "github-actions" && echo "GitHub Actions user set"
-          git config --global user.email "actions@github.com" && echo "GitHub Actions email set"
+          git config --global user.name "$GPG_NAME_REAL"
+          git config --global user.email "$GPG_NAME_EMAIL"
+          git config --global user.signingkey "$GPG_KEY_ID"
+          git config --global commit.gpgsign true
           git remote set-url origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" && echo "Origin URL set to use the Default Token!"
           git pull origin ${{ github.ref_name }} && echo "Pulled latest changes"
           git add docs/badges/release.svg && echo "Badge added to commit"
-          git commit -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
+          git commit --gpg-sign="$GPG_KEY_ID" -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
           git push origin HEAD:${{ github.ref_name }} && echo "Push successful" || echo "No changes to push"
       
       - name: 🚀 Push badge to repo using  PAT_GITHUB - (Optional)
@@ -74,7 +217,7 @@ jobs:
         run: |
           # git pull origin ${{ github.ref_name }} && echo "Pulled latest changes"
           # git add docs/badges/release.svg && echo "Badge added to commit"
-          # git commit -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
+          # git commit --gpg-sign="$GPG_KEY_ID" -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
           # git remote set-url origin https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}
           # git push origin HEAD:${{ github.ref_name }} && echo "Push successful" || echo "No changes to push"
 

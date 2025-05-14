@@ -25,11 +25,12 @@ def test_connector_returns_backend():
         assert backend is not None
         print("🐍 Test1 Completed Successfully")
     except ValueError as e:
-        if "Exactly one of OPEN_PLAN, STANDARD_PLAN, PREMIUM_PLAN or DEDICATED_PLAN" in str(e):
+        if "Exactly one of plan must be set to on - Check your variable setup file." in str(e):
             print("✅ Test1 Passed: PLAN environment variable not set — expected during CI/CD test.")
             pass  # treat as success
         else:
             raise e  # re-raise if it's another ValueError
+
 
 # Test 2: Test if the plan function returns a valid string
 def test_qplan_is_string():
@@ -38,11 +39,13 @@ def test_qplan_is_string():
         assert isinstance(plan_value, str)
         print("🐍 Test2 Completed Successfully")
     except ValueError as e:
-        if "Exactly one of OPEN_PLAN, STANDARD_PLAN, PREMIUM_PLAN or DEDICATED_PLAN" in str(e):
+        if "Exactly one of plan must be set to on - Check your variable setup file." in str(e):
             print("✅ Test2 Passed: PLAN environment variable not set — expected during CI/CD test.")
             pass  # treat as success
         else:
             raise e  # re-raise if it's another ValueError
+
+
 
 # Test 3: Test if the _load_environment function loads the environment correctly
 def test_load_environment():
@@ -57,7 +60,7 @@ def test_load_environment():
 def test_get_credentials():
     try:
         from qiskit_connector import _get_credentials
-        creds = _get_credentials('open')  # even if dummy
+        creds = _get_credentials('open')  # even if is_secure_aes
         assert isinstance(creds, dict)
         required_keys = {'name', 'channel', 'instance', 'token'}
         assert required_keys.issubset(creds.keys())
@@ -78,7 +81,8 @@ def test_footer():
 def test_get_plan_value_error_no_plan(monkeypatch):
     from qiskit_connector import _get_plan
     monkeypatch.delenv('OPEN_PLAN', raising=False)
-    monkeypatch.delenv('STANDARD_PLAN', raising=False)
+    monkeypatch.delenv('PAYGO_PLAN', raising=False)
+    monkeypatch.delenv('FLEX_PLAN', raising=False)
     monkeypatch.delenv('PREMIUM_PLAN', raising=False)
     monkeypatch.delenv('DEDICATED_PLAN', raising=False)
     try:
@@ -120,7 +124,7 @@ def test_list_backends(monkeypatch):
     monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
     monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
     monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
+    monkeypatch.setenv("IQP_API_TOKEN", "is_secure_aes")
     
     monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", MockService)
     list_backends()  # Should run and print
@@ -138,7 +142,7 @@ def test_connector_no_backend(monkeypatch):
     monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
     monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
     monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
+    monkeypatch.setenv("IQP_API_TOKEN", "is_secure_aes")
 
     monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", lambda: MockService())
     
@@ -161,7 +165,7 @@ def test_save_account_success(monkeypatch):
     monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
     monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
     monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
+    monkeypatch.setenv("IQP_API_TOKEN", "is_secure_aes")
 
     monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", MockQiskitService)
     save_account()  # Should print success
@@ -183,7 +187,7 @@ def test_connector_lists_qpus(monkeypatch):
     monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
     monkeypatch.setenv("OPEN_PLAN_CHANNEL", "ibm_cloud")
     monkeypatch.setenv("OPEN_PLAN_INSTANCE", "ibm-q/open/main")
-    monkeypatch.setenv("IQP_API_TOKEN", "dummy")
+    monkeypatch.setenv("IQP_API_TOKEN", "is_secure_aes")
 
     monkeypatch.setattr("qiskit_connector.QiskitRuntimeService", lambda: MockService())
     backend = connector()
