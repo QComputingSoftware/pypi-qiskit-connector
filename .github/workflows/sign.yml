@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
   actions: write
   deployments: write
   pull-requests: write
@@ -176,7 +177,7 @@ jobs:
               echo "🔄 Re-signing tag: $tag"
               commit_sha=$(git rev-list -n 1 "$tag")
               tag_message=$(git for-each-ref --format="%(contents)" refs/tags/$tag)
-
+              git tag -d main || echo "Tag 'main' not found. Skipping deletion."
               git tag -d "$tag"
               GIT_COMMITTER_DATE="$(git show -s --format=%ci "$commit_sha")" \
               GIT_AUTHOR_DATE="$(git show -s --format=%ci "$commit_sha")" \
