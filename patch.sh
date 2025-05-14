@@ -8,7 +8,12 @@
 #   Commit Code Update to Github
 # -----------------------------------------------------------------------------
 set -euo pipefail
-git pull
+
+
+git fetch origin
+git pull origin main --no-edit
+git pull origin stable --no-edit
+
 source ./pvars.sh
 
 
