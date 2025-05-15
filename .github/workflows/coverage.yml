@@ -57,6 +57,28 @@ jobs:
       - name: 🧪 Run tests with coverage
         run: coverage run --source=qiskit_connector -m pytest
 
+     ################################################################################
+      # 🛡️ Generate coverage badge
+     ################################################################################
+      - name: 📊 Extract coverage percentage
+        id: coverage
+        run: |
+          COVERAGE=$(coverage report | grep "TOTAL" | awk '{print $4}' | sed 's/%//')
+          echo "Coverage: $COVERAGE%"
+          echo "coverage=$COVERAGE%" >> "$GITHUB_OUTPUT"
+
+      - name: 📂 Ensure badge directory exists
+        run: mkdir -p docs/badges
+
+      - name: 🛠️ Generate coverage badge
+        uses: emibcn/badge-action@v2
+        with:
+          label: "Qiskit Connector Code Coverage Analysis"
+          label-color: "555"
+          status: "${{ steps.coverage.outputs.coverage }}"
+          color: "green"
+          style: "classic"
+          path: "docs/badges/coverage.svg"
 
      #_____________________________________________________
       - name: Install jq (JSON processor)
@@ -181,57 +203,30 @@ jobs:
       #_____________________________________________________________________________
 
 
-
-
-
-      - name: 📊 Extract coverage percentage
-        id: coverage
+      ##############################################################################
+      # 🛡️ This is the badge that will be committed to the repo
+      ###############################################################################
+      - name: 🌍 Fetch origin and rebase if needed
         run: |
-          COVERAGE=$(coverage report | grep "TOTAL" | awk '{print $4}' | sed 's/%//')
-          echo "Coverage: $COVERAGE%"
-          echo "coverage=$COVERAGE%" >> "$GITHUB_OUTPUT"
+          git fetch origin main
+          git checkout main
+          git rebase origin/main || git merge origin/main --no-edit
 
-      - name: 📂 Ensure badge directory exists
-        run: mkdir -p docs/badges
-
-      - name: 🛠️ Generate coverage badge
-        uses: emibcn/badge-action@v2
-        with:
-          label: "Qiskit Connector Code Coverage Analysis"
-          label-color: "555"
-          status: "${{ steps.coverage.outputs.coverage }}"
-          color: "green"
-          style: "classic"
-          path: "docs/badges/coverage.svg"
-
-      - name: 🚀 Commit badge to main and sync to stable
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 🖊️ Commit coverage badge update if changed
         run: |
-          set -e
-
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-
-          # 🧼 Clean workspace
-          git reset --hard
-          git clean -fd
-
-          # ✅ Ensure we’re truly on main
-          git fetch origin refs/heads/main:refs/remotes/origin/main
-          git checkout -B main origin/main
-
           git add docs/badges/coverage.svg
-          git commitn --gpg-sign="$GPG_KEY_ID" -m "🛡️ Qiskit Code Update - Inteli Check" || echo "⚠️ No changes to commit"
-          git push origin HEAD:refs/heads/main
-
-          # ✅ Sync to stable
-          git fetch origin refs/heads/stable:refs/remotes/origin/stable || true
-          git checkout -B stable origin/stable || git checkout -b stable
-
-          if git merge main -m "🔁 Sync coverage badge from main to stable"; then
-            git push origin HEAD:refs/heads/stable
+          if git diff --cached --quiet; then
+            echo "✅ No changes to commit."
           else
-            echo "⚠️ Merge conflict detected. Skipping push to protect stable."
-            git merge --abort || true
+            git commit -S -m "🌟 Update coverage badge [skip ci]"
+            echo "✅ Changes committed."
           fi
+
+      - name: 🚀 Push changes
+        run: |
+          git push origin main || (
+            echo "⚠️ Push failed, attempting pull and retry..."
+            git pull origin main --rebase
+            git push origin main
+          )
+
