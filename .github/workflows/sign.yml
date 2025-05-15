@@ -12,7 +12,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write
   actions: write
   deployments: write
   pull-requests: write
@@ -48,6 +47,7 @@ jobs:
           submodules: recursive         
 
      #_____________________________________________________
+
       - name: Install jq (JSON processor)
         run: sudo apt-get update && sudo apt-get install -y jq
 
@@ -167,27 +167,32 @@ jobs:
           git config --global commit.gpgsign true
 
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
+
       #_____________________________________________________________________________
 
-      - name: 🏷️ Sign All Unsigned Release Tags
+      - name: 🏷️ Re-sign All Unsigned or Unverified Tags
         run: |
           for tag in $(git tag --sort=creatordate); do
             echo "🔍 Checking tag: $tag"
-            if ! git tag -v "$tag" 2>&1 | grep -q "QComputingSoftware Digital Signature"; then
+
+            if ! git tag -v "$tag" 2>&1 | grep -q "Good signature"; then
               echo "🔄 Re-signing tag: $tag"
+
               commit_sha=$(git rev-list -n 1 "$tag")
-              tag_message=$(git for-each-ref --format="%(contents)" refs/tags/$tag)
-              git tag -d main || echo "Tag 'main' not found. Skipping deletion."
-              git tag -d "$tag"
+              tag_message=$(git for-each-ref --format="%(contents)" "refs/tags/$tag" | head -c 20000)
+
+              git tag -d "$tag" || true
+
+              echo "$tag_message" > .tmp_tagmsg.txt
+
               GIT_COMMITTER_DATE="$(git show -s --format=%ci "$commit_sha")" \
               GIT_AUTHOR_DATE="$(git show -s --format=%ci "$commit_sha")" \
-              git tag -s -u "$GPG_KEY_ID" "$tag" "$commit_sha" -m "$tag_message" || true
+              git tag -s -u "$GPG_KEY_ID" "$tag" "$commit_sha" -F .tmp_tagmsg.txt
 
-              git push --force origin "$tag"
-              git push --force origin HEAD
-              git pull --rebase
+              echo "📤 Pushing tag: $tag"
+              git push --force origin "refs/tags/$tag"
             else
-              echo "✅ Tag $tag already signed. Skipping."
+              echo "✅ Tag $tag is already signed and verified. Skipping."
             fi
           done
       
