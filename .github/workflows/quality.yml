@@ -6,14 +6,18 @@ name: Qiskit Connector Quality Check
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:  
 
 permissions:
   contents: write
   actions: write
   deployments: write
+  pull-requests: write
   checks: write
   statuses: write
+  reviews: write
 
    
 jobs:
