@@ -70,8 +70,8 @@ jobs:
           git config --global user.email "actions@github.com"
 
           # 🧼 Clean workspace
-          git reset --hard
-          git clean -fd
+          #git reset --hard
+          #git clean -fd
 
           # ✅ Ensure we’re truly on main
           git fetch origin refs/heads/main:refs/remotes/origin/main
@@ -79,11 +79,11 @@ jobs:
 
           git add docs/badges/coverage.svg
           git commit -m "🛡️ Qiskit Code Update - Inteli Check" || echo "⚠️ No changes to commit"
-          git push -f origin HEAD:refs/heads/main
+          git push -f 
 
           # # ✅ Sync to stable
           # git fetch origin refs/heads/stable:refs/remotes/origin/stable || true
-          # git checkout -B stable origin/stable || git checkout -b stable
+          # git checkout -B stable origin/stable
           # if git merge main -m "🔁 Sync coverage badge from main to stable"; then
           #   git push -f origin HEAD:refs/heads/stable
           # else
