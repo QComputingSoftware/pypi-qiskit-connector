@@ -215,8 +215,8 @@ jobs:
           set -e
 
           # # 🧼 Clean workspace
-          # git reset --hard
-          # git clean -fd
+          git reset --hard
+          git clean -fd
 
           # ✅ Ensure we’re truly on main
           git fetch origin refs/heads/main:refs/remotes/origin/main
