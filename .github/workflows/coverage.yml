@@ -208,31 +208,14 @@ jobs:
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
       #_____________________________________________________________________________
 
-      - name: 🚀 Commit badge to main and sync to stable
+      - name: 🚀 Commit badge[]
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
-
-          # # 🧼 Clean workspace
-          git reset --hard
-          git clean -fd
-
-          # ✅ Ensure we’re truly on main
-          git fetch origin refs/heads/main:refs/remotes/origin/main
+          git pull
+          git fetch origin
           git checkout -B main origin/main
-
           git add docs/badges/coverage.svg
-          git commit --gpg-sign="$GPG_KEY_ID" -m "🛡️ Qiskit Code Update - Inteli Check" || echo "⚠️ No changes to commit"
+          git commit --gpg-sign="$GPG_KEY_ID" -m "🔖 Quantum Computing Code Update - Inteli Check" || echo "⚠️ No changes to commit"
           git push origin HEAD:refs/heads/main
-
-          # # ✅ Sync to stable
-          # git fetch origin refs/heads/stable:refs/remotes/origin/stable || true
-          # git checkout -B stable origin/stable || git checkout -b stable
-
-          # if git merge main -m "🔁 Sync coverage badge from main to stable"; then
-          #   git push origin HEAD:refs/heads/stable
-          # else
-          #   echo "⚠️ Merge conflict detected. Skipping push to protect stable."
-          #   git merge --abort || true
-          # fi
+          git pull
