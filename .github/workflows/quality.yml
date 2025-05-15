@@ -17,7 +17,6 @@ permissions:
   pull-requests: write
   checks: write
   statuses: write
-  reviews: write
 
    
 jobs:
