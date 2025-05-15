@@ -75,7 +75,9 @@ jobs:
           echo "coverage=$COVERAGE%" >> "$GITHUB_OUTPUT"
 
       - name: 📂 Ensure badge directory exists
-        run: mkdir -p docs/badges
+        run: |
+          mkdir -p docs/badges
+          rm -f docs/badges/coverage.svg || echo "No existing badge to remove."
 
       - name: 🛠️ Generate coverage badge
         uses: emibcn/badge-action@v2
