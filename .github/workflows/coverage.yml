@@ -79,15 +79,14 @@ jobs:
 
           git add docs/badges/coverage.svg
           git commit -m "🛡️ Qiskit Code Update - Inteli Check" || echo "⚠️ No changes to commit"
-          git push origin HEAD:refs/heads/main
+          git push -f origin HEAD:refs/heads/main
 
-          # ✅ Sync to stable
-          git fetch origin refs/heads/stable:refs/remotes/origin/stable || true
-          git checkout -B stable origin/stable || git checkout -b stable
-
-          if git merge main -m "🔁 Sync coverage badge from main to stable"; then
-            git push origin HEAD:refs/heads/stable
-          else
-            echo "⚠️ Merge conflict detected. Skipping push to protect stable."
-            git merge --abort || true
-          fi
+          # # ✅ Sync to stable
+          # git fetch origin refs/heads/stable:refs/remotes/origin/stable || true
+          # git checkout -B stable origin/stable || git checkout -b stable
+          # if git merge main -m "🔁 Sync coverage badge from main to stable"; then
+          #   git push -f origin HEAD:refs/heads/stable
+          # else
+          #   echo "⚠️ Merge conflict detected. Skipping push to protect stable."
+          #   git merge --abort || true
+          # fi
