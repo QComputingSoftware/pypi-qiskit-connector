@@ -14,16 +14,6 @@ on:
 permissions:
   contents: write
   actions: write
-  deployments: write
-  pull-requests: write
-  checks: write
-  statuses: write
-  issues: write
-  discussions: write
-  pages: write
-  packages: write
-  security-events: write
-  repository-projects: write
 
 env:
   GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
@@ -64,9 +54,11 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install qiskit-connector
 
+      - name: 🧪 Run tests with coverage
+        run: coverage run --source=qiskit_connector -m pytest
 
 
-      #_____________________________________________________________________________
+     #_____________________________________________________
       - name: Install jq (JSON processor)
         run: sudo apt-get update && sudo apt-get install -y jq
 
@@ -189,94 +181,57 @@ jobs:
       #_____________________________________________________________________________
 
 
-     # ... (previous steps: checkout, setup python, install deps) ...
 
-      - name: 🧪 Run tests with coverage
-        run: |
-          coverage run --source=qiskit_connector -m pytest
-          # Optional: Add error handling here if tests fail but you still want to report 0% coverage
-          # e.g., coverage run ... || echo "Tests failed, coverage might be 0"
 
-      - name: 📊 Generate and Extract coverage percentage
+
+      - name: 📊 Extract coverage percentage
         id: coverage
         run: |
-          echo "--- Full coverage report output ---"
-          coverage report
-          echo "-----------------------------------"
-          
-          # Attempt to extract coverage. Default to 0 if not found or an error occurs.
-          COVERAGE_VALUE=$(coverage report | grep "TOTAL" | awk '{print $NF}' | sed 's/%//' || echo "0")
-          
-          if [[ -z "$COVERAGE_VALUE" ]] || ! [[ "$COVERAGE_VALUE" =~ ^[0-9]+$ ]]; then
-            echo "::warning::Could not parse coverage percentage, defaulting to 0."
-            COVERAGE_VALUE="0"
-          fi
-          
-          echo "Coverage Value: $COVERAGE_VALUE"
-          echo "Coverage String for Badge: $COVERAGE_VALUE%"
-          
-          # This output will be used by the badge action
-          echo "coverage_status_string=$COVERAGE_VALUE%" >> "$GITHUB_OUTPUT"
-          # This output is just the number, in case needed elsewhere
-          echo "coverage_numeric_value=$COVERAGE_VALUE" >> "$GITHUB_OUTPUT"
+          COVERAGE=$(coverage report | grep "TOTAL" | awk '{print $4}' | sed 's/%//')
+          echo "Coverage: $COVERAGE%"
+          echo "coverage=$COVERAGE%" >> "$GITHUB_OUTPUT"
 
       - name: 📂 Ensure badge directory exists
-        run: |
-          mkdir -p docs/badges
-          # No need to rm here if the badge action overwrites or creates
+        run: mkdir -p docs/badges
 
       - name: 🛠️ Generate coverage badge
         uses: emibcn/badge-action@v2
         with:
-          label: "Qiskit Connector Code Coverage" #
+          label: "Qiskit Connector Code Coverage Analysis"
           label-color: "555"
-          status: "${{ steps.coverage.outputs.coverage_status_string }}"
-          color: ${{ steps.coverage.outputs.coverage_numeric_value > 90 && 'brightgreen' || (steps.coverage.outputs.coverage_numeric_value > 70 && 'green' || (steps.coverage.outputs.coverage_numeric_value > 50 && 'yellow' || 'red')) }}
-          style: "flat" # 
+          status: "${{ steps.coverage.outputs.coverage }}"
+          color: "green"
+          style: "classic"
           path: "docs/badges/coverage.svg"
-    
 
-      # ... (subsequent Git GPG, commit, and push steps) ...
-
-
-      # Ensure the 'Commit coverage:
-      - name: 🌍 Fetch origin and Prepare Branch for Badge Commit
+      - name: 🚀 Commit badge to main and sync to stable
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name "${{ env.GPG_NAME_REAL }}"
-          git config --global user.email "${{ env.GPG_NAME_EMAIL }}"
-          echo "Synchronizing with remote main..."
-          git fetch origin main
-          git checkout -B main origin/main # Reset local main to remote main
-          echo "✅ Local main branch synchronized with origin/main."
+          set -e
 
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
 
-      - name: 🖊️ Commit coverage badge update
-        run: |
+          # 🧼 Clean workspace
+          git reset --hard
+          git clean -fd
+
+          # ✅ Ensure we’re truly on main
+          git fetch origin refs/heads/main:refs/remotes/origin/main
+          git checkout -B main origin/main
+
           git add docs/badges/coverage.svg
-          if git diff --cached --quiet; then
-            echo "✅ No changes to coverage badge to commit."
-          else
-            echo "📝 Committing updated coverage badge..."
-            git commit -S"$GPG_KEY_ID" -m "📊 Qiskit Connector Coverage Report ${{ steps.coverage.outputs.coverage_status_string }} [skip ci]"
-            echo "✅ Coverage badge changes committed."
-          fi
+          git commitn --gpg-sign="$GPG_KEY_ID" -m "🛡️ Qiskit Code Update - Inteli Check" || echo "⚠️ No changes to commit"
+          git push origin HEAD:refs/heads/main
 
-      - name: 🚀 Push badge changes
-        run: |
-          if ! git diff --quiet HEAD origin/main; then
-            echo "⬆️ Pushing changes to main..."
-            git push origin main
-            if [ $? -ne 0 ]; then
-                echo "::error::Git push failed. Trying rebase strategy..."
-                git fetch origin main
-                git rebase origin/main
-                git push origin main
-                if [ $? -ne 0 ]; then
-                    echo "::error::Git push failed even after rebase. Manual intervention may be needed."
-                    exit 1
-                fi
-            fi
-            echo "✅ Badge changes pushed."
+          # ✅ Sync to stable
+          git fetch origin refs/heads/stable:refs/remotes/origin/stable || true
+          git checkout -B stable origin/stable || git checkout -b stable
+
+          if git merge main -m "🔁 Sync coverage badge from main to stable"; then
+            git push origin HEAD:refs/heads/stable
           else
-            echo "✅ No new badge commit to push, or branch is not ahead."
+            echo "⚠️ Merge conflict detected. Skipping push to protect stable."
+            git merge --abort || true
           fi
