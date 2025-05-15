@@ -218,7 +218,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "✅ No changes to commit."
           else
-            git commit -S -m "🌟 Update coverage badge [skip ci]"
+            git commit --gpg-sign="${GPG_KEY_ID}" -m "🌟 Update coverage badge [skip ci]"
             echo "✅ Changes committed."
           fi
 
