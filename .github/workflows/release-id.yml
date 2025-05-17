@@ -80,7 +80,7 @@ jobs:
         uses: emibcn/badge-action@v2
         with:
           label: 'Qiskit Connector Latest Release'
-          labelColor: 555
+          label-color: 555
           status: v${{ steps.extract_version.outputs.latest }}
           color: blue
           style: classic
