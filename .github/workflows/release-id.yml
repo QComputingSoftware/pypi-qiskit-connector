@@ -5,12 +5,12 @@ name: Qiskit Connector Latest Release
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch: 
+    branches: [ "pypi" ]
+  workflow_dispatch:  
   schedule:
-    - cron: '0 13 * * *'   
-    - cron: '0 15 * * *'   
-    - cron: '0 17 * * *'   
+    - cron: '0 13 * * *'  # 12:00 PM EST
+    - cron: '0 15 * * *'  # 2:00 PM EST
+    - cron: '0 17 * * *'  # 4:00 PM EST
 
 permissions:
   contents: write
@@ -42,16 +42,25 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write # <-- Permissions to write to the repository
+      actions: write # <-- Permissions to read the actions
+
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
+
+      - name: Git Hard Reset
+        run: |
+          git reset --hard origin/main
+          git pull origin main
 
       - name: Qiskit Connector Active State
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
           python .github/scripts/pkg_active_check.py
-          
+
       - name: 🏷️ Get latest version from PyPI
         id: extract_version
         run: |
@@ -73,7 +82,7 @@ jobs:
           label: 'Qiskit Connector Latest Release'
           labelColor: 555
           status: v${{ steps.extract_version.outputs.latest }}
-          gradient: blue
+          color: blue
           style: classic
           path: docs/badges/release.svg
 
@@ -200,27 +209,25 @@ jobs:
       #_____________________________________________________________________________
 
 
-      - name: 🚀 Push badge to repo using  GITHUB_TOKEN - (Recommended)
+      - name: 🚀 Push badge to repo - (Recommended)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
-          git config --global user.signingkey "$GPG_KEY_ID"
-          git config --global commit.gpgsign true
           git remote set-url origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" && echo "Origin URL set to use the Default Token!"
           git pull origin ${{ github.ref_name }} && echo "Pulled latest changes"
           git add docs/badges/release.svg && echo "Badge added to commit"
           git commit --gpg-sign="$GPG_KEY_ID" -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
-          git push origin HEAD:${{ github.ref_name }} && echo "Push successful" || echo "No changes to push"
+          git push -f origin HEAD:${{ github.ref_name }} && echo "Push successful" || echo "No changes to push"
       
-      - name: 🚀 Push badge to repo using  PAT_GITHUB - (Optional)
+      - name: 🚀 Push badge to repo - (Optional)
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
           # git pull origin ${{ github.ref_name }} && echo "Pulled latest changes"
           # git add docs/badges/release.svg && echo "Badge added to commit"
-          # git commit --gpg-sign="$GPG_KEY_ID" -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
+          # git commit -S -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
           # git remote set-url origin https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}
-          # git push origin HEAD:${{ github.ref_name }} && echo "Push successful" || echo "No changes to push"
+          # git push -f origin HEAD:${{ github.ref_name }} && echo "Push successful" || echo "No changes to push"
 
