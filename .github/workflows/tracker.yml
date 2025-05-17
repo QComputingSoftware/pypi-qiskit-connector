@@ -8,12 +8,12 @@ name: 📿 Monthly Downloads
 
 on:
   push:
-    branches: [ "pypi" ]
+    branches: ["pypi"]
   workflow_dispatch:
   schedule:
-    - cron: '0 18 * * *'   
-    - cron: '0 20 * * *'   
-    - cron: '0 22 * * *'   
+    - cron: '0 18 * * *'  # 6:00 PM EST
+    - cron: '0 20 * * *'  # 8:00 PM EST
+    - cron: '0 22 * * *'  # 10:00 PM EST
 
 permissions:
   contents: write
@@ -45,10 +45,15 @@ jobs:
   build-monthly-downloads-badge:
     name: 📊 Monthly Downloads from Pepy
     runs-on: ubuntu-latest
-  
+    
     steps:
-      - name: 📿 Checkout
+      - name: 📿 Git Repo Checkout
         uses: actions/checkout@v4
+
+      - name: Git Hard Reset Main
+        run: |
+          git reset --hard origin/main
+          git pull origin main
 
       - name: Qiskit Connector Active State
         env:
@@ -62,24 +67,7 @@ jobs:
           pip install qiskit-connector
           pip install requests
 
-      - name: 🔍 Extract Downloads
-        id: get_downloads
-        env:
-          PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
-        run: |
-          echo "🔍 Extracting download record..."
-          python .github/scripts/pepy.py
-
-      - name: 🚰️ Generate Badge
-        uses: emibcn/badge-action@v2
-        with:
-          label: "monthly downloads"
-          label-color: "555"
-          status: "${{ steps.get_downloads.outputs.md }}"
-          color: "7DD71D"
-          style: "flat"
-          path: "docs/badges/monthly-downloads.svg"
-
+     
       - name: 🔍 Extract Downloads
         id: get_downloads
         env:
@@ -220,16 +208,31 @@ jobs:
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
       #_____________________________________________________________________________
 
-
-      - name: 🚀 Commit and Push Badge
-        run: |
-          git pull
-          git config --global user.name "$GPG_NAME_REAL"
-          git config --global user.email "$GPG_NAME_EMAIL"
-          git config --global user.signingkey "$GPG_KEY_ID"
-          git add docs/badges/monthly-downloads.svg
-          git commit --gpg-sign="$GPG_KEY_ID" -m "📈 Qiskit Code Update - Inteli Check" || echo "No changes to commit"
-          git push
-          git pull
+      - name: 🚀 Commit badge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+
+          #______________________________________________________________________________
+          # Step 1: Fetch the latest changes from the remote main branch
+          echo "Adding the coverage badge to the commit"
+          git add docs/badges/monthly-downloads.svg  || echo "⚠️ No changes in coverage badge to add"
+
+          # Step 2: Rebase your local main branch's commits on top of the updated origin/main
+          echo "Committing the changes"
+          git commit -m "🛡️ Qiskit Code Update - Inteli Check" --gpg-sign="$GPG_KEY_ID" || echo "⚠️ No changes to commit"
+
+          # Step 3: Now, fetch the latest changes from the remote main branch
+          echo "Fetching latest changes from origin/main..."
+          git fetch origin main || echo "⚠️ No changes to fetch"
+
+          # Step 4: Merge the changes from the remote main branch into your local main branch
+          echo "Merging changes from origin/main..."
+          git merge origin/main --no-edit --allow-unrelated-histories || echo "⚠️ No unrelated histories to merge"
+
+          # Step 5: Push 
+          echo "Pushing changes to origin/main..."
+          git push -f origin HEAD:${{ github.ref_name }}
+          #_____________________________________________________________________________
+          # end of script
