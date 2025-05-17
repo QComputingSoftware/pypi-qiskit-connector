@@ -8,13 +8,21 @@ on:
     branches: [ "pypi" ]
   workflow_dispatch:  
   schedule:
-    - cron: '0 10 * * *'   
-    - cron: '0 12 * * *'   
-    - cron: '0 14 * * *'   
+    - cron: '17 8 * * *'   
 
 permissions:
   contents: write
   actions: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  issues: write
+  discussions: write
+  pages: write
+  packages: write
+  security-events: write
+  repository-projects: write
 
 jobs:
   coverage-badge:
