@@ -3,19 +3,19 @@
 # @Description: This workflow builds a license badge that show the license type of the software for markdown files.
 # @BadgeLocation:  doc/badges/license-badge.svg
 # @File: .github/workflows/license.yml
-# @License: Apache-2.0, Creative Commons Attribution 4.0
+# @License: Apache-2.0, Creative Commons Attribution 4.0..
 #___________________________________________________________
 
 name: Software License Badge
 
 on:
   push:
-    branches: [ "pypi" ]
+    branches: ["pypi"]
   workflow_dispatch:
   schedule:
-    - cron: '0 22 * * *'   
-    - cron: '0 0 * * *'    
-    - cron: '0 2 * * *'    
+    - cron: '38 6 * * *'   
+    - cron: '38 9 * * *'   
+    - cron: '17 14 * * *'   
 
 permissions:
   contents: write
@@ -47,11 +47,22 @@ jobs:
     name: 🏷️ License Badge Generator
     runs-on: ubuntu-latest
 
+    env:
+      GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+      GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+      GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+      GPG_GITHUB_TOKEN: ${{ secrets.GPG_GITHUB_OPERATOR }}
+
     steps:
       - name: ⬇️ Checkout main branch
         uses: actions/checkout@v4
         with:
           ref: refs/heads/main
+
+      - name: Git Hard Reset Main
+        run: |
+          git reset --hard origin/main
+          git pull origin main
 
       - name: Qiskit Connector Active State
         env:
@@ -72,7 +83,7 @@ jobs:
           style: "classic"
           path: "docs/badges/license-badge.svg"
 
-     #_____________________________________________________
+      #_____________________________________________________________________________
       - name: Install jq (JSON processor)
         run: sudo apt-get update && sudo apt-get install -y jq
 
@@ -185,7 +196,7 @@ jobs:
           fi
           echo "✅ GPG key test successful."
 
-          echo "🚀 Configuring git with GPG key details..."
+          echo "Configuring git with GPG key details..."
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
           git config --global user.signingkey "$GPG_KEY_ID" 
@@ -194,17 +205,25 @@ jobs:
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
       #_____________________________________________________________________________
 
-      - name: 🚀 Commit badge to main
+      - name: 🚀 Commit badge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git pull
-          git fetch origin
-          git checkout -B main origin/main
-          git add docs/badges/license-badge.svg
-          git commit --gpg-sign="$GPG_KEY_ID" -m "🔖 Quantum Computing Code Update - Inteli Check" || echo "⚠️ No changes to commit"
-          git push origin HEAD:refs/heads/main
-          git pull
+
+          git add docs/badges/license-badge.svg || echo "⚠️ No changes to add"
+
+          git commit --gpg-sign="$GPG_KEY_ID" -m "🔖 Quantum Computing Code Update Badge - Inteli Check" || echo "⚠️ No changes to commit"
+
+          git fetch origin main  || echo "⚠️ No changes to fetch"
+
+          git merge origin/main --no-edit || echo "⚠️ No changes to merge"
+
+          echo "Checking for changes to push..."
+          sleep 7
+          
+          git push origin HEAD:${{ github.ref_name }}
+          
+    
 
 
 
