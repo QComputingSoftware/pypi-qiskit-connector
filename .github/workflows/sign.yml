@@ -140,6 +140,12 @@ jobs:
             echo "GPG_KEY_ID is ready for use in subsequent GPG operations."
           fi
 
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+
       - name: Import GPG Key, Configure Git, and Prepare for Signing
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}

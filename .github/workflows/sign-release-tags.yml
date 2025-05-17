@@ -128,6 +128,12 @@ jobs:
             exit 1
           fi
 
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+
       - name: Verify Found Key ID in Environment
         run: |
           if [[ -z "$GPG_KEY_ID" ]]; then

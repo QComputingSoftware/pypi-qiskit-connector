@@ -62,3 +62,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
+
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py

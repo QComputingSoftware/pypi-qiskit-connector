@@ -110,7 +110,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
 
-
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+          
       #______________________________________________________________________________________________________
       #   --- Check if all workflows succeeded.
       #   --- If any workflow failed, exit gracefully othrerwise continue.
