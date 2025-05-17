@@ -8,6 +8,10 @@ on:
     tags:
       - '[v]?[0-9]+.[0-9]+.[0-9]+*'
   workflow_dispatch: 
+  schedule:
+    - cron: '0 0 * * *'    
+    - cron: '0 2 * * *'    
+    - cron: '0 4 * * *'    
 
 permissions:
   contents: write

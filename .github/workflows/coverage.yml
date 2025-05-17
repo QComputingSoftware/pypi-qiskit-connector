@@ -5,11 +5,12 @@ name: Qiskit Connector Code Coverage Analysis
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-
-  workflow_dispatch:  # Required for external workflows to trigger this via API
+    branches: [ "pypi" ]
+  workflow_dispatch:  
+  schedule:
+    - cron: '0 10 * * *'   
+    - cron: '0 12 * * *'   
+    - cron: '0 14 * * *'   
 
 permissions:
   contents: write

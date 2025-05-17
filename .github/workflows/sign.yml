@@ -7,8 +7,12 @@ name: 🔐 Verify & Sign All Software
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "pypi" ]
   workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * *'   
+    - cron: '0 14 * * *'   
+    - cron: '0 16 * * *'   
 
 permissions:
   contents: write

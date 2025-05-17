@@ -13,11 +13,10 @@ on:
         required: false
         default: 'false'
 
-  # Trigger on push to main branch:
   push:
-    branches: [ "main" ]
+    branches: [ "pypi" ]
 
- # Trigger on schedule:
+
   schedule:
     - cron: '0 3 * * *'      
     - cron: '0 10 * * *'     

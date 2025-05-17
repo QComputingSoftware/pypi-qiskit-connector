@@ -5,10 +5,12 @@ name: Sync PyPI Releases to GitHub
 
 on:
   push:
-    branches:
-      - main
-      # stable
+    branches: [ "main" ]
   workflow_dispatch: 
+  schedule:
+    - cron: '0 19 * * *'   
+    - cron: '0 21 * * *'   
+    - cron: '0 23 * * *'   
 
 permissions:
   contents: write

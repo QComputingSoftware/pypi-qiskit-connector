@@ -5,9 +5,12 @@ name: PyPI Deployment Environment
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "pypi" ]
   workflow_dispatch:  
+  schedule:
+    - cron: '0 16 * * *'   
+    - cron: '0 18 * * *'   
+    - cron: '0 20 * * *'   
 
 permissions:
   contents: write

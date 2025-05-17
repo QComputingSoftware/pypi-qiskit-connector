@@ -8,17 +8,12 @@ name: 📿 Monthly Downloads
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "pypi" ]
   workflow_dispatch:
   schedule:
-    - cron: "0 2 * * *"
-    - cron: "0 2 * * 0"
-    - cron: "0 2 * * 1"
-    - cron: "0 2 * * 2"
-    - cron: "0 2 * * 3"
-    - cron: "0 2 * * 4"
-    - cron: "0 2 * * 5"
-    - cron: "0 2 * * 6"
+    - cron: '0 18 * * *'   
+    - cron: '0 20 * * *'   
+    - cron: '0 22 * * *'   
 
 permissions:
   contents: write

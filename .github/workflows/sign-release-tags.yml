@@ -8,9 +8,11 @@ name: 🔐 Sign & Verify All Release Tags
 
 on:
   push:
-    branches: [main]
+    branches: [ "pypi" ]
   schedule:
-    - cron: '0 * * * *'  # Every hour
+    - cron: '0 6 * * *'    
+    - cron: '0 8 * * *'    
+    - cron: '0 10 * * *'    
 
 permissions:
   contents: write

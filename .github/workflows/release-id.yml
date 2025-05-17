@@ -6,8 +6,11 @@ name: Qiskit Connector Latest Release
 on:
   push:
     branches: [ "main" ]
-
-  workflow_dispatch:  
+  workflow_dispatch: 
+  schedule:
+    - cron: '0 13 * * *'   
+    - cron: '0 15 * * *'   
+    - cron: '0 17 * * *'   
 
 permissions:
   contents: write

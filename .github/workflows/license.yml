@@ -10,8 +10,12 @@ name: Software License Badge
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "pypi" ]
   workflow_dispatch:
+  schedule:
+    - cron: '0 22 * * *'   
+    - cron: '0 0 * * *'    
+    - cron: '0 2 * * *'    
 
 permissions:
   contents: write
