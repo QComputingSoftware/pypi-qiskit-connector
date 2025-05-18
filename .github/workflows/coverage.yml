@@ -228,7 +228,8 @@ jobs:
             echo "✅ All tests passed."
           else
             PASS_ID=0
-            echo "⚠️ One or more tests failed (as expected)."
+            echo "⚠️ One or more tests failed."
+            exit 1
           fi
 
           coverage report || true
@@ -256,23 +257,7 @@ jobs:
           echo "BENCHMARK=$BENCHMARK" >> $GITHUB_ENV
           echo "✅ Coverage data exported to environment variables."
 
-          if [[ "$COVER_NUMERIC" -lt "$BENCHMARK" ]]; then
-              echo "::error::Coverage is below the acceptable threshold of $BENCHMARK (100%)."
-              echo "Current coverage is $COVER."
-              exit 1
-            else
-              echo "✅ Coverage is within the acceptable threshold of $BENCHMARK benchmark. Current coverage is $COVER."
-            fi
-          ### END OF COVERAGE TESTING ######################################################
-
-
-          if [[ "$COVER_NUMERIC" -lt "$BENCHMARK" ]]; then
-            echo "::error::Coverage is below the acceptable threshold of $BENCHMARK (100%)."
-            echo "Current coverage is $COVER."
-            exit 1
-          else
-            echo "✅ Coverage is within the acceptable threshold of $BENCHMARK benchmark. Current coverage is $COVER."
-          fi
+          ### END OF COVERAGE TESTING #####################################################
 
 
       - name: 📊 Analyze and compute qiskit-connector code coverage report
