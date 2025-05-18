@@ -8,7 +8,7 @@ on:
     branches: [ "pypi" ]
   workflow_dispatch:  
   schedule:
-    - cron: '33 4 * * *' 
+    - cron: '0 3 * * 1-5'   
 
 permissions:
   contents: write
@@ -37,12 +37,10 @@ env:
 
 jobs:
   update-badge:
-
     runs-on: ubuntu-latest
-
     permissions:
-      contents: write # <-- Permissions to write to the repository
-      actions: write # <-- Permissions to read the actions
+      contents: write  
+      actions: write  
 
     steps:
       - name: ⬇️ Checkout repository

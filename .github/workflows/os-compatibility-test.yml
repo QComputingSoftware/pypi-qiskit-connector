@@ -10,7 +10,8 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'  
+    - cron: '27 7 * * 1-5'   
+    - cron: '27 9 * * 1-5'   
 
 jobs:
   os-matrix-test:

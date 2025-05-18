@@ -8,11 +8,10 @@ name: 🔐 Sign & Verify All Release Tags
 
 on:
   push:
-    branches: [ "pypi" ]
+    branches: [pypi]
+  workflow_dispatch: 
   schedule:
-    - cron: '0 6 * * *'    
-    - cron: '0 8 * * *'    
-    - cron: '0 10 * * *'    
+    - cron: '0 9 * * 0'  
 
 permissions:
   contents: write
@@ -48,7 +47,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-     #_____________________________________________________
+      
+      - name: Git Hard Reset Main
+        run: |
+          git reset --hard origin/main
+          git pull origin main
+    #____________________________________________________________________________________ 
+    # This job is responsible for GPG key pair with GitHub.
+    # It ensures that the GPG key is available for signing commits and tags.
+    #____________________________________________________________________________________
 
       - name: Install jq (JSON processor)
         run: sudo apt-get update && sudo apt-get install -y jq
@@ -128,12 +135,6 @@ jobs:
             exit 1
           fi
 
-      - name: Qiskit Connector Active State
-        env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
-        run: |
-          python .github/scripts/pkg_active_check.py
-
       - name: Verify Found Key ID in Environment
         run: |
           if [[ -z "$GPG_KEY_ID" ]]; then
@@ -175,10 +176,14 @@ jobs:
           git config --global commit.gpgsign true
 
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
+      #__________________________________________________________________________________
+   
 
-      #_____________________________________________________________________________
 
-
+      #____________________________________________________________________________________
+      # This job is responsible for signing all unsigned release tags and commits.
+      # It ensures that all tags and commits are properly signed with the GPG key.
+      #____________________________________________________________________________________
       - name: 🏷️ Sign All Unsigned Release Tags
         run: |
           for tag in $(git tag --sort=creatordate); do
@@ -192,7 +197,8 @@ jobs:
               GIT_COMMITTER_DATE="$(git show -s --format=%ci "$commit_sha")" \
               GIT_AUTHOR_DATE="$(git show -s --format=%ci "$commit_sha")" \
               git tag -s -u "$GPG_KEY_ID" "$tag" "$commit_sha" -m "$tag_message"
-
+              echo "✅ Tag now signed with GPG key: $GPG_KEY_ID"
+              echo "📤 Pushing signed tag to remote..."
               git push --force origin "$tag"
             else
               echo "✅ Tag $tag already signed. Skipping."
@@ -210,7 +216,18 @@ jobs:
               GIT_AUTHOR_EMAIL="$GPG_NAME_EMAIL" \
               GIT_COMMITTER_NAME="$GPG_NAME_REAL" \
               GIT_COMMITTER_EMAIL="$GPG_NAME_EMAIL" \
+
               git commit --amend --gpg-sign="$GPG_KEY_ID" --no-edit || true
+              echo "✅ Now signed with GPG key: $GPG_KEY_ID"
+
+              echo '📦 Fetching latest changes from remote...'
+              git fetch origin
+
+              echo '🔄 Check-1: Merging changes from remote main branch...'
+              git merge origin/main --no-edit --allow-unrelated-histories || echo "⚠️ No unrelated histories to merge"
+
+              echo "📤 Pushing signed commit to remote..."
+              git push -f origin HEAD:${{ github.ref_name }}
             else
               echo "✅ Commit $commit already signed. Skipping."
             fi

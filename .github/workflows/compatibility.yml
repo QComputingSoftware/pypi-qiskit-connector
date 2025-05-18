@@ -6,12 +6,13 @@ name: Python Compatibility
 on:
   push:
     branches: [ "pypi" ]
-  workflow_dispatch:
+  workflow_dispatch:  
   schedule:
-    - cron: '0 4 * * *'    
-    - cron: '0 6 * * *'    
-    - cron: '0 8 * * *'    
-    
+    - cron: '0 4 * * 1-5'    
+    - cron: '0 6 * * 1-5'    
+    - cron: '0 8 * * 1-5'    
+    - cron: '0 12 * * 1-5'   
+   
 permissions:
   contents: write
   actions: write
@@ -48,6 +49,11 @@ jobs:
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
+
+      - name: Git Hard Reset Main
+        run: |
+          git reset --hard origin/main
+          git pull origin main
 
       - name: Qiskit Connector Active State
         env:
@@ -255,9 +261,7 @@ jobs:
           # if [[ "$CURRENT_BRANCH" == "main" ]]; then
           #   git checkout stable
           #   git pull origin stable --rebase
-
           #   if git merge --no-ff main -m "🔁 Sync coverage badge from main to stable" --allow-unrelated-histories; then
-
           #     echo "✅ Merge successful. Pushing to stable..."
           #     git push origin stable
           #     git checkout main

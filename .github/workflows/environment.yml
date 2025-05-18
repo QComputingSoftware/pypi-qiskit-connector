@@ -5,12 +5,12 @@ name: PyPI Deployment Environment
 
 on:
   push:
-    branches: [ "pypi" ]
+    branches:
+      - pypi
   workflow_dispatch:  
   schedule:
-    - cron: '0 16 * * *'   
-    - cron: '0 18 * * *'   
-    - cron: '0 20 * * *'   
+    - cron: '14 8 * * 1-5'    
+    - cron: '14 10 * * 1-5'  
 
 permissions:
   contents: write
@@ -19,17 +19,6 @@ permissions:
   pull-requests: write
   checks: write
   statuses: write
-
-env:
-  GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
-  GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
-  GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
-  GPG_GITHUB_OPERATOR: ${{ secrets.GPG_GITHUB_OPERATOR }}
-  EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
-  UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
-  UNAME_CONTRIBUTOR_03: ${{ secrets.UNAME_CONTRIBUTOR_03 }}
-  EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
-  EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
   
 jobs:
   deploy:
@@ -41,6 +30,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Git Hard Reset Main
+        run: |
+          git reset --hard origin/main
+          git pull origin main
 
       - name: Qiskit Connector Active State
         env:

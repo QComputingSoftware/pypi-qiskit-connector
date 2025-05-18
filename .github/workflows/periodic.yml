@@ -5,7 +5,10 @@
 # @ Reference:  This workflow ensures that all necessary checks are performed regularly to maintain software integrity. 
 
 name: Force Sync - Periodic Quality Control
+
 on:
+  push:
+    branches: [ "pypi" ]
   workflow_dispatch:
     inputs:
       force:
@@ -13,28 +16,10 @@ on:
         required: false
         default: 'false'
 
-  push:
-    branches: [ "pypi" ]
-
-
   schedule:
-    - cron: '0 3 * * *'      
-    - cron: '0 10 * * *'     
-    - cron: '0 15 * * *'      
-    - cron: '0 20 * * *'    
-    - cron: '0 23 * * *'     
-    - cron: '0 17 * * *'     
-    - cron: '0 20 * * *'     
-    - cron: '0 23 * * *'     
-    - cron: '0 2 * * *'      
-    - cron: '0 5 * * *'      
-    - cron: '0 8 * * *'      
-    - cron: '0 11 * * *'     
-    - cron: '0 14 * * *'     
-    - cron: '0 17 * * *'     
-    - cron: '0 20 * * *'     
-    - cron: '0 23 * * *'     
-    - cron: '0 2 * * *'      
+    - cron: '0 1 * * *'    
+    - cron: '0 3 * * *'    
+    - cron: '0 5 * * *'    
 
   workflow_run:
     workflows:
@@ -56,23 +41,11 @@ permissions:
   pages: write
   packages: write
 
-env:
-  GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
-  GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
-  GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
-  GPG_GITHUB_OPERATOR: ${{ secrets.GPG_GITHUB_OPERATOR }}
-  EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
-  UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
-  UNAME_CONTRIBUTOR_03: ${{ secrets.UNAME_CONTRIBUTOR_03 }}
-  EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
-  EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
-
 jobs:
   wait-and-dispatch:
     name: 🔄 Conditional Trigger of Release Sync Jobs
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
-
     steps:
       - name: 🔎 Ensure we're on main (scheduled run)
         if: github.event_name == 'schedule'
@@ -85,7 +58,6 @@ jobs:
             exit 0
           fi
 
-
       - name: ⏳ Wait for all required workflows to complete successfully
         uses: ahmadnassri/action-workflow-queue@v1
         with:
@@ -94,10 +66,9 @@ jobs:
             Qiskit Connector Quality Check
             Python Compatibility
           repo: ${{ github.repository }}
-          token: ${{ secrets.PAT_GITHUB }}
-          wait: true
-          fail-fast: true
-          required-status: completed
+          delay: 2m
+          timeout: 48m
+          github-token: ${{ secrets.PAT_GITHUB }}
 
 
       #______________________________________________________________________________________________________
@@ -110,12 +81,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
 
-      - name: Qiskit Connector Active State
-        env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
-        run: |
-          python .github/scripts/pkg_active_check.py
-          
+
       #______________________________________________________________________________________________________
       #   --- Check if all workflows succeeded.
       #   --- If any workflow failed, exit gracefully othrerwise continue.
