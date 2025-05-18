@@ -226,15 +226,14 @@ jobs:
           if coverage run --source=qiskit_connector -m pytest tests/test_connector.py; then
             PASS_ID=1
             echo "✅ All tests passed."
-            BENCHMARK="36"
           else
             PASS_ID=0
-            echo "⚠️ One or more tests failed."
-            exit 1
+            echo "⚠️ One or more tests failed (as expected)."
           fi
 
           coverage report || true
-          
+
+          BENCHMARK="36"
           echo "Benchmark for Qiskit-connector coverage: $BENCHMARK%"
 
           STMTS=$(coverage report | grep "TOTAL" | awk '{print $2}')
@@ -257,7 +256,17 @@ jobs:
           echo "BENCHMARK=$BENCHMARK" >> $GITHUB_ENV
           echo "✅ Coverage data exported to environment variables."
 
-          ### END OF COVERAGE TESTING #####################################################
+          if [[ "$COVER_NUMERIC" -lt "$BENCHMARK" ]]; then
+              echo "⚠️::warning::STOP ID: 00786"
+              echo "::warning::Coverage is below the acceptable threshold of $BENCHMARK (100%)."
+              echo "::warning::Analysis incomplete & report may not be available. Exiting now."
+              exit 1
+            else
+              echo "✅ Coverage is within the acceptable threshold of $BENCHMARK benchmark. Current coverage is $COVER."
+              echo "✅ Analysis complete. Report available."
+              echo "✅ Coverage report is available."
+            fi
+          ### END OF COVERAGE TESTING ######################################################
 
 
       - name: 📊 Analyze and compute qiskit-connector code coverage report
@@ -294,10 +303,15 @@ jobs:
               printf "Qiskit Connector Analyzed Coverage Status (Computed): %.2f\n" "$COVERAGE"
               printf "Marginal Error: %.4f\n" "$MARGINAL_ERROR"
           else
-              echo "❌ Tests did not pass. Coverage report may be incomplete."
+              echo "⚠️::warning::STOP ID: 00998"
+              echo "🔄::warning::Tests did not pass. Coverage report may be incomplete."
+              echo "🔄::warning::This process will now terminate."
+              echo "🔄::warning::This code analysis is incomplete - exiting now."
+              exit 1
           fi
 
           # Set the coverage status as output for the next step
+          #---------------------------------------------------
           echo "analyzed_status=$COVERAGE" >> $GITHUB_OUTPUT
 
 
