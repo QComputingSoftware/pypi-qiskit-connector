@@ -219,6 +219,19 @@ jobs:
           echo "✅ Qiskit connector packages listed."
 
 
+
+
+      # - name: 🐛 Debug directory structure and source
+      #   run: |
+      #     pwd
+      #     ls -R . # List all files recursively to see the structure
+      #     # Specifically check if 'qiskit_connector' directory exists where expected
+      #     echo "--- Checking for qiskit_connector directory ---"
+      #     find . -name "qiskit_connector" -type d
+
+
+
+
       - name: 🧪 Run pkg tests with coverage
         run: |
           coverage_run() {
@@ -237,7 +250,7 @@ jobs:
 
             # Loop through commands and run until one succeeds
             for cmd in "${COVERAGE_COMMANDS[@]}"; do
-              echo "Trying: $cmd"
+              echo "Now Trying: $cmd"
               eval $cmd
               if [ $? -eq 0 ]; then
                 echo "✅ Success with: $cmd"
@@ -248,17 +261,16 @@ jobs:
                 echo "❌ Failed: $cmd"
               fi
             done
-
             echo "All coverage commands failed to run successfully."
             return 1
           }
-          # To run the function:
+          # To run::::::
           # coverage_run
           # exit 0
 
           # Run the coverage command: BareLine Option
           #-------------------------------------------
-          coverage run --source=qiskit_connector -m pytest  
+          coverage run -m pytest tests/test_connector.py tests/test_os_compatibility.py tests/test_os.py
           REPORT_TABLE=$(coverage report || true)
           if [[ -z "$REPORT_TABLE" ]]; then
             echo "::warning::Coverage report is empty or not generated."
