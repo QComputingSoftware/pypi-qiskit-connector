@@ -225,6 +225,7 @@ jobs:
 
           if coverage run --source=qiskit_connector -m pytest tests/test_connector.py; then
             PASS_ID=1
+            COVER=$(coverage report | grep "TOTAL" | awk '{print $4}')
             BENCHMARK=$(echo "$COVER" | sed 's/%//')
             OTHER=100 - "$BENCHMARK"
             echo "✅ All qiskit connector tests passed."
