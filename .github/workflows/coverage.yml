@@ -226,6 +226,7 @@ jobs:
           if coverage run --source=qiskit_connector -m pytest tests/test_connector.py; then
             PASS_ID=1
             echo "✅ All tests passed."
+            BENCHMARK="36"
           else
             PASS_ID=0
             echo "⚠️ One or more tests failed."
@@ -233,8 +234,7 @@ jobs:
           fi
 
           coverage report || true
-
-          BENCHMARK="36"
+          
           echo "Benchmark for Qiskit-connector coverage: $BENCHMARK%"
 
           STMTS=$(coverage report | grep "TOTAL" | awk '{print $2}')
