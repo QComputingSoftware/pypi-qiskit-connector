@@ -233,7 +233,10 @@ jobs:
 
 
       - name: 🧪 Run pkg tests with coverage
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
+          SOURCE_DIR="https://github.com/QComputingSoftware/qiskit-connector/tree/main/qiskit_connector"
           coverage_run() {
             # Array of coverage run options
             COVERAGE_COMMANDS=(
@@ -370,7 +373,7 @@ jobs:
 
           # Set the coverage status as output for the next step
           #---------------------------------------------------
-          echo "analyzed_status=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "analyzed_status=$COVER" >> $GITHUB_OUTPUT
 
 
       #################################################################################
