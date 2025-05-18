@@ -223,19 +223,22 @@ jobs:
         run: |
           set -e
 
-          if coverage run --source=qiskit_connector -m pytest tests/test_connector.py; then
-            PASS_ID=1
-            echo "✅ All tests passed."
+          coverage run --source=qiskit_connector -m pytest tests/test_connector.py 
+
+          REPORT_TABLE=$(coverage report || true)
+          if [[ -z "$REPORT_TABLE" ]]; then
+            echo "::warning::Coverage report is empty or not generated."
+            exit 1
           else
-            PASS_ID=0
-            echo "⚠️ One or more tests failed (as expected)."
+            echo "✅ All tests passed."
+            echo "✅ Coverage report generated successfully."
+            BENCHMARK="36"
+            echo "Benchmark for Qiskit-connector coverage: $BENCHMARK%"
+            PASS_ID=1
+            FAIL_ID=0
+            coverage report || true
           fi
-
-          coverage report || true
-
-          BENCHMARK="36"
-          echo "Benchmark for Qiskit-connector coverage: $BENCHMARK%"
-
+      
           STMTS=$(coverage report | grep "TOTAL" | awk '{print $2}')
           MISS=$(coverage report | grep "TOTAL" | awk '{print $3}')
           COVER=$(coverage report | grep "TOTAL" | awk '{print $4}')
