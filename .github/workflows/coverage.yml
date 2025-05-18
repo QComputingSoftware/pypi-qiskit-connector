@@ -8,8 +8,8 @@ on:
     branches: ["pypi"]
   workflow_dispatch:  
   schedule:
-    - cron: '15 6 * * 1-5'   
-    - cron: '39 11 * * 1-5'  
+    - cron: '15 6 * * 1-5'  #  Mon-Fri at 06:15 UTC
+    - cron: '39 11 * * 1-5' #  Mon-Fri at 11:39 UTC
 
 permissions:
   contents: write
@@ -225,14 +225,7 @@ jobs:
 
           if coverage run --source=qiskit_connector -m pytest tests/test_connector.py; then
             PASS_ID=1
-            COVER=$(coverage report | grep "TOTAL" | awk '{print $4}')
-            BENCHMARK=$(echo "$COVER" | sed 's/%//')
-            OTHER=100 - "$BENCHMARK"
-            echo "✅ All qiskit connector tests passed."
-            echo "✅ Qiskit connector software code covers a benchmark ($BENCHMARK%) of the codebase."
-            echo "✅ Qiskit-connector accepted coverage is 95-100% success rate of the benchmark it occupies."
-            echo "✅ The rest of the codebase coverage is $OTHER% which is what we consider Segmented or Purposive Miss."
-            echo "✅ Coverage analysis completed successfully."
+            echo "✅ All tests passed."
           else
             PASS_ID=0
             echo "⚠️ One or more tests failed (as expected)."
@@ -240,20 +233,17 @@ jobs:
 
           coverage report || true
 
+          BENCHMARK="36"
           echo "Benchmark for Qiskit-connector coverage: $BENCHMARK%"
 
           STMTS=$(coverage report | grep "TOTAL" | awk '{print $2}')
           MISS=$(coverage report | grep "TOTAL" | awk '{print $3}')
           COVER=$(coverage report | grep "TOTAL" | awk '{print $4}')
-          COVER_NUMERIC=$BENCHMARK
-          OTHER=100 - "$BENCHMARK"
+          COVER_NUMERIC=$(echo "$COVER" | sed 's/%//')
 
-          echo "Qiskit Connector Code Coverage Analysis:"
-          echo "============================================================="
           echo "Statements: $STMTS"
           echo "Missed: $MISS"
-          echo "Qiskit Connector Code Coverage: $COVER%"
-          echo "Other Code Coverage: $OTHER%"
+          echo "Coverage: $COVER"
           echo "Coverage Numeric: $COVER_NUMERIC"
           echo "PASS_ID: $PASS_ID"
 
@@ -264,7 +254,6 @@ jobs:
           echo "COVER_NUMERIC=$COVER_NUMERIC" >> $GITHUB_ENV
           echo "PASS_ID=$PASS_ID" >> $GITHUB_ENV
           echo "BENCHMARK=$BENCHMARK" >> $GITHUB_ENV
-          echo "OTHER=$OTHER" >> $GITHUB_ENV
           echo "✅ Coverage data exported to environment variables."
 
           if [[ "$COVER_NUMERIC" -lt "$BENCHMARK" ]]; then
@@ -297,7 +286,6 @@ jobs:
           COVER: ${{ env.COVER }}
           COVER_NUMERIC: ${{ env.COVER_NUMERIC }}
           BENCHMARK: ${{ env.BENCHMARK }}
-          OTHER: ${{ env.OTHER }}
         run: |
           coverage report || true
 
@@ -306,7 +294,6 @@ jobs:
               SEGMENTED="$MISS"
               EFFICIENCY_POINTER=100
 
-              OTHER="${{ env.OTHER }}%"
               QUOTIENT=$(echo "$STMTS - $SEGMENTED" | bc)
               PASSING=$(echo "$QUOTIENT * $COVER_NUMERIC / 100" | bc -l)
               COVERAGE=$(echo "$SEGMENTED + $PASSING" | bc -l | xargs printf "%.2f")
@@ -314,18 +301,15 @@ jobs:
               MARGINAL_ERROR=$(echo "$ME / 100" | bc -l)
 
               # Format outputs to two decimal places where appropriate
-              echo "Qiskit Connector Code Coverage Analysis Summary:"
-              echo "============================================================="
               printf "Total Executable Code: %s\n" "$STMTS"
               printf "Code Area Outside Qiskit Connector: %s\n" "$SEGMENTED"
               printf "Qiskit Connector Code Area: %s%%\n" "$COVER"
               printf "Qiskit Connector Numeric Coverage: %s\n" "$COVER_NUMERIC"
-              printf "Other Code Coverage: %s%%\n" "$OTHER%"
               printf "Passing Coverage (Computed): %.2f\n" "$PASSING"
               printf "Qiskit Connector Analyzed Coverage Status (Computed): %.2f\n" "$COVERAGE"
               printf "Marginal Error: %.4f\n" "$MARGINAL_ERROR"
           else
-              echo "❌ Tests data not collected."
+              echo "❌ Tests did not pass. Coverage report may be incomplete."
           fi
 
           # Set the coverage status as output for the next step
