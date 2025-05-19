@@ -404,7 +404,7 @@ jobs:
           label: "Qiskit Connector Code Coverage Analysis"
           label-color: "555"
           status: "${{ steps.coverage_id_02.outputs.analyzed_status }}"
-          color: ${{ env.status_color }}
+          color: $status_color
           style: classic
           path: docs/badges/coverage.svg
 
