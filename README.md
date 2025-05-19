@@ -1,13 +1,11 @@
-# Qiskit Connector
+# ⚛️ Qiskit Connector
 
 [![Python](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/python.svg)](https://www.python.org/downloads) [![Qiskit Connector Quality Check](https://github.com/QComputingSoftware/pypi-qiskit-connector/actions/workflows/quality.yml/badge.svg)](https://github.com/QComputingSoftware/pypi-qiskit-connector) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15349641.svg)](https://doi.org/10.5281/zenodo.15304310) [![Qiskit Connector Code Coverage Analysis](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/coverage.svg)](https://github.com/QComputingSoftware/pypi-qiskit-connector) [![Qiskit Connector Latest Release](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/release.svg)](https://github.com/QComputingSoftware/pypi-qiskit-connector/releases) [![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector) [![License](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/license-badge.svg)](https://opensource.org/licenses/Apache-2.0) [![Downloads](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/monthly-downloads.svg)](https://pypi.org/project/qiskit-connector)
 
 
-
-
 ###### Install from Pypi: [https://pypi.org/project/qiskit-connector](https://pypi.org/project/qiskit-connector)
 
-**⚛️Quantum Computing Qiskit Connector For Quantum Backend Use In Realtime**
+**🖥️ Quantum Computing Qiskit Connector For Quantum Backend Use In Realtime**
 
 The Qiskit Connector transforms how quantum developers connect to IBM Quantum backends by automating every step of the authentication, plan detection, and backend selection process. Instead of writing extensive boilerplate setup code for each project, developers can now seamlessly authenticate, dynamically detect whether they are using an `Open` or `Paid` plan, and instantly access the optimal backend `QPU`resource which is least-busy using a single intuitive keyword: `backend`. The connector intelligently manages quantum computing plan environment variables and Qiskit runtime service configuration for sticky reusability of QPU resources from the backend, allowing quantum developers to streamline connection workflows and immediately focus on building, testing, and scaling quantum applications.
 <br><br>
