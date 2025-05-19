@@ -383,9 +383,9 @@ jobs:
           COLOR_COVER: ${{ env.color_cover }}
         run: |
           if [[ "$COLOR_COVER" -lt 90 ]]; then
-              status_color="#ffa500" # Orange
+              status_color="orange" # Orange
           else
-              status_color="#0072bb" # Blue
+              status_color="blue" # Blue
           fi
           echo "status_color=$status_color" >> $GITHUB_ENV
 
