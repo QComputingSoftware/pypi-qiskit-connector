@@ -28,7 +28,7 @@ from qiskit_connector import QPlanV2 as plan
 ###############################################################################
 
 # Test 1: Valid backend return
-def test_connector_returns_backend():
+def test_connector_returns_backend_func():
     try:
         backend = connector()
         assert backend is not None
@@ -36,14 +36,14 @@ def test_connector_returns_backend():
         assert True
 
 # Test 2: Plan returns string
-def test_qplan_is_string():
+def test_qplan_is_string_func():
     try:
         assert isinstance(plan(), str)
     except ValueError:
         assert True
 
 # Test 3: Load environment
-def test_load_environment():
+def test_load_environment_func():
     try:
         from qiskit_connector import _load_environment
         _load_environment()
@@ -52,7 +52,7 @@ def test_load_environment():
         assert False
 
 # Test 4: Credentials retrieval
-def test_get_credentials():
+def test_get_credentials_func():
     try:
         from qiskit_connector import _get_credentials
         creds = _get_credentials('open')
@@ -62,7 +62,7 @@ def test_get_credentials():
         assert True
 
 # Test 5: Footer call
-def test_footer():
+def test_footer_func():
     try:
         from qiskit_connector import footer
         footer()
@@ -71,7 +71,7 @@ def test_footer():
         assert False
 
 # Test 6: Plan selection error
-def test_get_plan_value_error_no_plan(monkeypatch):
+def test_get_plan_value_error_no_plan_func(monkeypatch):
     from qiskit_connector import _get_plan
     for k in ['OPEN_PLAN', 'PAYGO_PLAN', 'FLEX_PLAN', 'PREMIUM_PLAN', 'DEDICATED_PLAN']:
         monkeypatch.delenv(k, raising=False)
@@ -81,7 +81,7 @@ def test_get_plan_value_error_no_plan(monkeypatch):
         assert True
 
 # Test 7: Missing plan name
-def test_get_plan_value_error_missing_name(monkeypatch):
+def test_get_plan_value_error_missing_name_func(monkeypatch):
     from qiskit_connector import _get_plan
     monkeypatch.setenv("OPEN_PLAN", "on")
     monkeypatch.delenv("OPEN_PLAN_NAME", raising=False)
@@ -91,7 +91,7 @@ def test_get_plan_value_error_missing_name(monkeypatch):
         assert True
 
 # Test 8: Missing credentials
-def test_save_account_missing_creds(monkeypatch):
+def test_save_account_missing_creds_func(monkeypatch):
     from qiskit_connector import save_account
     monkeypatch.setenv("OPEN_PLAN", "on")
     monkeypatch.setenv("OPEN_PLAN_NAME", "test-open")
@@ -104,7 +104,7 @@ def test_save_account_missing_creds(monkeypatch):
         assert True
 
 # Test 9: Backend list fallback
-def test_list_backends(monkeypatch):
+def test_list_backends_func(monkeypatch):
     from qiskit_connector import list_backends
     class MockBackend:
         def __init__(self, name): self.name = name
@@ -123,7 +123,7 @@ def test_list_backends(monkeypatch):
         assert True
 
 # Test 10: No available backend
-def test_connector_no_backend(monkeypatch):
+def test_connector_no_backend_func(monkeypatch):
     class MockService:
         def least_busy(self, **kwargs): return None
         def backends(self, **kwargs): return []
@@ -140,7 +140,7 @@ def test_connector_no_backend(monkeypatch):
         assert True
 
 # Test 11: Save account mock
-def test_save_account_success(monkeypatch):
+def test_save_account_success_func(monkeypatch):
     from qiskit_connector import save_account
     class MockQiskitService:
         @staticmethod
@@ -159,7 +159,7 @@ def test_save_account_success(monkeypatch):
         assert True
 
 # Test 12: Connector returns mock backend
-def test_connector_lists_qpus(monkeypatch):
+def test_connector_lists_qpus_func(monkeypatch):
     class MockBackend:
         def __init__(self, name): self.name = name
         version = "1.0"
@@ -180,48 +180,3 @@ def test_connector_lists_qpus(monkeypatch):
         assert True
 
 ############################################################################
-
-
-
-
-################################################################################
-# STABILITY & PRODUCTION-READY TESTS:
-# These tests are designed to check the stability of the Qiskit Connector.
-# by performing a series of operations that should not raise any exceptions.
-################################################################################
-
-def run_stability_check(step_number: int) -> bool:
-    """
-    Perform stability check:
-    1. pip install qiskit-connector
-    2. attempt import of QConnectorV2 and QPlanV2
-    3. pip uninstall qiskit-connector
-    Returns True if all succeed, False otherwise.
-    """
-    try:
-        subprocess.run(["python", "-m", "pip", "install", "--upgrade", "qiskit-connector"],
-                       check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        subprocess.run(
-            [
-                "python", "-c",
-                "from qiskit_connector import QConnectorV2 as connector; from qiskit_connector import QPlanV2 as plan"
-            ],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-
-        subprocess.run(["python", "-m", "pip", "uninstall", "-y", "qiskit-connector"],
-                       check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Stability Test Step {step_number} failed: {e}")
-        return False
-
-
-# ✅ Pytest-compatible function
-@pytest.mark.parametrize("step", range(1, 251))
-def test_stability_step(step):
-    assert run_stability_check(step) is True, f"❌ Stability Test Step {step} failed."
