@@ -10,8 +10,8 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: '27 7 * * 1-5'   
-    - cron: '27 9 * * 1-5'   
+    - cron: '27 7 * * 1-5'  # 2:27 AM EST (7:27 UTC) Monday to Friday
+    - cron: '27 9 * * 1-5'  # 4:27 AM EST (9:27 UTC) Monday to Friday
 
 jobs:
   os-matrix-test:
@@ -19,8 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
+        os: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04, macos-latest, macos-14, macos-13, windows-latest, windows-2022, windows-2019]
     steps:
       - name: 🧾 Checkout
         uses: actions/checkout@v4
