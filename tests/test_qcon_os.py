@@ -14,7 +14,8 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 
-def fetch_latest_versions(package_url, limit=10):
+# Test 1:
+def test_fetch_latest_versions_0(package_url, limit=10):
     response = requests.get(package_url)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
@@ -24,13 +25,12 @@ def fetch_latest_versions(package_url, limit=10):
         versions.append(version)
     return versions[:limit]
 
-# Fetch first 10 most recent versions at import time
-VERSIONS_TO_TEST = fetch_latest_versions("https://pypi.org/project/qiskit-connector/#history", 10)
-
-def make_install_test(version, idx):
+# Test 2:
+def test_make_install_test_0(version, idx):
     def test_func():
         os_type = platform.system()
-        print(f"Running installation test {idx} on: {os_type} for qiskit-connector=={version}")
+        print(f"Running installation test {idx} on: {os_type}")
+        print(f"Attempting to install qiskit-connector=={version}")
         try:
             result = subprocess.run(
                 [sys.executable, "-m", "pip", "install", f"qiskit-connector=={version}"],
@@ -43,10 +43,99 @@ def make_install_test(version, idx):
         except subprocess.CalledProcessError as e:
             print(e.stderr.decode())
             assert False, f"Installation test failed on {os_type} for version {version}: {e}"
-    test_func.__name__ = f"test_install_qiskit_connector_on_os_t{idx}"
+    test_func.__name__ = f"test_install_qiskit_connector_on_os_t0{idx}"
     return test_func
 
-# Dynamically create and register 10 tests
-for idx, version in enumerate(VERSIONS_TO_TEST, 1):
-    globals()[f"test_install_qiskit_connector_on_os_t{idx}"] = make_install_test(version, idx)
+# ------------------------
+# PYTEST UNIT TESTS BELOW:
+# ------------------------
 
+# Test 1:
+def test_fetch_latest_versions_0():
+    url = "https://pypi.org/project/qiskit-connector/#history"
+    versions = test_fetch_latest_versions_0(url, 5)
+    print("Fetched versions:", versions)
+    # Check we have at least 1 version and they look like version strings
+    assert len(versions) > 0
+    assert all(isinstance(v, str) and "." in v for v in versions)
+
+def test_make_install_test():
+    url = "https://pypi.org/project/qiskit-connector/#history"
+    versions = test_fetch_latest_versions_0(url, 1)
+    assert versions, "No versions found"
+    version = versions[0]
+    idx = 1
+    fn = test_make_install_test_0(version, idx)
+    assert callable(fn)
+    assert fn.__name__ == "test_install_qiskit_connector_on_os_t1"
+
+
+# Test 4:
+def test_install_qiskit_connector_on_os_consume_v4():
+    os_type = platform.system()
+    print(f"Running installation test on: {os_type}")
+
+    try:
+        # Attempt pip installation simulation
+        result = subprocess.run([sys.executable, "-m", "pip", "install", "qiskit-connector"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(result.stdout.decode())
+        assert result.returncode == 0, f"Installation failed on {os_type}"
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode())
+        assert False, f"Installation test failed on {os_type}: {e}"
+
+# Test 5:
+def test_install_qiskit_connector_on_os_consume_v5():
+    os_type = platform.system()
+    print(f"Running installation test on: {os_type}")
+
+    try:
+        # Attempt pip installation simulation
+        result = subprocess.run([sys.executable, "-m", "pip", "install", "qiskit-connector"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(result.stdout.decode())
+        assert result.returncode == 0, f"Installation failed on {os_type}"
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode())
+        assert False, f"Installation test failed on {os_type}: {e}"
+
+# Test 6:
+def test_install_qiskit_connector_on_os_consume_v6():
+    os_type = platform.system()
+    print(f"Running installation test on: {os_type}")
+
+    try:
+        # Attempt pip installation simulation
+        result = subprocess.run([sys.executable, "-m", "pip", "install", "qiskit-connector"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(result.stdout.decode())
+        assert result.returncode == 0, f"Installation failed on {os_type}"
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode())
+        assert False, f"Installation test failed on {os_type}: {e}"
+
+# Test 7:
+def test_install_qiskit_connector_on_os_consume_v7():
+    os_type = platform.system()
+    print(f"Running installation test on: {os_type}")
+
+    try:
+        # Attempt pip installation simulation
+        result = subprocess.run([sys.executable, "-m", "pip", "install", "qiskit-connector"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(result.stdout.decode())
+        assert result.returncode == 0, f"Installation failed on {os_type}"
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode())
+        assert False, f"Installation test failed on {os_type}: {e}"
+
+# Test 8:
+def test_install_qiskit_connector_on_os_consume_v8():
+    os_type = platform.system()
+    print(f"Running installation test on: {os_type}")
+
+    try:
+        # Attempt pip installation simulation
+        result = subprocess.run([sys.executable, "-m", "pip", "install", "qiskit-connector"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(result.stdout.decode())
+        assert result.returncode == 0, f"Installation failed on {os_type}"
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode())
+        assert False, f"Installation test failed on {os_type}: {e}"
