@@ -5,7 +5,10 @@
 # @ Reference:  This workflow ensures that all necessary checks are performed regularly to maintain software integrity. 
 
 name: Force Sync - Periodic Quality Control
+
 on:
+  push:
+    branches: [ "pypi" ]
   workflow_dispatch:
     inputs:
       force:
@@ -13,29 +16,10 @@ on:
         required: false
         default: 'false'
 
-  # Trigger on push to main branch:
-  push:
-    branches: [ "main" ]
-
- # Trigger on schedule:
   schedule:
-    - cron: '0 3 * * *'     # 11 PM EST.
-    - cron: '0 10 * * *'    # 6 AM EST.
-    - cron: '0 15 * * *'    # 3 PM EST.  
-    - cron: '0 20 * * *'    # 8 PM EST.
-    - cron: '0 23 * * *'    # 11 PM EST.
-    - cron: '0 17 * * *'    # 1 AM EST.
-    - cron: '0 20 * * *'    # 4 AM EST.
-    - cron: '0 23 * * *'    # 7 AM EST.
-    - cron: '0 2 * * *'     # 10 AM EST.
-    - cron: '0 5 * * *'     # 1 PM EST.
-    - cron: '0 8 * * *'     # 4 PM EST.
-    - cron: '0 11 * * *'    # 7 PM EST.
-    - cron: '0 14 * * *'    # 10 PM EST.
-    - cron: '0 17 * * *'    # 1 AM EST.
-    - cron: '0 20 * * *'    # 4 AM EST.
-    - cron: '0 23 * * *'    # 7 AM EST.
-    - cron: '0 2 * * *'     # 10 AM EST.
+    - cron: '0 1 * * *'    
+    - cron: '0 3 * * *'    
+    - cron: '0 5 * * *'    
 
   workflow_run:
     workflows:
@@ -44,7 +28,6 @@ on:
       - Python Compatibility
     types:
       - completed
-
 
 permissions:
   actions: write
@@ -63,7 +46,6 @@ jobs:
     name: 🔄 Conditional Trigger of Release Sync Jobs
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
-
     steps:
       - name: 🔎 Ensure we're on main (scheduled run)
         if: github.event_name == 'schedule'
@@ -76,7 +58,6 @@ jobs:
             exit 0
           fi
 
-
       - name: ⏳ Wait for all required workflows to complete successfully
         uses: ahmadnassri/action-workflow-queue@v1
         with:
@@ -85,10 +66,9 @@ jobs:
             Qiskit Connector Quality Check
             Python Compatibility
           repo: ${{ github.repository }}
-          token: ${{ secrets.PAT_GITHUB }}
-          wait: true
-          fail-fast: true
-          required-status: completed
+          delay: 2m
+          timeout: 48m
+          github-token: ${{ secrets.PAT_GITHUB }}
 
 
       #______________________________________________________________________________________________________

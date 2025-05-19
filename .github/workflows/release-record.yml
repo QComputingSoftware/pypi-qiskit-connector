@@ -6,10 +6,10 @@ name: Sync PyPI Releases to GitHub
 on:
   push:
     branches:
-      - main
-      # stable
-
-  workflow_dispatch: # Required for external workflows to trigger this via API
+      - pypi
+  workflow_dispatch: 
+  schedule:
+    - cron: '33 0 * * 6'   
 
 permissions:
   contents: write
@@ -26,6 +26,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Git Hard Reset Main
+        run: |
+          git fetch origin
+          git checkout main
+          git reset --hard origin/main
+
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
 
       - name: Set up Python
         uses: actions/setup-python@v4

@@ -20,6 +20,9 @@ __pycache__/
 *.coverage.*
 *.coveragerc  
 
+
+pvars.sh
+
 # Ignore Jupyter Notebook checkpoints
 #tools/quantum-account.py
 test.py

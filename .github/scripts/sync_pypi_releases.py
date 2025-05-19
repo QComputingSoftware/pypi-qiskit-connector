@@ -2,7 +2,7 @@ import requests
 import os
 
 GITHUB_API = "https://api.github.com"
-REPO = "schijioke-uche/pypi-qiskit-connector"
+REPO = "QComputingSoftware/pypi-qiskit-connector"
 PYPI_PROJECT = "qiskit-connector"
 
 def get_pypi_versions():

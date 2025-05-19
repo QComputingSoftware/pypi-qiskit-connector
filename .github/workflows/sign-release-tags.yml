@@ -1,19 +1,17 @@
-# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
-# @last update: 2025-03-01
-# @Description: This workflow builds a license badge that show the license type of the software for markdown files.
-# @BadgeLocation:  doc/badges/license-badge.svg
-# @File: .github/workflows/license.yml
-# @License: Apache-2.0, Creative Commons Attribution 4.0..
-#___________________________________________________________
+# @Author: Dr. Jeffrey Chijioke-Uche
+# @Last Modified: 2025-05-10
+# @Purpose: Automatically sign all unsigned GitHub release tags/commits using GPG and verified secret identity.
+# @Signer: Dr. Jeffrey Chijioke-Uche
+#_______________________________________________________________________________________________________________
 
-name: Software License Badge
+name: 🔐 Sign & Verify All Release Tags
 
 on:
   push:
-    branches: ["pypi"]
-  workflow_dispatch:
+    branches: [pypi]
+  workflow_dispatch: 
   schedule:
-    - cron: '29 7 * * 1-5'   
+    - cron: '0 9 * * 0'  
 
 permissions:
   contents: write
@@ -41,47 +39,24 @@ env:
   EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
 
 jobs:
-  license-badge:
-    name: 🏷️ License Badge Generator
+  sign-release-tags:
     runs-on: ubuntu-latest
 
-    env:
-      GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
-      GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
-      GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
-      GPG_GITHUB_TOKEN: ${{ secrets.GPG_GITHUB_OPERATOR }}
-
     steps:
-      - name: ⬇️ Checkout main branch
+      - name: 📦 Checkout Repository
         uses: actions/checkout@v4
         with:
-          ref: refs/heads/main
-
+          fetch-depth: 0
+      
       - name: Git Hard Reset Main
         run: |
           git reset --hard origin/main
           git pull origin main
+    #____________________________________________________________________________________ 
+    # This job is responsible for GPG key pair with GitHub.
+    # It ensures that the GPG key is available for signing commits and tags.
+    #____________________________________________________________________________________
 
-      - name: Qiskit Connector Active State
-        env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
-        run: |
-          python .github/scripts/pkg_active_check.py
-
-      - name: 📂 Ensure badge directory exists
-        run: mkdir -p doc/badges
-
-      - name: 🛠️ Generate license badge
-        uses: emibcn/badge-action@v2
-        with:
-          label: "licenses"
-          label-color: "555"
-          status: "Apache-2.0 | Creative Commons Attribution 4.0"
-          color: "7DD71D"
-          style: "classic"
-          path: "docs/badges/license-badge.svg"
-
-      #_____________________________________________________________________________
       - name: Install jq (JSON processor)
         run: sudo apt-get update && sudo apt-get install -y jq
 
@@ -201,27 +176,59 @@ jobs:
           git config --global commit.gpgsign true
 
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
-      #_____________________________________________________________________________
+      #__________________________________________________________________________________
+   
 
-      - name: 🚀 Commit badge
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      #____________________________________________________________________________________
+      # This job is responsible for signing all unsigned release tags and commits.
+      # It ensures that all tags and commits are properly signed with the GPG key.
+      #____________________________________________________________________________________
+      - name: 🏷️ Sign All Unsigned Release Tags
         run: |
+          for tag in $(git tag --sort=creatordate); do
+            echo "🔍 Checking tag: $tag"
+            if ! git tag -v "$tag" 2>&1 | grep -q "Good signature"; then
+              echo "🔄 Re-signing tag: $tag"
+              commit_sha=$(git rev-list -n 1 "$tag")
+              tag_message=$(git for-each-ref --format="%(contents)" refs/tags/$tag)
 
-          git add docs/badges/license-badge.svg || echo "⚠️ No changes to add"
+              git tag -d "$tag"
+              GIT_COMMITTER_DATE="$(git show -s --format=%ci "$commit_sha")" \
+              GIT_AUTHOR_DATE="$(git show -s --format=%ci "$commit_sha")" \
+              git tag -s -u "$GPG_KEY_ID" "$tag" "$commit_sha" -m "$tag_message"
+              echo "✅ Tag now signed with GPG key: $GPG_KEY_ID"
+              echo "📤 Pushing signed tag to remote..."
+              git push --force origin "$tag"
+            else
+              echo "✅ Tag $tag already signed. Skipping."
+            fi
+          done
 
-          git commit --gpg-sign="$GPG_KEY_ID" -m "🔖 Quantum Computing Code Update Badge - Inteli Check" || echo "⚠️ No changes to commit"
+      - name: 🖊️ Sign All Unsigned Commits
+        run: |
+          for commit in $(git rev-list --all); do
+            if ! git verify-commit $commit &>/dev/null; then
+              echo "🔄 Re-signing commit: $commit"
+              GIT_COMMITTER_DATE="$(git show -s --format=%ci $commit)" \
+              GIT_AUTHOR_DATE="$(git show -s --format=%ci $commit)" \
+              GIT_AUTHOR_NAME="$GPG_NAME_REAL" \
+              GIT_AUTHOR_EMAIL="$GPG_NAME_EMAIL" \
+              GIT_COMMITTER_NAME="$GPG_NAME_REAL" \
+              GIT_COMMITTER_EMAIL="$GPG_NAME_EMAIL" \
 
-          git fetch origin main  || echo "⚠️ No changes to fetch"
+              git commit --amend --gpg-sign="$GPG_KEY_ID" --no-edit || true
+              echo "✅ Now signed with GPG key: $GPG_KEY_ID"
 
-          git merge origin/main --no-edit || echo "⚠️ No changes to merge"
+              echo '📦 Fetching latest changes from remote...'
+              git fetch origin
 
-          echo "Checking for changes to push..."
-          sleep 7
-          
-          git push origin HEAD:${{ github.ref_name }}
-          
-    
+              echo '🔄 Check-1: Merging changes from remote main branch...'
+              git merge origin/main --no-edit --allow-unrelated-histories || echo "⚠️ No unrelated histories to merge"
 
-
-
+              echo "📤 Pushing signed commit to remote..."
+              git push -f origin HEAD:${{ github.ref_name }}
+            else
+              echo "✅ Commit $commit already signed. Skipping."
+            fi
+          done

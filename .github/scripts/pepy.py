@@ -56,7 +56,7 @@ def get_qiskit_connector_td_pro_api_v3():
 
 td = get_qiskit_connector_td_pro_api_v3()
 if td is not None:
-    md = round(td * 0.4333)
+    md = round(td * 0.4998)
     print(f"✅ Monthly downloads successfully retrieved!")
 
     dv = f"{md:,}"

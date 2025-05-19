@@ -6,9 +6,11 @@ name: PyPI Deployment Environment
 on:
   push:
     branches:
-      - main
-
-  workflow_dispatch:  # Required for external workflows to trigger this via API
+      - pypi
+  workflow_dispatch:  
+  schedule:
+    - cron: '14 8 * * 1-5'    
+    - cron: '14 10 * * 1-5'  
 
 permissions:
   contents: write
@@ -28,6 +30,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Git Hard Reset Main
+        run: |
+          git reset --hard origin/main
+          git pull origin main
+
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
 
       - name: Echo Deployment Context
         run: |
