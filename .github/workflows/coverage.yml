@@ -262,7 +262,7 @@ jobs:
 
           # Run the coverage command: BareLine Option
           #-------------------------------------------
-          coverage run -m pytest tests/test_qcon_func.py tests/test_qcon_os_compat.py tests/test_qcon_os.py tests/test_qcon_pkg.py tests/test_qcon_runtime.py tests/test_qcon_consumption.py
+          coverage run -m pytest tests/test_qcon_func.py tests/test_qcon_os_compat.py tests/test_qcon_version.py tests/test_qcon_pkg.py tests/test_qcon_runtime.py tests/test_qcon_consumption.py
           REPORT_TABLE=$(coverage report || true)
           if [[ -z "$REPORT_TABLE" ]]; then
             echo "::warning::Coverage report is empty or not generated."
