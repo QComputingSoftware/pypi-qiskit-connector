@@ -219,24 +219,11 @@ jobs:
           echo "✅ Qiskit connector packages listed."
 
 
-
-
-      # - name: 🐛 Debug directory structure and source
-      #   run: |
-      #     pwd
-      #     ls -R . # List all files recursively to see the structure
-      #     # Specifically check if 'qiskit_connector' directory exists where expected
-      #     echo "--- Checking for qiskit_connector directory ---"
-      #     find . -name "qiskit_connector" -type d
-
-
-
-
       - name: 🧪 Run pkg tests with coverage
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
-          SOURCE_DIR="https://github.com/QComputingSoftware/qiskit-connector/tree/main/qiskit_connector"
+          SOURCE_DIR="qiskit_connector" # URL argument accepted as well.
           coverage_run() {
             # Array of coverage run options
             COVERAGE_COMMANDS=(
@@ -399,7 +386,7 @@ jobs:
         with:
           label: "Qiskit Connector Code Coverage Analysis"
           label-color: "555"
-          status: "${{ steps.coverage_id_02.outputs.analyzed_status }}%"
+          status: "${{ steps.coverage_id_02.outputs.analyzed_status }}"
           color: blue
           style: classic
           path: docs/badges/coverage.svg

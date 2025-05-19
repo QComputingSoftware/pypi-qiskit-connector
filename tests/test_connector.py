@@ -222,6 +222,6 @@ def run_stability_check(step_number: int) -> bool:
 
 
 # ✅ Pytest-compatible function
-@pytest.mark.parametrize("step", range(1, 201))
+@pytest.mark.parametrize("step", range(1, 251))
 def test_stability_step(step):
     assert run_stability_check(step) is True, f"❌ Stability Test Step {step} failed."
