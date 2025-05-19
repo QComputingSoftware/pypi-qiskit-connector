@@ -363,7 +363,8 @@ jobs:
           # Set the coverage status as output for the next step
           #---------------------------------------------------
           echo "analyzed_status=$COVER" >> $GITHUB_OUTPUT
-
+          COLOR_COVER="${COVER%\%}"
+          echo "color_cover=$COLOR_COVER" >> $GITHUB_ENV
 
       #################################################################################
       # - name: 🛠️ Generate coverage badge                                           #
@@ -371,12 +372,23 @@ jobs:
       #   with:                                                                       #
       #     label: "Qiskit Connector Code Coverage Analysis"                          #
       #     label-color: "555"                                                        #
-      #     status: "${{ steps.coverage.outputs.passrate }}%"                         #
+      #     status: "${{ steps.coverage.outputs.passrate }}%"                          #
       #     color: blue                                                               #
       #     style: classic                                                            #
       #     path: docs/badges/coverage.svg                                            #
       #################################################################################
      
+      - name: Status Color Confirmation
+        env:
+          COLOR_COVER: ${{ env.color_cover }}
+        run: |
+          if [[ "$COLOR_COVER" -lt 90 ]]; then
+              status_color="#ffa500" # Orange
+          else
+              status_color="#0072bb" # Blue
+          fi
+          echo "status_color=$status_color" >> $GITHUB_ENV
+
 
       - name: 📂 Ensure badge directory exists
         run: |
@@ -384,12 +396,15 @@ jobs:
 
 
       - name: 🛠️ Generate coverage badge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          status_color: ${{ env.status_color }}
         uses: emibcn/badge-action@v2
         with:
           label: "Qiskit Connector Code Coverage Analysis"
           label-color: "555"
           status: "${{ steps.coverage_id_02.outputs.analyzed_status }}"
-          color: blue
+          color: ${{ env.status_color }}
           style: classic
           path: docs/badges/coverage.svg
 
