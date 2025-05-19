@@ -385,8 +385,12 @@ jobs:
         run: |
           if [[ "$COLOR_COVER" -lt 90 ]]; then
               STATUS_COLOR="orange" # Orange
+              echo "⚠️ Coverage is below 90%. Status color set to orange."
+              echo "🧪 Coverage: $COLOR_COVER% is below the threshold of 90%."
           else
               STATUS_COLOR="blue" # Blue
+              echo "✅ Coverage is above 90%. Status color set to blue."
+              echo "🧪 Coverage: $COLOR_COVER% is above the threshold of 90%."
           fi
           echo "status_color=$STATUS_COLOR" >> $GITHUB_OUTPUT
           echo "STATUS_COLOR=$STATUS_COLOR" >> $GITHUB_ENV
@@ -395,6 +399,7 @@ jobs:
       - name: 📂 Ensure badge directory exists
         run: |
           mkdir -p docs/badges
+          echo "✅ Badge directory created or already exists."
 
 
       - name: 🛠️ Generate coverage badge
