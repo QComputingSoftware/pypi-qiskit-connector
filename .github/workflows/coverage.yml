@@ -364,7 +364,7 @@ jobs:
           #---------------------------------------------------
           echo "analyzed_status=$COVER" >> $GITHUB_OUTPUT
           COLOR_COVER="${COVER%\%}"
-          echo "color_cover=$COLOR_COVER" >> $GITHUB_ENV
+          echo "COLOR_COVER=$COLOR_COVER" >> $GITHUB_ENV
 
       #################################################################################
       # - name: 🛠️ Generate coverage badge                                           #
@@ -378,16 +378,16 @@ jobs:
       #     path: docs/badges/coverage.svg                                            #
       #################################################################################
      
-      - name: Status Color Confirmation
+      - name: Status Color Determination
         env:
-          COLOR_COVER: ${{ env.color_cover }}
+          COLOR_COVER: ${{ env.COLOR_COVER }}
         run: |
           if [[ "$COLOR_COVER" -lt 90 ]]; then
-              status_color="orange" # Orange
+              STATUS_COLOR="orange" # Orange
           else
-              status_color="blue" # Blue
+              STATUS_COLOR="blue" # Blue
           fi
-          echo "status_color=$status_color" >> $GITHUB_ENV
+          echo "STATUS_COLOR=$STATUS_COLOR" >> $GITHUB_ENV
 
 
       - name: 📂 Ensure badge directory exists
@@ -398,13 +398,13 @@ jobs:
       - name: 🛠️ Generate coverage badge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          status_color: ${{ env.status_color }}
+          STATUS_COLOR: ${{ env.STATUS_COLOR }}
         uses: emibcn/badge-action@v2
         with:
           label: "Qiskit Connector Code Coverage Analysis"
           label-color: "555"
           status: "${{ steps.coverage_id_02.outputs.analyzed_status }}"
-          color: $status_color
+          color: $STATUS_COLOR
           style: classic
           path: docs/badges/coverage.svg
 
