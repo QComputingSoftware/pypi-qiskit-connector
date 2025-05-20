@@ -428,6 +428,9 @@ jobs:
 ################################################################################################################
 #                                           GPG AUTO GENERATOR
 ################################################################################################################
+################################################################################################################
+#                                           GPG AUTO GENERATOR
+################################################################################################################
       - name: GPG Auto Generator
         id: auto_gpg_id_01
         env:
@@ -438,6 +441,8 @@ jobs:
           PAT_GITHUB: ${{ secrets.PAT_GITHUB }} # Needs read:gpg_key and write:gpg_key permissions
         shell: bash
         run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
           set -e # Exit immediately if a command exits with a non-zero status.
           set -o pipefail # Causes a pipeline to return the exit status of the last command in the pipe that failed.
 
@@ -469,16 +474,32 @@ jobs:
             chmod 700 ~/.gnupg
 
             echo "🔧 Configuring GPG and GPG Agent for non-interactive use..."
+            # Touch files first to ensure they exist before grep attempts
+            touch ~/.gnupg/gpg.conf
+            touch ~/.gnupg/gpg-agent.conf
             grep -qxF "use-agent" ~/.gnupg/gpg.conf || echo "use-agent" >> ~/.gnupg/gpg.conf
             grep -qxF "pinentry-mode loopback" ~/.gnupg/gpg.conf || echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
             grep -qxF "allow-loopback-pinentry" ~/.gnupg/gpg-agent.conf || echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
             
             echo "🔄 Restarting GPG Agent to apply settings..."
             gpgconf --kill gpg-agent &>/dev/null || true
-            gpg-agent --daemon --pinentry-program /usr/bin/pinentry-loopback --allow-loopback-pinentry
+            sleep 1 # Give a moment for the agent to die
+            # Launch new agent and source its environment
+            if ! gpg-agent --daemon --pinentry-program /usr/bin/pinentry-loopback --allow-loopback-pinentry --write-env-file "${HOME}/.gpg-agent-info"; then
+                echo -e "${RED}⛔ ERROR: Failed to start gpg-agent with specified pinentry mode.${RESET}"
+                exit 1
+            fi
+            if [ -f "${HOME}/.gpg-agent-info" ]; then
+                source "${HOME}/.gpg-agent-info"
+                export GPG_TTY=$(tty) # Set GPG_TTY after agent info is sourced
+            else
+                echo -e "${RED}⛔ ERROR: gpg-agent did not write env file.${RESET}"
+                exit 1
+            fi
+            echo "✅ GPG Agent restarted and configured."
+
 
             echo "🔐 Generating new GPG key with passphrase using batch configuration..."
-            # ---- MODIFIED SECTION: Replaced here-document with printf ----
             printf "%s\n" \
               "%echo Generating a GPG key" \
               "Key-Type: RSA" \
@@ -492,7 +513,6 @@ jobs:
               "Passphrase: ${GPG_PASSPHRASE}" \
               "%commit" \
               "%echo Done" > gpg-batch.conf
-            # ---- END OF MODIFIED SECTION ----
 
             if ! gpg --batch --generate-key gpg-batch.conf; then
               echo -e "${RED}⛔ ERROR: GPG key generation failed.${RESET}"; exit 1
@@ -569,10 +589,11 @@ jobs:
             echo "✅ GPG key processing complete and Git configured!"
 
             # Using consistent uppercase for env vars set via GITHUB_OUTPUT/GITHUB_ENV
+            # Removing duplicate GITHUB_OUTPUT lines. Keeping one set.
             echo "AUTO_GENERATED_GPG_KEY_ID=$GPG_KEY_ID_16CHAR" >> "$GITHUB_OUTPUT"
-            echo "AUTO_GENERATED_GPG_KEY_ID=$GPG_KEY_ID_16CHAR" >> "$GITHUB_ENV"
+            echo "AUTO_GENERATED_GPG_KEY_ID_ENV=$GPG_KEY_ID_16CHAR" >> "$GITHUB_ENV" # Use distinct name for ENV if needed, or same if intended
             echo "AUTO_GENERATED_GPG_FINGERPRINT=$GPG_FULL_FINGERPRINT" >> "$GITHUB_OUTPUT"
-            echo "AUTO_GENERATED_GPG_FINGERPRINT=$GPG_FULL_FINGERPRINT" >> "$GITHUB_ENV"
+            echo "AUTO_GENERATED_GPG_FINGERPRINT_ENV=$GPG_FULL_FINGERPRINT" >> "$GITHUB_ENV" # Use distinct name for ENV
 
             rm -f gpg-batch.conf publickey.asc gh_upload_response.txt existing_keys.json
           } # End of GPGAUTO function
