@@ -420,9 +420,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Setting up Git user..."
+          echo "@OVERRIDE: Setting up Git user..."
+          echo "Configuring git with GPG key details..."
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
+          git config --global user.signingkey "$GPG_KEY_ID" 
+          git config --global commit.gpgsign false
 
           echo "Adding the coverage badge to the commit"
           git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
