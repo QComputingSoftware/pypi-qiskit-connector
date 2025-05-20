@@ -384,11 +384,11 @@ jobs:
           COLOR_COVER: ${{ env.COLOR_COVER }}
         run: |
           if [[ "$COLOR_COVER" -lt 90 ]]; then
-              STATUS_COLOR="#b7950b" # Orange/gold:#b7950b 
+              STATUS_COLOR="orange" # Orange/gold:#b7950b 
               echo "⚠️ Coverage is below 90%. Status color set to orange."
               echo "🧪 Coverage: $COLOR_COVER% is below the threshold of 90%."
           else
-              STATUS_COLOR="#007bff" # Blue
+              STATUS_COLOR="blue" # Blue
               echo "✅ Coverage is above 90%. Status color set to blue."
               echo "🧪 Coverage: $COLOR_COVER% is above the threshold of 90%."
           fi
