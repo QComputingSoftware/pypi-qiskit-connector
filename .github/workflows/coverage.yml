@@ -433,45 +433,55 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
         run: |
-          echo "🔐 Generating new GPG key with passphrase..."
+          GPGAUTO(){
+            echo "🔐 Generating new GPG key with passphrase..."
+            echo "%echo Generating a GPG key with passphrase" > gpg-batch.conf
+            echo "Key-Type: RSA" >> gpg-batch.conf
+            echo "Key-Length: 4096" >> gpg-batch.conf
+            echo "Subkey-Type: RSA" >> gpg-batch.conf
+            echo "Name-Real: $GPG_NAME_REAL" >> gpg-batch.conf
+            echo "Name-Email: $GPG_NAME_EMAIL" >> gpg-batch.conf
+            echo "Name-Comment: $GPG_NAME_COMMENT" >> gpg-batch.conf
+            echo "Expire-Date: 0" >> gpg-batch.conf
+            echo "Passphrase: $GPG_PASSPHRASE" >> gpg-batch.conf
+            echo "%commit" >> gpg-batch.conf
+            echo "%echo Done" >> gpg-batch.conf
 
-          echo "%echo Generating a GPG key with passphrase" > gpg-batch.conf
-          echo "Key-Type: default" >> gpg-batch.conf
-          echo "Key-Length: 4096" >> gpg-batch.conf
-          echo "Subkey-Type: default" >> gpg-batch.conf
-          echo "Name-Real: $GPG_NAME_REAL" >> gpg-batch.conf
-          echo "Name-Email: $GPG_NAME_EMAIL" >> gpg-batch.conf
-          echo "Name-Comment: $GPG_NAME_COMMENT" >> gpg-batch.conf
-          echo "Expire-Date: 1y" >> gpg-batch.conf
-          echo "Passphrase: $GPG_PASSPHRASE" >> gpg-batch.conf
-          echo "%commit" >> gpg-batch.conf
-          echo "%echo Done" >> gpg-batch.conf
+            gpg --batch --pinentry-mode loopback --generate-key gpg-batch.conf
 
-          gpg --batch --pinentry-mode loopback --generate-key gpg-batch.conf
+            echo "🔍 Extracting GPG key ID..."
+            GPG_KEY_ID=$(gpg --list-keys --with-colons "$GPG_NAME_EMAIL" | awk -F: '/^pub/ {print $5}')
+            echo "GPG Key ID: $GPG_KEY_ID"
 
-          echo "🔍 Extracting GPG key ID..."
-          GPG_KEY_ID=$(gpg --list-keys --with-colons "$GPG_NAME_EMAIL" | awk -F: '/^pub/ {print $5}')
-          echo "GPG Key ID: $GPG_KEY_ID"
+            echo "📤 Exporting GPG public key..."
+            gpg --armor --export "$GPG_KEY_ID" > publickey.asc
 
-          echo "📤 Exporting GPG public key..."
-          gpg --armor --export "$GPG_KEY_ID" > publickey.asc
+            echo "🌐 Uploading public key to GitHub..."
+            PUBLIC_KEY_CONTENT=$(cat publickey.asc | sed ':a;N;$!ba;s/\n/\\n/g')
+            curl -s -X POST https://api.github.com/user/gpg_keys \
+              -H "Authorization: token $PAT_GITHUB" \
+              -H "Accept: application/vnd.github+json" \
+              -d "{\"name\": \"GPG PUBLIC KEY - AUTO\", \"armored_public_key\": \"$PUBLIC_KEY_CONTENT\"}"
 
-          echo "🌐 Uploading public key to GitHub..."
-          PUBLIC_KEY_CONTENT=$(cat publickey.asc | sed ':a;N;$!ba;s/\n/\\n/g')
-          curl -s -X POST https://api.github.com/user/gpg_keys \
-            -H "Authorization: token $PAT_GITHUB" \
-            -H "Accept: application/vnd.github+json" \
-            -d "{\"name\": \"GPG PUBLIC KEY - AUTO\", \"armored_public_key\": \"$PUBLIC_KEY_CONTENT\"}"
+            echo "⚙️ Configuring Git with GPG key..."
+            git config --global user.name "$GPG_NAME_REAL"
+            git config --global user.email "$GPG_NAME_EMAIL"
+            git config --global user.signingkey "$GPG_KEY_ID"
+            git config --global commit.gpgsign false
 
-          echo "⚙️ Configuring Git with GPG key..."
-          git config --global user.name "$GPG_NAME_REAL"
-          git config --global user.email "$GPG_NAME_EMAIL"
-          git config --global user.signingkey "$GPG_KEY_ID"
-          git config --global commit.gpgsign false
+            echo "✅ GPG key generated and ready for use! (Auto GPG)"
+            echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_OUTPUT
+            echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
+          }
 
-          echo "✅ GPG key generated and ready for use! (Auto GPG)"
-          echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_OUTPUT
-          echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
+          enable_status="on"  #[Turn it Off or On]
+          if [ "$enable_status" == "on" ]; then
+            echo "🔄 Auto GPG key generation is enabled."
+            GPGAUTO
+          else
+            echo "🔒 Auto GPG key generation is disabled."
+            echo "🔒 Skipping GPG key generation."
+          fi
         #===========================================================
 
 
