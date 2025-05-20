@@ -384,8 +384,8 @@ jobs:
           COLOR_COVER: ${{ env.COLOR_COVER }}
         run: |
           if [[ "$COLOR_COVER" -lt 90 ]]; then
-              STATUS_COLOR="gold" # Orange/gold:#b7950b 
-              echo "⚠️ Coverage is below 90%. Status color set to gold."
+              STATUS_COLOR="yellow" # Orange/gold:#b7950b 
+              echo "⚠️ Coverage is below 90%. Status color set to yellow."
               echo "🧪 Coverage: $COLOR_COVER% is below the threshold of 90%."
           else
               STATUS_COLOR="blue" # Blue
@@ -425,7 +425,7 @@ jobs:
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
           git config --global user.signingkey "$GPG_KEY_ID" 
-          git config --global commit.gpgsign false
+          git config --global commit.gpgsign true
 
           echo "Adding the coverage badge to the commit"
           git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
