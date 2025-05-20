@@ -426,7 +426,7 @@ jobs:
           path: docs/badges/coverage.svg
 
 ################################################################################################################
-#                                   GPG AUTO GENERATOR
+#                                           GPG AUTO GENERATOR
 ################################################################################################################
       - name: GPG Auto Generator
         id: auto_gpg_id_01
@@ -478,20 +478,22 @@ jobs:
             gpg-agent --daemon --pinentry-program /usr/bin/pinentry-loopback --allow-loopback-pinentry
 
             echo "🔐 Generating new GPG key with passphrase using batch configuration..."
-            cat << EOF > gpg-batch.conf
-              %echo Generating a GPG key
-              Key-Type: RSA
-              Key-Length: 4096
-              Subkey-Type: RSA
-              Subkey-Length: 4096
-              Name-Real: ${GPG_NAME_REAL}
-              Name-Email: ${GPG_NAME_EMAIL}
-              Name-Comment: ${GPG_NAME_COMMENT:-Automatic Good Signing Key}
-              Expire-Date: 0
-              Passphrase: ${GPG_PASSPHRASE}
-              %commit
-              %echo Done
-            EOF
+            # ---- MODIFIED SECTION: Replaced here-document with printf ----
+            printf "%s\n" \
+              "%echo Generating a GPG key" \
+              "Key-Type: RSA" \
+              "Key-Length: 4096" \
+              "Subkey-Type: RSA" \
+              "Subkey-Length: 4096" \
+              "Name-Real: ${GPG_NAME_REAL}" \
+              "Name-Email: ${GPG_NAME_EMAIL}" \
+              "Name-Comment: ${GPG_NAME_COMMENT:-Automatic Good Signing Key}" \
+              "Expire-Date: 0" \
+              "Passphrase: ${GPG_PASSPHRASE}" \
+              "%commit" \
+              "%echo Done" > gpg-batch.conf
+            # ---- END OF MODIFIED SECTION ----
+
             if ! gpg --batch --generate-key gpg-batch.conf; then
               echo -e "${RED}⛔ ERROR: GPG key generation failed.${RESET}"; exit 1
             fi
@@ -502,7 +504,7 @@ jobs:
             if [[ -z "$GPG_FULL_FINGERPRINT" ]]; then
               echo -e "${RED}⛔ ERROR: Could not extract GPG key fingerprint.${RESET}"; exit 1
             fi
-            GPG_KEY_ID_16CHAR="${GPG_FULL_FINGERPRINT: -16}" # Get last 16 chars for GitHub API comparison
+            GPG_KEY_ID_16CHAR="${GPG_FULL_FINGERPRINT: -16}"
             echo "🔑 GPG Key Fingerprint (Full): $GPG_FULL_FINGERPRINT"
             echo "🔑 GPG Key ID (16-char for GitHub): $GPG_KEY_ID_16CHAR"
 
@@ -515,27 +517,26 @@ jobs:
 
             if [[ "$existing_keys_response_code" -ne 200 ]]; then
                 echo -e "${RED}⛔ ERROR: Failed to fetch existing GPG keys from GitHub (HTTP $existing_keys_response_code).${RESET}"
-                cat existing_keys.json # Print error response from GitHub
+                cat existing_keys.json
                 exit 1
             fi
 
-            # The GitHub API returns the 16-character key ID as the 'key_id' field for V4 keys
             key_already_exists=$(jq -r --arg keyid "$GPG_KEY_ID_16CHAR" '.[] | select(.key_id == $keyid) | .id' existing_keys.json)
 
             if [[ -n "$key_already_exists" ]]; then
-              echo -e "${YELLOW}⚠️ GPG key with ID $GPG_KEY_ID_16CHAR (Fingerprint Suffix) already exists on GitHub (GitHub Key Database ID: $key_already_exists). Skipping upload.${RESET}"
+              echo -e "${YELLOW}⚠️ GPG key with ID $GPG_KEY_ID_16CHAR already exists on GitHub. Skipping upload.${RESET}"
             else
               echo "📤 Exporting GPG public key for upload..."
               if ! gpg --armor --export "$GPG_FULL_FINGERPRINT" > publickey.asc; then
                 echo -e "${RED}⛔ ERROR: GPG public key export failed.${RESET}"; exit 1
               fi
               if ! grep -q "BEGIN PGP PUBLIC KEY BLOCK" publickey.asc; then
-                echo -e "${RED}⛔ ERROR: Exported public key file (publickey.asc) is invalid or empty.${RESET}"; exit 1
+                echo -e "${RED}⛔ ERROR: Exported public key file is invalid or empty.${RESET}"; exit 1
               fi
-              echo "✅ Public key exported to publickey.asc."
+              echo "✅ Public key exported."
 
               echo "🌐 Uploading GPG public key ($GPG_KEY_ID_16CHAR) to GitHub..."
-              PUBKEY_FILE_CONTENT=$(cat publickey.asc) # Read entire file content
+              PUBKEY_FILE_CONTENT=$(cat publickey.asc)
               JSON_PAYLOAD=$(jq -n \
                 --arg name "GPG Auto-Generated Key $(date +%Y-%m-%d)" \
                 --arg key "$PUBKEY_FILE_CONTENT" \
@@ -552,36 +553,29 @@ jobs:
               cat gh_upload_response.txt
 
               if [[ "$upload_http_response_code" -eq 201 ]]; then
-                echo "✅ Public key successfully uploaded to GitHub (HTTP $upload_http_response_code)."
+                echo "✅ Public key successfully uploaded (HTTP $upload_http_response_code)."
               else
-                echo -e "${RED}⛔ ERROR: Failed to upload public key to GitHub (HTTP $upload_http_response_code).${RESET}"
-                # A 422 here might mean the key *content* is seen as a duplicate even if the ID check passed,
-                # or the JSON payload was still somehow malformed.
+                echo -e "${RED}⛔ ERROR: Failed to upload public key (HTTP $upload_http_response_code).${RESET}"
                 exit 1
               fi
-            fi # End of if key_already_exists
+            fi
 
             echo "⚙️ Configuring Git to use this GPG key ($GPG_FULL_FINGERPRINT)..."
             git config --global user.name "$GPG_NAME_REAL"
             git config --global user.email "$GPG_NAME_EMAIL"
             git config --global user.signingkey "$GPG_FULL_FINGERPRINT"
-            git config --global commit.gpgsign false
+            git config --global commit.gpgsign false # As per original script
             git config --global gpg.program $(which gpg)
             echo "✅ GPG key processing complete and Git configured!"
 
-            echo "auto_generated_gpg_key_id=$GPG_KEY_ID_16CHAR" >> "$GITHUB_OUTPUT"
-            echo "auto_generated_gpg_key_id=$GPG_KEY_ID_16CHAR" >> "$GITHUB_ENV"
-            echo "auto_generated_gpg_fingerprint=$GPG_FULL_FINGERPRINT" >> "$GITHUB_OUTPUT"
-            echo "auto_generated_gpg_fingerprint=$GPG_FULL_FINGERPRINT" >> "$GITHUB_ENV"
-
+            # Using consistent uppercase for env vars set via GITHUB_OUTPUT/GITHUB_ENV
             echo "AUTO_GENERATED_GPG_KEY_ID=$GPG_KEY_ID_16CHAR" >> "$GITHUB_OUTPUT"
             echo "AUTO_GENERATED_GPG_KEY_ID=$GPG_KEY_ID_16CHAR" >> "$GITHUB_ENV"
             echo "AUTO_GENERATED_GPG_FINGERPRINT=$GPG_FULL_FINGERPRINT" >> "$GITHUB_OUTPUT"
             echo "AUTO_GENERATED_GPG_FINGERPRINT=$GPG_FULL_FINGERPRINT" >> "$GITHUB_ENV"
 
-            # Clean up temporary files
             rm -f gpg-batch.conf publickey.asc gh_upload_response.txt existing_keys.json
-          }
+          } # End of GPGAUTO function
 
           # --- Main execution flow ---
           enable_status="on"
