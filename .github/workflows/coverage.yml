@@ -412,3 +412,6 @@ jobs:
           echo "Pushing changes to origin..."
           git push -f origin HEAD:${{ github.ref_name }}
           echo "✅ Changes pushed successfully."
+
+          echo "Expected gpg key ID: $EXPECTED_GPG_KEY_ID"
+          echo "Matched GPG key ID:  $REAL_GPG_KEY_ID"
