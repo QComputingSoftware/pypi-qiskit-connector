@@ -13,6 +13,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  pull-requests: write
   actions: write
   deployments: write
   checks: write
@@ -432,46 +434,60 @@ jobs:
           GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
+        shell: bash
         run: |
-          GPGAUTO(){
+          GPGAUTO() {
+            echo "🔄 Auto GPG key generation is enabled."
             echo "🔐 Generating new GPG key with passphrase..."
-            echo "%echo Generating a GPG key with passphrase" > gpg-batch.conf
-            echo "Key-Type: RSA" >> gpg-batch.conf
-            echo "Key-Length: 4096" >> gpg-batch.conf
-            echo "Subkey-Type: RSA" >> gpg-batch.conf
-            echo "Name-Real: $GPG_NAME_REAL" >> gpg-batch.conf
-            echo "Name-Email: $GPG_NAME_EMAIL" >> gpg-batch.conf
-            echo "Name-Comment: $GPG_NAME_COMMENT" >> gpg-batch.conf
-            echo "Expire-Date: 0" >> gpg-batch.conf
-            echo "Passphrase: $GPG_PASSPHRASE" >> gpg-batch.conf
-            echo "%commit" >> gpg-batch.conf
-            echo "%echo Done" >> gpg-batch.conf
 
+            # Write GPG config as a flat file
+            {
+              echo "%echo Generating a GPG key with passphrase"
+              echo "Key-Type: RSA"
+              echo "Key-Length: 4096"
+              echo "Subkey-Type: RSA"
+              echo "Name-Real: $GPG_NAME_REAL"
+              echo "Name-Email: $GPG_NAME_EMAIL"
+              echo "Name-Comment: $GPG_NAME_COMMENT"
+              echo "Expire-Date: 0"
+              echo "Passphrase: $GPG_PASSPHRASE"
+              echo "%commit"
+              echo "%echo Done"
+            } > gpg-batch.conf
+
+            # Generate the key
             gpg --batch --pinentry-mode loopback --generate-key gpg-batch.conf
 
-            echo "🔍 Extracting GPG key ID..."
-            GPG_KEY_ID=$(gpg --list-keys --with-colons "$GPG_NAME_EMAIL" | awk -F: '/^pub/ {print $5}')
-            echo "GPG Key ID: $GPG_KEY_ID"
+            echo "🔍 Extracting full GPG key fingerprint..."
+            GPG_KEY_ID=$(gpg --list-secret-keys --with-colons "$GPG_NAME_EMAIL" | awk -F: '/^fpr:/ {print $10}' | head -n 1)
+            echo "GPG Key Fingerprint: $GPG_KEY_ID"
 
-            echo "📤 Exporting GPG public key..."
+            echo "📤 Exporting public key..."
             gpg --armor --export "$GPG_KEY_ID" > publickey.asc
 
-            echo "🌐 Uploading public key to GitHub..."
-            PUBLIC_KEY_CONTENT=$(cat publickey.asc | sed ':a;N;$!ba;s/\n/\\n/g')
+            if ! grep -q "BEGIN PGP PUBLIC KEY BLOCK" publickey.asc; then
+              echo "❌ Public key export failed or is empty."
+              exit 1
+            fi
+
+            echo "🌐 Uploading GPG public key to GitHub..."
+            PUBKEY_CONTENT=$(cat publickey.asc | sed ':a;N;$!ba;s/\n/\\n/g')
+
             curl -s -X POST https://api.github.com/user/gpg_keys \
               -H "Authorization: token $PAT_GITHUB" \
               -H "Accept: application/vnd.github+json" \
-              -d "{\"name\": \"GPG PUBLIC KEY - AUTO\", \"armored_public_key\": \"$PUBLIC_KEY_CONTENT\"}"
+              -d "{\"name\": \"GPG PUBLIC KEY - AUTO\", \"armored_public_key\": \"$PUBKEY_CONTENT\"}"
 
-            echo "⚙️ Configuring Git with GPG key..."
+            echo "⚙️ Configuring Git to use this GPG key..."
             git config --global user.name "$GPG_NAME_REAL"
             git config --global user.email "$GPG_NAME_EMAIL"
             git config --global user.signingkey "$GPG_KEY_ID"
             git config --global commit.gpgsign false
 
-            echo "✅ GPG key generated and ready for use! (Auto GPG)"
-            echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_OUTPUT
-            echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
+            echo "✅ GPG key successfully generated and configured!"
+
+            echo "auto_gpg_key_id=$GPG_KEY_ID" >> "$GITHUB_OUTPUT"
+            echo "auto_gpg_key_id=$GPG_KEY_ID" >> "$GITHUB_ENV"
           }
 
           enable_status="on"  #[Turn it Off or On]
