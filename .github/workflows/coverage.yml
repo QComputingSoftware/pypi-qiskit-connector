@@ -167,6 +167,7 @@ jobs:
           fi
 
       - name: Import GPG Key, Configure Git, and Prepare for Signing
+        id: gpg_id_01
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
@@ -194,8 +195,13 @@ jobs:
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
           git config --global user.signingkey "$GPG_KEY_ID" 
-          git config --global commit.gpgsign true
+          git config --global commit.gpgsign false
 
+          test_gpg_key_id="0000000000000"
+          echo "gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
+          echo "gpg_key_id=$GPG_KEY_ID" >> $GITHUB_OUTPUT
+          echo "test_gpg_key_id=$test_gpg_key_id" >> $GITHUB_OUTPUT
+          echo "test_gpg_key_id=$test_gpg_key_id" >> $GITHUB_ENV
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
       #_____________________________________________________________________________
       # End of GPG key setup
@@ -421,19 +427,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "@OVERRIDE: Setting up Git user..."
+          TEST_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.test_gpg_key_id }}"
+          REAL_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.gpg_key_id }}"
           echo "Configuring git with GPG key details..."
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
-          git config --global user.signingkey "$GPG_KEY_ID" 
+          git config --global user.signingkey "$REAL_GPG_KEY_ID" 
           git config --global commit.gpgsign true
 
           echo "Adding the coverage badge to the commit"
           git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
 
           echo "Committing changes"
-          git commit --gpg-sign="${GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
-          #git commit -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
-          echo "✅ Changes committed & signing stage completed."
+          git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
+          echo "✅ Changes committed successfully & signing stage completed."
 
           echo "Checking for changes..."
           git fetch origin main
