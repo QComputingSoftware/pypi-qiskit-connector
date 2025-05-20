@@ -197,7 +197,7 @@ jobs:
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
           git config --global user.signingkey "$GPG_KEY_ID" 
-          git config --global commit.gpgsign false
+          git config --global commit.gpgsign false # (default)
 
           test_gpg_key_id="0000000000000"
           echo "gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
@@ -423,7 +423,7 @@ jobs:
           style: classic
           path: docs/badges/coverage.svg
 
-            #====================================================
+      #====================================================
       - name: GPG Auto Generator
         id: auto_gpg_id_01
         env:
@@ -432,7 +432,6 @@ jobs:
           GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
-        shell: bash
         run: |
           GpgAuto() {
             echo "🔐 Generating new GPG key with passphrase..."
@@ -450,38 +449,40 @@ jobs:
             %commit
             %echo Done
             EOF
-              gpg --batch --pinentry-mode loopback --generate-key gpg-batch.conf
-              echo "🔍 Extracting GPG key ID..."
-              GPG_KEY_ID=$(gpg --list-keys --with-colons "$GPG_NAME_EMAIL" | awk -F: '/^pub/ {print $5}')
-              echo "GPG Key ID: $GPG_KEY_ID"
+            
+            gpg --batch --pinentry-mode loopback --generate-key gpg-batch.conf
+            echo "🔍 Extracting GPG key ID..."
+            GPG_KEY_ID=$(gpg --list-keys --with-colons "$GPG_NAME_EMAIL" | awk -F: '/^pub/ {print $5}')
+            echo "GPG Key ID: $GPG_KEY_ID"
 
-              echo "📤 Exporting GPG public key..."
-              gpg --armor --export "$GPG_KEY_ID" > publickey.asc
+            echo "📤 Exporting GPG public key..."
+            gpg --armor --export "$GPG_KEY_ID" > publickey.asc
 
-              echo "🌐 Uploading public key to GitHub..."
-              curl -s -X POST https://api.github.com/user/gpg_keys \
-                -H "Authorization: token $PAT_GITHUB" \
-                -H "Accept: application/vnd.github+json" \
-                -d @- <<EOF
+            echo "🌐 Uploading public key to GitHub..."
+            curl -s -X POST https://api.github.com/user/gpg_keys \
+            -H "Authorization: token $PAT_GITHUB" \
+            -H "Accept: application/vnd.github+json" \
+            -d @- <<EOKEY
             {
               "name": "GPG PUBLIC KEY - AUTO",
               "armored_public_key": "$(cat publickey.asc)"
             }
-            EOF
-
+            EOKEY
+            
             echo "⚙️ Configuring Git with GPG key..."
             git config --global user.name "$GPG_NAME_REAL"
             git config --global user.email "$GPG_NAME_EMAIL"
             git config --global user.signingkey "$GPG_KEY_ID"
-            git config --global commit.gpgsign true
+            git config --global commit.gpgsign false #(default)
 
-            echo "✅ GPG key generated and ready for use!"
+            echo "✅ GPG key generated and ready for use!(Auto GPG)"
             echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_OUTPUT
             echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
           }
-          #GpgAuto
 
-      #=====================================================
+          GpgAuto
+          #End of GPG Auto Generator
+        #===========================================================
 
 
       - name: 🚀 Commit Badge to Repos
@@ -518,20 +519,38 @@ jobs:
               echo "✅ GPG secret key sign test successful!"
           fi
           
+          echo "Adding the coverage badge to the commit"
+          git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add."
+
+          # Attempt commit with REAL_GPG_KEY_ID
+          echo "🔄 Attempting to sign commit with REAL_GPG_KEY_ID..."
           echo "Configuring git with GPG key details..."
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
           git config --global user.signingkey "$REAL_GPG_KEY_ID" 
           git config --global commit.gpgsign true
+          probe_signed_commit=$(git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" 2>&1)
 
-          echo "Adding the coverage badge to the commit"
-          git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
+          # Check for failure signatures in the output
+          if echo "$probe_signed_commit" | grep -qE "gpg: signing failed: No secret key|fatal: failed to write commit object|error: gpg failed to sign the data|gpg: skipped|\[GNUPG:\] FAILURE sign"; then
+            echo "⚠️ GPG signing with REAL_GPG_KEY_ID failed. Falling back to AUTO_GPG_KEY_ID..."
 
-          echo "Committing changes"
-          #probe_signed_commit=$(git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core")
-          git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
-          echo "✅ Changes committed successfully & signing stage completed."
+            # Re-attempt commit with AUTO_GPG_KEY_ID
+            echo "🔄 Attempting to sign commit with AUTO_GPG_KEY_ID..."
+            echo "Configuring git with GPG key details..."
+            git config --global user.name "$GPG_NAME_REAL"
+            git config --global user.email "$GPG_NAME_EMAIL"
+            git config --global user.signingkey "$AUTO_GPG_KEY_ID"
+            git config --global commit.gpgsign true
+            probe_signed_commit=$(git commit --gpg-sign="${AUTO_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" 2>&1)
 
+            # Optionally log or print second attempt output
+            echo "$probe_signed_commit"
+          else
+            echo "✅ Commit signed successfully with REAL_GPG_KEY_ID."
+            echo "$probe_signed_commit"
+          fi
+            
           echo "Checking for changes..."
           git fetch origin main
 
