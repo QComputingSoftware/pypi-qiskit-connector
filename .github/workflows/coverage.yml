@@ -479,18 +479,18 @@ jobs:
 
             echo "🔐 Generating new GPG key with passphrase using batch configuration..."
             cat << EOF > gpg-batch.conf
-            %echo Generating a GPG key
-            Key-Type: RSA
-            Key-Length: 4096
-            Subkey-Type: RSA
-            Subkey-Length: 4096
-            Name-Real: ${GPG_NAME_REAL}
-            Name-Email: ${GPG_NAME_EMAIL}
-            Name-Comment: ${GPG_NAME_COMMENT:-Automatic Good Signing Key}
-            Expire-Date: 0
-            Passphrase: ${GPG_PASSPHRASE}
-            %commit
-            %echo Done
+              %echo Generating a GPG key
+              Key-Type: RSA
+              Key-Length: 4096
+              Subkey-Type: RSA
+              Subkey-Length: 4096
+              Name-Real: ${GPG_NAME_REAL}
+              Name-Email: ${GPG_NAME_EMAIL}
+              Name-Comment: ${GPG_NAME_COMMENT:-Automatic Good Signing Key}
+              Expire-Date: 0
+              Passphrase: ${GPG_PASSPHRASE}
+              %commit
+              %echo Done
             EOF
             if ! gpg --batch --generate-key gpg-batch.conf; then
               echo -e "${RED}⛔ ERROR: GPG key generation failed.${RESET}"; exit 1
