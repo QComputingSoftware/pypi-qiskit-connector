@@ -425,7 +425,9 @@ jobs:
           style: classic
           path: docs/badges/coverage.svg
 
-      #====================================================
+################################################################################################################
+#                                   GPG AUTO GENERATOR
+################################################################################################################
       - name: GPG Auto Generator
         id: auto_gpg_id_01
         env:
@@ -433,146 +435,287 @@ jobs:
           GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
           GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
+          PAT_GITHUB: ${{ secrets.PAT_GITHUB }} # Needs read:gpg_key and write:gpg_key permissions
         shell: bash
         run: |
+          set -e # Exit immediately if a command exits with a non-zero status.
+          set -o pipefail # Causes a pipeline to return the exit status of the last command in the pipe that failed.
+
+          # ANSI color codes
+          RED='\033[0;31m'
+          GREEN='\033[0;32m'
+          YELLOW='\033[1;33m'
+          BLUE='\033[0;34m'
+          RESET='\033[0m'
+
+          banner() {
+            local color="$1"
+            local msg="$2"
+            echo -e "${color}==============================================================${RESET}"
+            echo -e "${color}» ${msg}${RESET}"
+            echo -e "${color}==============================================================${RESET}"
+          }
+
           GPGAUTO() {
-            echo "🔄 Auto GPG key generation is enabled."
-            echo "🔐 Generating new GPG key with passphrase..."
+            banner "${BLUE}" "🚀 Starting Auto GPG Key Generation Process"
 
-            # Write GPG config as a flat file
-            {
-              echo "%echo Generating a GPG key with passphrase"
-              echo "Key-Type: RSA"
-              echo "Key-Length: 4096"
-              echo "Subkey-Type: RSA"
-              echo "Name-Real: $GPG_NAME_REAL"
-              echo "Name-Email: $GPG_NAME_EMAIL"
-              echo "Name-Comment: $GPG_NAME_COMMENT"
-              echo "Expire-Date: 0"
-              echo "Passphrase: $GPG_PASSPHRASE"
-              echo "%commit"
-              echo "%echo Done"
-            } > gpg-batch.conf
-
-            # Generate the key
-            gpg --batch --pinentry-mode loopback --generate-key gpg-batch.conf
-
-            echo "🔍 Extracting full GPG key fingerprint..."
-            GPG_KEY_ID=$(gpg --list-secret-keys --with-colons "$GPG_NAME_EMAIL" | awk -F: '/^fpr:/ {print $10}' | head -n 1)
-            echo "GPG Key Fingerprint: $GPG_KEY_ID"
-
-            echo "📤 Exporting public key..."
-            gpg --armor --export "$GPG_KEY_ID" > publickey.asc
-
-            if ! grep -q "BEGIN PGP PUBLIC KEY BLOCK" publickey.asc; then
-              echo "❌ Public key export failed or is empty."
+            if [[ -z "$GPG_NAME_REAL" || -z "$GPG_NAME_EMAIL" || -z "$GPG_PASSPHRASE" || -z "$PAT_GITHUB" ]]; then
+              echo -e "${RED}⛔ ERROR: Required secrets (GPG_NAME_REAL, GPG_NAME_EMAIL, GPG_PASSPHRASE, PAT_GITHUB) are not all set.${RESET}"
               exit 1
             fi
 
-            echo "🌐 Uploading GPG public key to GitHub..."
-            PUBKEY_CONTENT=$(cat publickey.asc | sed ':a;N;$!ba;s/\n/\\n/g')
+            echo "🔧 Ensuring GPG directory and permissions..."
+            mkdir -p ~/.gnupg
+            chmod 700 ~/.gnupg
 
-            curl -s -X POST https://api.github.com/user/gpg_keys \
+            echo "🔧 Configuring GPG and GPG Agent for non-interactive use..."
+            grep -qxF "use-agent" ~/.gnupg/gpg.conf || echo "use-agent" >> ~/.gnupg/gpg.conf
+            grep -qxF "pinentry-mode loopback" ~/.gnupg/gpg.conf || echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+            grep -qxF "allow-loopback-pinentry" ~/.gnupg/gpg-agent.conf || echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+            
+            echo "🔄 Restarting GPG Agent to apply settings..."
+            gpgconf --kill gpg-agent &>/dev/null || true
+            gpg-agent --daemon --pinentry-program /usr/bin/pinentry-loopback --allow-loopback-pinentry
+
+            echo "🔐 Generating new GPG key with passphrase using batch configuration..."
+            cat << EOF > gpg-batch.conf
+            %echo Generating a GPG key
+            Key-Type: RSA
+            Key-Length: 4096
+            Subkey-Type: RSA
+            Subkey-Length: 4096
+            Name-Real: ${GPG_NAME_REAL}
+            Name-Email: ${GPG_NAME_EMAIL}
+            Name-Comment: ${GPG_NAME_COMMENT:-Automatic Good Signing Key}
+            Expire-Date: 0
+            Passphrase: ${GPG_PASSPHRASE}
+            %commit
+            %echo Done
+            EOF
+            if ! gpg --batch --generate-key gpg-batch.conf; then
+              echo -e "${RED}⛔ ERROR: GPG key generation failed.${RESET}"; exit 1
+            fi
+            echo "✅ GPG key generated."
+
+            echo "🔍 Extracting GPG key identifiers for the new key..."
+            GPG_FULL_FINGERPRINT=$(gpg --list-secret-keys --with-colons "$GPG_NAME_EMAIL" | awk -F: '/^sec:/ {key_id_line=NR+1} NR==key_id_line && /^fpr:/ {print $10}' | tail -n 1)
+            if [[ -z "$GPG_FULL_FINGERPRINT" ]]; then
+              echo -e "${RED}⛔ ERROR: Could not extract GPG key fingerprint.${RESET}"; exit 1
+            fi
+            GPG_KEY_ID_16CHAR="${GPG_FULL_FINGERPRINT: -16}" # Get last 16 chars for GitHub API comparison
+            echo "🔑 GPG Key Fingerprint (Full): $GPG_FULL_FINGERPRINT"
+            echo "🔑 GPG Key ID (16-char for GitHub): $GPG_KEY_ID_16CHAR"
+
+            echo "🔎 Checking if GPG key ($GPG_KEY_ID_16CHAR) already exists on GitHub..."
+            existing_keys_response_code=$(curl -s -w "%{http_code}" -o existing_keys.json \
               -H "Authorization: token $PAT_GITHUB" \
               -H "Accept: application/vnd.github+json" \
-              -d "{\"name\": \"GPG PUBLIC KEY - AUTO\", \"armored_public_key\": \"$PUBKEY_CONTENT\"}"
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/user/gpg_keys")
 
-            echo "⚙️ Configuring Git to use this GPG key..."
+            if [[ "$existing_keys_response_code" -ne 200 ]]; then
+                echo -e "${RED}⛔ ERROR: Failed to fetch existing GPG keys from GitHub (HTTP $existing_keys_response_code).${RESET}"
+                cat existing_keys.json # Print error response from GitHub
+                exit 1
+            fi
+
+            # The GitHub API returns the 16-character key ID as the 'key_id' field for V4 keys
+            key_already_exists=$(jq -r --arg keyid "$GPG_KEY_ID_16CHAR" '.[] | select(.key_id == $keyid) | .id' existing_keys.json)
+
+            if [[ -n "$key_already_exists" ]]; then
+              echo -e "${YELLOW}⚠️ GPG key with ID $GPG_KEY_ID_16CHAR (Fingerprint Suffix) already exists on GitHub (GitHub Key Database ID: $key_already_exists). Skipping upload.${RESET}"
+            else
+              echo "📤 Exporting GPG public key for upload..."
+              if ! gpg --armor --export "$GPG_FULL_FINGERPRINT" > publickey.asc; then
+                echo -e "${RED}⛔ ERROR: GPG public key export failed.${RESET}"; exit 1
+              fi
+              if ! grep -q "BEGIN PGP PUBLIC KEY BLOCK" publickey.asc; then
+                echo -e "${RED}⛔ ERROR: Exported public key file (publickey.asc) is invalid or empty.${RESET}"; exit 1
+              fi
+              echo "✅ Public key exported to publickey.asc."
+
+              echo "🌐 Uploading GPG public key ($GPG_KEY_ID_16CHAR) to GitHub..."
+              PUBKEY_FILE_CONTENT=$(cat publickey.asc) # Read entire file content
+              JSON_PAYLOAD=$(jq -n \
+                --arg name "GPG Auto-Generated Key $(date +%Y-%m-%d)" \
+                --arg key "$PUBKEY_FILE_CONTENT" \
+                '{name: $name, armored_public_key: $key}')
+
+              upload_http_response_code=$(curl -s -w "%{http_code}" -o gh_upload_response.txt \
+                -X POST https://api.github.com/user/gpg_keys \
+                -H "Authorization: token $PAT_GITHUB" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                -d "$JSON_PAYLOAD")
+
+              echo "GitHub API Upload Response Body:"
+              cat gh_upload_response.txt
+
+              if [[ "$upload_http_response_code" -eq 201 ]]; then
+                echo "✅ Public key successfully uploaded to GitHub (HTTP $upload_http_response_code)."
+              else
+                echo -e "${RED}⛔ ERROR: Failed to upload public key to GitHub (HTTP $upload_http_response_code).${RESET}"
+                # A 422 here might mean the key *content* is seen as a duplicate even if the ID check passed,
+                # or the JSON payload was still somehow malformed.
+                exit 1
+              fi
+            fi # End of if key_already_exists
+
+            echo "⚙️ Configuring Git to use this GPG key ($GPG_FULL_FINGERPRINT)..."
             git config --global user.name "$GPG_NAME_REAL"
             git config --global user.email "$GPG_NAME_EMAIL"
-            git config --global user.signingkey "$GPG_KEY_ID"
+            git config --global user.signingkey "$GPG_FULL_FINGERPRINT"
             git config --global commit.gpgsign false
+            git config --global gpg.program $(which gpg)
+            echo "✅ GPG key processing complete and Git configured!"
 
-            echo "✅ GPG key successfully generated and configured!"
+            echo "auto_generated_gpg_key_id=$GPG_KEY_ID_16CHAR" >> "$GITHUB_OUTPUT"
+            echo "auto_generated_gpg_key_id=$GPG_KEY_ID_16CHAR" >> "$GITHUB_ENV"
+            echo "auto_generated_gpg_fingerprint=$GPG_FULL_FINGERPRINT" >> "$GITHUB_OUTPUT"
+            echo "auto_generated_gpg_fingerprint=$GPG_FULL_FINGERPRINT" >> "$GITHUB_ENV"
 
-            echo "auto_gpg_key_id=$GPG_KEY_ID" >> "$GITHUB_OUTPUT"
-            echo "auto_gpg_key_id=$GPG_KEY_ID" >> "$GITHUB_ENV"
+            echo "AUTO_GENERATED_GPG_KEY_ID=$GPG_KEY_ID_16CHAR" >> "$GITHUB_OUTPUT"
+            echo "AUTO_GENERATED_GPG_KEY_ID=$GPG_KEY_ID_16CHAR" >> "$GITHUB_ENV"
+            echo "AUTO_GENERATED_GPG_FINGERPRINT=$GPG_FULL_FINGERPRINT" >> "$GITHUB_OUTPUT"
+            echo "AUTO_GENERATED_GPG_FINGERPRINT=$GPG_FULL_FINGERPRINT" >> "$GITHUB_ENV"
+
+            # Clean up temporary files
+            rm -f gpg-batch.conf publickey.asc gh_upload_response.txt existing_keys.json
           }
 
-          enable_status="on"  #[Turn it Off or On]
+          # --- Main execution flow ---
+          enable_status="on"
           if [ "$enable_status" == "on" ]; then
-            echo "🔄 Auto GPG key generation is enabled."
+            echo "🚀 Auto GPG key generation process is enabled by script."
             GPGAUTO
           else
-            echo "🔒 Auto GPG key generation is disabled."
-            echo "🔒 Skipping GPG key generation."
+            echo "🔒 Auto GPG key generation is disabled by script."
           fi
-        #===========================================================
+######################################################################################################################
+# End:: GPG AUTO GENERATOR.
+######################################################################################################################
 
-
-      - name: 🚀 Commit Badge to Repos
+      - name: 🚀 Commit and Push Coverage Badge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_PRIVATE_KEY_FOR_REAL_ID: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE_FOR_REAL_ID: ${{ secrets.GPG_PASSPHRASE }}
+          REAL_GPG_KEY_ID: ${{ steps.find_key.outputs.GPG_KEY_ID }}
+          AUTO_GENERATED_GPG_KEY_ID: ${{ steps.auto_gpg_id_01.outputs.AUTO_GENERATED_GPG_KEY_ID }}
+          COMMITTER_NAME: ${{ env.GPG_NAME_REAL }}
+          COMMITTER_EMAIL: ${{ env.GPG_NAME_EMAIL }}
         run: |
-          echo "@OVERRIDE: Setting up Git user..."
-          TEST_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.test_gpg_key_id }}"
-          REAL_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.gpg_key_id }}"
-          AUTO_GPG_KEY_ID="{{ steps.auto_gpg_id_01.outputs.auto_gpg_key_id }}"
+          set -e # Exit immediately if a command exits with a non-zero status
+          set -o pipefail # Ensure pipeline failures are caught
 
-          echo "Setting GPG_TTY..."
+          echo "--- Step: Commit Badge to Repos ---"
+          echo "Using REAL_GPG_KEY_ID: '${REAL_GPG_KEY_ID}'"
+          echo "Using AUTO_GENERATED_GPG_KEY_ID: '${AUTO_GENERATED_GPG_KEY_ID}'"
+
+          # 1. Configure Git User
+          echo "Configuring Git user: '$COMMITTER_NAME <$COMMITTER_EMAIL>'..."
+          git config --global user.name "$COMMITTER_NAME"
+          git config --global user.email "$COMMITTER_EMAIL"
+          # commit.gpgsign will be true, but we'll use explicit --gpg-sign=<keyid> for clarity
+
+          # 2. Import Primary GPG Private Key (for REAL_GPG_KEY_ID)
           export GPG_TTY=$(tty)
-          echo "Importing GPG secret key..."
-          echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import <(echo "${GPG_PRIVATE_KEY}")
-          if [ $? -ne 0 ]; then
-              echo "::error::GPG secret key import failed."
-              echo "::error::GPG secret key missing will not allow signing commits."
-              exit 1
+          primary_key_usable=false
+          if [[ -n "$GPG_PRIVATE_KEY_FOR_REAL_ID" && -n "$GPG_PASSPHRASE_FOR_REAL_ID" && -n "$REAL_GPG_KEY_ID" ]]; then
+            echo "Importing GPG secret key for REAL_GPG_KEY_ID (${REAL_GPG_KEY_ID})..."
+            echo "${GPG_PASSPHRASE_FOR_REAL_ID}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import <(echo "${GPG_PRIVATE_KEY_FOR_REAL_ID}")
+            if [ $? -eq 0 ]; then
+              echo "✅ GPG secret key for REAL_GPG_KEY_ID imported."
+              echo "Verifying GPG key by signing test data with REAL_GPG_KEY_ID: ${REAL_GPG_KEY_ID}..."
+              echo "test data" | echo "${GPG_PASSPHRASE_FOR_REAL_ID}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --clearsign --default-key "${REAL_GPG_KEY_ID}" > /dev/null
+              if [ $? -eq 0 ]; then
+                echo "✅ GPG sign test successful for REAL_GPG_KEY_ID."
+                primary_key_usable=true
+              else
+                echo "::warning::GPG sign test failed for REAL_GPG_KEY_ID. Primary signing will likely fail."
+              fi
+            else
+              echo "::warning::GPG secret key import for REAL_GPG_KEY_ID failed. Primary signing will likely fail."
+            fi
           else
-              echo "✅ GPG secret key imported."
-              echo "✅ The GPG secret key should allow signing of commits."
-          fi
-
-          echo "Verifying GPG secret key - using GPG_KEY_ID: ${REAL_GPG_KEY_ID}"
-          echo "test data" | echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --clearsign --default-key "${REAL_GPG_KEY_ID}" > /dev/null
-          if [ $? -ne 0 ]; then
-              echo "::error::GPG secret key sign test failed."
-              echo "::error::Passphrase might not be available or key ID ('${REAL_GPG_KEY_ID}') is incorrect/ambiguous for GPG."
-              exit 1
-          else
-              echo "✅ GPG secret key sign test successful!"
+            echo "::notice:: Secrets for REAL_GPG_KEY_ID not fully provided. Will rely on AUTO_GENERATED_GPG_KEY_ID if available."
           fi
           
-          echo "Adding the coverage badge to the commit"
-          git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add."
+          # 3. Add the badge and check for actual changes
+          echo "Adding coverage badge: docs/badges/coverage.svg"
+          git add docs/badges/coverage.svg
 
-          # Attempt commit with REAL_GPG_KEY_ID
-          echo "🔄 Attempting to sign commit with REAL_GPG_KEY_ID..."
-          echo "Configuring git with GPG key details..."
-          git config --global user.name "$GPG_NAME_REAL"
-          git config --global user.email "$GPG_NAME_EMAIL"
-          git config --global user.signingkey "$REAL_GPG_KEY_ID" 
-          git config --global commit.gpgsign true
-          probe_signed_commit=$(git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" 2>&1)
-
-          # Check for failure signatures in the output
-          if echo "$probe_signed_commit" | grep -qE "gpg: signing failed: No secret key|fatal: failed to write commit object|error: gpg failed to sign the data|gpg: skipped|\[GNUPG:\] FAILURE sign"; then
-            echo "⚠️ GPG signing with REAL_GPG_KEY_ID failed. Falling back to AUTO_GPG_KEY_ID..."
-
-            # Re-attempt commit with AUTO_GPG_KEY_ID
-            echo "🔄 Attempting to sign commit with AUTO_GPG_KEY_ID..."
-            echo "Configuring git with GPG key details..."
-            git config --global user.name "$GPG_NAME_REAL"
-            git config --global user.email "$GPG_NAME_EMAIL"
-            git config --global user.signingkey "$AUTO_GPG_KEY_ID"
-            git config --global commit.gpgsign true
-            probe_signed_commit=$(git commit --gpg-sign="${AUTO_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" 2>&1)
-
-            # Optionally log or print second attempt output
-            echo "$probe_signed_commit"
-          else
-            echo "✅ Commit signed successfully with REAL_GPG_KEY_ID."
-            echo "$probe_signed_commit"
+          if git diff --staged --quiet; then
+            echo "✅ No changes to 'docs/badges/coverage.svg' to commit. Workflow section for badge commit ends."
+            exit 0 # Nothing to do, successful exit
           fi
+
+          # 4. Attempt to commit, with GPG signing fallback logic
+          commit_successful=false
+          final_signing_key_id=""
+          # Explicit and consistent commit message (without [skip ci])
+          THE_COMMIT_MESSAGE="🛡️ Qiskit Code Update - Qcon Intelligence Core"
+
+          # Attempt 1: Use REAL_GPG_KEY_ID
+          if [[ "$primary_key_usable" == "true" ]]; then
+            echo "Attempting to commit and sign with REAL_GPG_KEY_ID: $REAL_GPG_KEY_ID"
+            if git commit --gpg-sign="$REAL_GPG_KEY_ID" -m "$THE_COMMIT_MESSAGE"; then
+              echo "✅ Commit signed successfully with REAL_GPG_KEY_ID."
+              commit_successful=true
+              final_signing_key_id="$REAL_GPG_KEY_ID"
+            else
+              echo "::warning::Commit attempt with REAL_GPG_KEY_ID ($REAL_GPG_KEY_ID) failed. Exit code: $?. Will attempt fallback."
+            fi
+          else
+            echo "::notice:: Primary key REAL_GPG_KEY_ID is not usable or not configured. Proceeding to fallback if available."
+          fi
+
+          # Attempt 2: Fallback to AUTO_GENERATED_GPG_KEY_ID
+          if [[ "$commit_successful" == "false" ]]; then
+            if [[ -n "$AUTO_GENERATED_GPG_KEY_ID" ]]; then
+              echo "Attempting fallback: Commit and sign with AUTO_GENERATED_GPG_KEY_ID: $AUTO_GENERATED_GPG_KEY_ID"
+              echo "This assumes its private key is available in the GPG agent."
+              
+              if git commit --gpg-sign="$AUTO_GENERATED_GPG_KEY_ID" -m "$THE_COMMIT_MESSAGE"; then
+                echo "✅ Commit signed successfully with AUTO_GENERATED_GPG_KEY_ID."
+                commit_successful=true
+                final_signing_key_id="$AUTO_GENERATED_GPG_KEY_ID"
+              else
+                commit_output_fallback=$(git commit --gpg-sign="$AUTO_GENERATED_GPG_KEY_ID" -m "$THE_COMMIT_MESSAGE" 2>&1 || true)
+                echo "::error::Fallback GPG signing with AUTO_GENERATED_GPG_KEY_ID ($AUTO_GENERATED_GPG_KEY_ID) also failed."
+                echo "Fallback commit output: $commit_output_fallback"
+                exit 1
+              fi
+            else
+              echo "::error::Commit signing failed with primary key, and no AUTO_GENERATED_GPG_KEY_ID available for fallback."
+              exit 1
+            fi
+          fi
+
+          # 5. Synchronize with remote AND Push the successfully committed changes
+          if [[ "$commit_successful" == "true" ]]; then
+            echo "Pushing commit (signed by $final_signing_key_id) to main..."
             
-          echo "Checking for changes..."
-          git fetch origin main
+            echo "Fetching latest from origin 'main' before push..."
+            git fetch origin main
+            
+            echo "Rebasing the new local commit(s) onto latest 'origin/main'..."
+            if ! git rebase origin/main; then
+                echo "::error::Rebase failed! This could be due to conflicts with recent changes on origin/main."
+                echo "Attempting to abort rebase..."
+                git rebase --abort || echo "::warning:: 'git rebase --abort' also failed or there was nothing to abort."
+                echo "Manual intervention is likely required. The new badge commit was not pushed."
+                exit 1
+            fi
+            echo "✅ Rebase successful."
 
-          echo "Merging changes from origin/main..."
-          git merge origin/main --no-edit --allow-unrelated-histories || echo "⚠️ No unrelated histories to merge"
-
-          echo "Pushing changes to origin..."
-          git push -f origin HEAD:${{ github.ref_name }}
-          echo "✅ Changes pushed successfully."
+            git push origin main # Pushing current branch (main) to remote main
+            if [ $? -ne 0 ]; then
+              echo "::error::Final 'git push origin main' failed. Manual intervention may be needed."
+              exit 1
+            fi
+            echo "✅ Changes pushed successfully to main."
+          else
+            # This case implies no changes were staged initially, as commit failures otherwise exit.
+            echo "✅ No commit was made successfully (likely no changes were staged). Nothing to push."
+          fi
