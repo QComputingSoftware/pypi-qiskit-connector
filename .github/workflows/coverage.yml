@@ -51,6 +51,8 @@ env:
   GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
   GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
   GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+  GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+  GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
   GPG_GITHUB_OPERATOR: ${{ secrets.GPG_GITHUB_OPERATOR }}
   EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
   UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
@@ -421,14 +423,101 @@ jobs:
           style: classic
           path: docs/badges/coverage.svg
 
+            #====================================================
+      - name: GPG Auto Generator
+        id: auto_gpg_id_01
+        env:
+          GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+          GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+          GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
+        shell: bash
+        run: |
+          GpgAuto() {
+            echo "🔐 Generating new GPG key with passphrase..."
+
+            cat > gpg-batch.conf <<EOF
+            %echo Generating a GPG key with passphrase
+            Key-Type: default
+            Key-Length: 4096
+            Subkey-Type: default
+            Name-Real: $GPG_NAME_REAL
+            Name-Email: $GPG_NAME_EMAIL
+            Name-Comment: $GPG_NAME_COMMENT
+            Expire-Date: 1y
+            Passphrase: $GPG_PASSPHRASE
+            %commit
+            %echo Done
+            EOF
+              gpg --batch --pinentry-mode loopback --generate-key gpg-batch.conf
+              echo "🔍 Extracting GPG key ID..."
+              GPG_KEY_ID=$(gpg --list-keys --with-colons "$GPG_NAME_EMAIL" | awk -F: '/^pub/ {print $5}')
+              echo "GPG Key ID: $GPG_KEY_ID"
+
+              echo "📤 Exporting GPG public key..."
+              gpg --armor --export "$GPG_KEY_ID" > publickey.asc
+
+              echo "🌐 Uploading public key to GitHub..."
+              curl -s -X POST https://api.github.com/user/gpg_keys \
+                -H "Authorization: token $PAT_GITHUB" \
+                -H "Accept: application/vnd.github+json" \
+                -d @- <<EOF
+            {
+              "name": "GPG PUBLIC KEY - AUTO",
+              "armored_public_key": "$(cat publickey.asc)"
+            }
+            EOF
+
+            echo "⚙️ Configuring Git with GPG key..."
+            git config --global user.name "$GPG_NAME_REAL"
+            git config --global user.email "$GPG_NAME_EMAIL"
+            git config --global user.signingkey "$GPG_KEY_ID"
+            git config --global commit.gpgsign true
+
+            echo "✅ GPG key generated and ready for use!"
+            echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_OUTPUT
+            echo "auto_gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
+          }
+          #GpgAuto
+
+      #=====================================================
+
 
       - name: 🚀 Commit Badge to Repos
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           echo "@OVERRIDE: Setting up Git user..."
           TEST_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.test_gpg_key_id }}"
           REAL_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.gpg_key_id }}"
+          AUTO_GPG_KEY_ID="{{ steps.auto_gpg_id_01.outputs.auto_gpg_key_id }}"
+
+          echo "Setting GPG_TTY..."
+          export GPG_TTY=$(tty)
+          echo "Importing GPG secret key..."
+          echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import <(echo "${GPG_PRIVATE_KEY}")
+          if [ $? -ne 0 ]; then
+              echo "::error::GPG secret key import failed."
+              echo "::error::GPG secret key missing will not allow signing commits."
+              exit 1
+          else
+              echo "✅ GPG secret key imported."
+              echo "✅ The GPG secret key should allow signing of commits."
+          fi
+
+          echo "Verifying GPG secret key - using GPG_KEY_ID: ${REAL_GPG_KEY_ID}"
+          echo "test data" | echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --clearsign --default-key "${REAL_GPG_KEY_ID}" > /dev/null
+          if [ $? -ne 0 ]; then
+              echo "::error::GPG secret key sign test failed."
+              echo "::error::Passphrase might not be available or key ID ('${REAL_GPG_KEY_ID}') is incorrect/ambiguous for GPG."
+              exit 1
+          else
+              echo "✅ GPG secret key sign test successful!"
+          fi
+          
           echo "Configuring git with GPG key details..."
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
@@ -439,6 +528,7 @@ jobs:
           git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
 
           echo "Committing changes"
+          #probe_signed_commit=$(git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core")
           git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
           echo "✅ Changes committed successfully & signing stage completed."
 
