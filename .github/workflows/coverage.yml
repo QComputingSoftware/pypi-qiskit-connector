@@ -408,7 +408,7 @@ jobs:
           STATUS_COLOR: ${{ steps.color_id_01.outputs.status_color }}
         uses: emibcn/badge-action@v2
         with:
-          label: "Qiskit Connector Code Coverage Analysis"
+          label: "🛡️Qiskit Connector Code Coverage Analysis"
           label-color: "555"
           status: "${{ steps.coverage_id_02.outputs.analyzed_status }}"
           color: "${{ steps.color_id_01.outputs.status_color }}"
@@ -431,8 +431,9 @@ jobs:
           git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
 
           echo "Committing changes"
-          #git commit --gpg-sign="${GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Intelli Check" || echo "⚠️ No changes to commit"
-          git commit -m "🛡️ Qiskit Code Update - Intelli Check" || echo "⚠️ No changes to commit"
+          git commit --gpg-sign="${GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
+          #git commit -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
+          echo "✅ Changes committed & signing stage completed."
 
           echo "Checking for changes..."
           git fetch origin main
