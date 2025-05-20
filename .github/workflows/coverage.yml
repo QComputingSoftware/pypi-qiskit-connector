@@ -13,8 +13,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write
-  pull-requests: write
   actions: write
   deployments: write
   checks: write
@@ -53,8 +51,6 @@ env:
   GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
   GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
   GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
-  GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-  GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
   GPG_GITHUB_OPERATOR: ${{ secrets.GPG_GITHUB_OPERATOR }}
   EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
   UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
@@ -199,7 +195,7 @@ jobs:
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
           git config --global user.signingkey "$GPG_KEY_ID" 
-          git config --global commit.gpgsign false # (default)
+          git config --global commit.gpgsign false  # See Override
 
           test_gpg_key_id="0000000000000"
           echo "gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
@@ -211,7 +207,7 @@ jobs:
       # End of GPG key setup
       #____________________________________________________________________________
 
-      
+
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
         with:
@@ -235,10 +231,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
-          SOURCE_DIR="qiskit_connector" # URL argument accepted as well.
-          # Run the coverage command: BareLine Option
-          #-------------------------------------------
-          coverage run -m pytest tests/test_qcon_func.py tests/test_qcon_os_compat.py tests/test_qcon_version.py tests/test_qcon_pkg.py tests/test_qcon_runtime.py tests/test_qcon_consumption.py tests/test_qcon_randomized.py tests/test_qcon_staggered.py tests/test_qcon_efficiency.py tests/test_qcon_resiliency.py
+          set -e
+          SOURCE_DIR="qiskit-connector" # URL argument for coverage accepted as well.
+          coverage run -m pytest tests/test_qcon_func.py tests/test_qcon_os_compat.py tests/test_qcon_version.py tests/test_qcon_pkg.py tests/test_qcon_runtime.py tests/test_qcon_consumption.py tests/test_qcon_staggered.py tests/test_qcon_randomized.py tests/test_qcon_efficiency.py tests/test_qcon_resiliency.py tests/test_qcon_coverage_promax.py
           REPORT_TABLE=$(coverage report || true)
           if [[ -z "$REPORT_TABLE" ]]; then
             echo "::warning::Coverage report is empty or not generated."
@@ -252,7 +247,12 @@ jobs:
             FAIL_ID=0
             coverage report || true
           fi
-      
+
+          coverage report || true
+
+          BENCHMARK="36"
+          echo "Benchmark for Qiskit-connector coverage: $BENCHMARK%"
+
           STMTS=$(coverage report | grep "TOTAL" | awk '{print $2}')
           MISS=$(coverage report | grep "TOTAL" | awk '{print $3}')
           COVER=$(coverage report | grep "TOTAL" | awk '{print $4}')
@@ -273,25 +273,16 @@ jobs:
           echo "BENCHMARK=$BENCHMARK" >> $GITHUB_ENV
           echo "✅ Coverage data exported to environment variables."
 
-          # Check if any of the key coverage variables are empty or contain only spaces
-          if [[ -z "${STMTS// }" || -z "${COVER// }" || -z "${MISS// }" || -z "${PASS_ID// }" ]]; then
-            echo "⚠️ The following variables are empty:"
-            [[ -z "${STMTS// }" ]] && echo "STMTS is empty."
-            [[ -z "${COVER// }" ]] && echo "COVER is empty."
-            [[ -z "${MISS// }" ]] && echo "MISS is empty."
-            [[ -z "${PASS_ID// }" ]] && echo "PASS_ID is empty."
-            echo "::warning::Coverage report is empty, not generated, or key metrics (Stmts, Cover, Miss) are missing."
-            echo "::warning::Analysis incomplete & report may not be available. Exiting now."
-            echo "⚠️::warning::STOP ID: 00786"
-            echo "::warning::Coverage report is empty, not generated, or key metrics (Stmts, Cover, Miss) are missing."
-            echo "::warning::Analysis incomplete & report may not be available. Exiting now."
-            exit 1
-          else
-              # This block executes if STMTS, COVER, AND MISS all have non-whitespace content
+          if [[ "$COVER_NUMERIC" -lt "$BENCHMARK" ]]; then
+              echo "⚠️::warning::STOP ID: 00786"
+              echo "::warning::Coverage is below the acceptable threshold of $BENCHMARK (100%)."
+              echo "::warning::Analysis incomplete & report may not be available. Exiting now."
+              exit 1
+            else
               echo "✅ Coverage is within the acceptable threshold of $BENCHMARK benchmark. Current coverage is $COVER."
               echo "✅ Analysis complete. Report available."
               echo "✅ Coverage report is available."
-          fi
+            fi
           ### END OF COVERAGE TESTING ######################################################
 
 
@@ -348,19 +339,19 @@ jobs:
       #   with:                                                                       #
       #     label: "Qiskit Connector Code Coverage Analysis"                          #
       #     label-color: "555"                                                        #
-      #     status: "${{ steps.coverage.outputs.passrate }}%"                          #
+      #     status: "${{ steps.coverage.outputs.passrate }}%"                         #
       #     color: blue                                                               #
       #     style: classic                                                            #
       #     path: docs/badges/coverage.svg                                            #
       #################################################################################
-     
+      
       - name: Status Color Determination
         id: color_id_01
         env:
           COLOR_COVER: ${{ env.COLOR_COVER }}
         run: |
           if [[ "$COLOR_COVER" -lt 90 ]]; then
-              STATUS_COLOR="yellow" # Orange/gold:#b7950b 
+              STATUS_COLOR="yellow" # Orange/Gold:#b7950b 
               echo "⚠️ Coverage is below 90%. Status color set to yellow."
               echo "🧪 Coverage: $COLOR_COVER% is below the threshold of 90%."
           else
@@ -392,114 +383,32 @@ jobs:
           path: docs/badges/coverage.svg
 
 
-##################################################################################################################
-# Start:                          GPG Key Generation and Configuration
-#####################################################################################################################
-      - name: 🔐 Generate GPG Key Pair
-        run: |
-          mkdir -p ~/.gnupg
-          chmod 700 ~/.gnupg
-
-          cat > genkey <<EOF
-          Key-Type: RSA
-          Key-Length: 4096
-          Subkey-Type: RSA
-          Subkey-Length: 4096
-          Name-Real: $GPG_NAME_REAL
-          Name-Email: $GPG_NAME_EMAIL
-          Name-Comment: $GPG_NAME_COMMENT
-          Expire-Date: 0
-          %no-protection
-          %commit
-          EOF
-
-          echo "🔐 Generating GPG Key..."
-          gpg --batch --generate-key genkey 2>/dev/null
-
-          if [ $? -eq 0 ]; then
-            echo "🔐 GPG Key generated successfully ✅"
-          else
-            echo "❌ GPG Key generation failed"
-            exit 1
-          fi
-
-          # Extract but do NOT display full key details::
-          export AUTO_GPG_KEY_ID=$(gpg --list-secret-keys --with-colons "$GPG_NAME_EMAIL" | grep '^sec' | cut -d':' -f5)
-          echo "AUTO_GPG_KEY_ID=$AUTO_GPG_KEY_ID" >> $GITHUB_ENV
-          #==============================================================================
-
-      - name: ⚙️ Configure Git Identity and Signing
-        id: gpg_id_03
-        run: |
-          git config --global user.name "$GPG_NAME_REAL"
-          git config --global user.email "$GPG_NAME_EMAIL"
-          git config --global user.signingkey $AUTO_GPG_KEY_ID
-          git config --global commit.gpgsign true
-          git config --global tag.gpgSign false # (default: SEE COMMIT SECTION)
-
-          test_gpg_key_id="0000000000000"
-          echo "auto_gpg_key_id=$AUTO_GPG_KEY_ID" >> $GITHUB_ENV
-          echo "auto_gpg_key_id=$AUTO_GPG_KEY_ID" >> $GITHUB_OUTPUT
-          echo "test_gpg_key_id=$test_gpg_key_id" >> $GITHUB_OUTPUT
-          echo "test_gpg_key_id=$test_gpg_key_id" >> $GITHUB_ENV
-          echo "✅ Git and GPG configured. Commits and tags will be signed using key."
-
-      - name: ☁️ Upload GPG Public Key to GitHub GPG
-        run: |
-          echo "🔐 Exporting GPG public key..."
-          PUB_KEY=$(gpg --armor --export "$GPG_NAME_EMAIL")
-          TITLE="AUTOMATED GPG PUBLIC KEY"
-          
-          echo "🔐 Uploading GPG public key to GitHub..."
-          PAYLOAD=$(jq -n --arg key "$PUB_KEY" --arg title "$TITLE" '{armored_public_key: $key, name: $title}')
-          RESPONSE=$(curl -s -X POST \
-            -H "Authorization: token $GPG_GITHUB_OPERATOR" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/user/gpg_keys \
-            -d "$PAYLOAD")
-
-          echo "✅ GPG key uploaded. ID: $(echo "$RESPONSE" | jq -r .id)"
-
-          echo "🧹 Sanitizing GPG key content..."
-          unset PUB_KEY
-          echo "PUB_KEY=***REDACTED***"
-
-          echo "🔒 GPG key export wiped from memory."
-
-#############################################################################################################
-# End:
-#############################################################################################################
-
-
       - name: 🚀 Commit Badge to Repos
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "@OVERRIDE: Setting up Git user..."
-          TEST_GPG_KEY_ID="{{ steps.gpg_id_03.outputs.test_gpg_key_id }}"
-          AUTO_GPG_KEY_ID="{{ steps.gpg_id_03.outputs.auto_gpg_key_id }}"
+          TEST_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.test_gpg_key_id }}"
+          REAL_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.gpg_key_id }}"
           echo "Configuring git with GPG key details..."
+          git config --global user.name "$GPG_NAME_REAL"
+          git config --global user.email "$GPG_NAME_EMAIL"
+          git config --global user.signingkey "$REAL_GPG_KEY_ID" 
           git config --global commit.gpgsign true
-          echo "✅ Git and GPG configured - GPGSign now set to true - [Default is false]."
 
-          echo "Adding the coverage badge to the commit.."
+          echo "Adding the coverage badge to the commit"
           git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
-          echo "✅ Added the coverage badge to the commit successfully."
 
-          echo "Committing changes..."
-          git commit --gpg-sign="${AUTO_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
+          echo "Committing changes"
+          git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
           echo "✅ Changes committed successfully & signing stage completed."
 
           echo "Checking for changes..."
           git fetch origin main
-          echo "✅ Fetched changes from origin/main." 
 
           echo "Merging changes from origin/main..."
           git merge origin/main --no-edit --allow-unrelated-histories || echo "⚠️ No unrelated histories to merge"
-          echo "✅ Changes merged successfully."
 
           echo "Pushing changes to origin..."
           git push -f origin HEAD:${{ github.ref_name }}
           echo "✅ Changes pushed successfully."
-
-
