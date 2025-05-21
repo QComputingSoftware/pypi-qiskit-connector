@@ -3,6 +3,7 @@
 # @Description: This workflow is triggered on a schedule to check the quality of the software(Qiskit Connector).
 # @ Reference:  This workflow ensures that all necessary checks are performed regularly to maintain software integrity.
 # @Copyright: 2025 Dr. Jeffrey Chijioke-Uche, Quantum Computing Qiskit Connector.
+#_____________________________________________________________________________________________________________________
 
 name: 🧠 Qcon Intelligence Core
 
@@ -26,20 +27,66 @@ env:
   EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
   EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
 
+#######
+
 jobs:
   qcon-intelligence-core:
     name: 🧠 Qcon Intelligence Core
     runs-on: ubuntu-latest
     steps:
-      - name: 🧾 Checkout
+      - name: 📦 Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: 🔐 Setup Git
+      - name: 🔐 Setup Git Identity
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "$GPG_NAME_REAL"
+          git config --global user.email "$GPG_NAME_EMAIL"
 
-      - name: 🧠 Audit Tags & Manage Releases
+      - name: 🧠 Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: 🔐 Find Matching GPG Key ID on GitHub
+        id: find_key
+        run: |
+          echo "Looking for expected GPG key: $EXPECTED_GPG_KEY_ID"
+          key_found=false
+          next_page_url="https://api.github.com/user/gpg_keys?per_page=100"
+          while [[ -n "$next_page_url" ]]; do
+            header_file=$(mktemp)
+            response_body=$(curl -s -L               -H "Authorization: token $GPG_GITHUB_OPERATOR"               -H "Accept: application/vnd.github+json"               -D "$header_file"               "$next_page_url")
+            if ! echo "$response_body" | jq -e '. | type == "array"' > /dev/null; then
+              echo "::error:: Failed to fetch keys."
+              break
+            fi
+            api_keys=$(echo "$response_body" | jq -r '.[]?.key_id // empty')
+            for current_key_id in $api_keys; do
+              if [[ "$current_key_id" == "$EXPECTED_GPG_KEY_ID" ]]; then
+                echo "Match found: $current_key_id"
+                echo "GPG_KEY_ID=$current_key_id" >> $GITHUB_ENV
+                key_found=true
+                break 2
+              fi
+            done
+            link_header=$(grep -i '^Link:' "$header_file")
+            next_page_url=$(echo "$link_header" | sed -n 's/.*<\([^>]*\)>; rel="next".*/\1/p')
+            rm -f "$header_file"
+          done
+          if [[ "$key_found" != "true" ]]; then
+            echo "::error:: GPG Key ID not found."
+            exit 1
+          fi
+
+      - name: 🔐 Import and Trust GPG Key
+        run: |
+          export GPG_TTY=$(tty)
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --import
+          echo "test data" | echo "$GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --clearsign --default-key "$EXPECTED_GPG_KEY_ID" > /dev/null
+          git config --global user.signingkey "$EXPECTED_GPG_KEY_ID"
+          git config --global commit.gpgsign true
+
+      - name: 🧠 Audit Tags and Manage Signed Releases
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
@@ -48,10 +95,7 @@ jobs:
 
           git fetch --tags --force
 
-          echo "🔍 Auditing tags..."
           for TAG in $(git tag); do
-            echo "⏳ Checking tag: $TAG"
-
             for BAD in "${PROHIBITED[@]}"; do
               if [[ "$TAG" == *"$BAD"* ]]; then
                 echo "🚫 Deleting prohibited tag: $TAG"
@@ -59,20 +103,25 @@ jobs:
                 continue 2
               fi
             done
-
             if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
-              echo "🚫 Deleting malformed tag: $TAG"
+              echo "🚫 Deleting invalid format tag: $TAG"
               git push origin :refs/tags/"$TAG"
               continue
             fi
-
             VALID_TAGS+=("$TAG")
           done
 
-          echo "✅ Valid tags: ${VALID_TAGS[*]}"
-
           for TAG in "${VALID_TAGS[@]}"; do
-            echo "🚀 Creating release for valid tag: $TAG"
+            if git tag -v "$TAG" 2>&1 | grep -q "$EXPECTED_GPG_KEY_ID"; then
+              echo "✅ Tag '$TAG' already signed."
+            else
+              echo "🖊️ Re-signing tag '$TAG'"
+              git tag -d "$TAG"
+              git tag -s "$TAG" -m "Signed tag $TAG" -u "$EXPECTED_GPG_KEY_ID" --pinentry-mode loopback --batch
+              git push --force origin "refs/tags/$TAG"
+            fi
+
+            echo "🚀 Creating release for tag $TAG"
             PAYLOAD=$(jq -n               --arg tag "$TAG"               --arg name "Release $TAG"               --arg body "Auto-generated release for tag $TAG"               '{
                 tag_name: $tag,
                 name: $name,
@@ -88,7 +137,7 @@ jobs:
             elif [[ "$RESPONSE_CODE" == "422" && $(grep -c "already_exists" response.json) -gt 0 ]]; then
               echo "ℹ️ Tag release already exists: $TAG"
             else
-              echo "❌ Unexpected error creating release for tag: $TAG"
+              echo "❌ Error creating release for tag: $TAG"
               cat response.json
             fi
           done
