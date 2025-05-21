@@ -25,6 +25,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: 🛠️ Checking if latest commit is signed with GPG
+        shell: bash
+        run: |
+          echo "🔍 Checking if the latest commit is signed..."
+          if git log -1 --pretty=format:'%G?' | grep -q 'G'; then
+            echo "✅ Latest commit is signed."
+          else
+            echo "❌ Latest commit is not signed. Exiting"
+            exit 1
+          fi
+
       - name: 🧾 Create GitHub Release with fallback for existing tags
         shell: bash
         run: |
