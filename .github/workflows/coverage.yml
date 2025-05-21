@@ -466,7 +466,7 @@ jobs:
           echo "Expected gpg key ID: ${EXPECTED_GPG_KEY_ID} [done]"
           echo "Matched GPG key ID:  ${GPG_KEY_ID} [done]"
 
-      - name: 🛠️ Dispatch find-and-sign.yml
+      - name: 🛠️ Dispatched F & S
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: find-and-sign.yml
