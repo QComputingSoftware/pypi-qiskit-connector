@@ -462,12 +462,8 @@ jobs:
           echo "Expected gpg key ID: ${EXPECTED_GPG_KEY_ID} [done]"
           echo "Matched GPG key ID:  ${GPG_KEY_ID} [done]"
 
-      - name: Calling Find and Sign Automation
-        id: find_and_sign
-        uses: ./.github/workflows/find-and-sign.yml
+      - name: ⏳ Dispatch find-and-sign.yml
+        uses: benc-uk/workflow-dispatch@v1
         with:
-          GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
-          GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
+          workflow: find-and-sign.yml
+          token: ${{ secrets.PAT_GITHUB }}
