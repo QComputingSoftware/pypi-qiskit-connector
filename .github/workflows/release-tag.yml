@@ -1,5 +1,5 @@
-# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador.
-# @last update: 2025-03-01.
+# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
+# @last update: 2025-03-01
 
 name: Sync Tag → GitHub Release
 
@@ -218,8 +218,7 @@ jobs:
             fi
           done
 
-
-      # ================================
+      #=============================================================
       - name: 🔍 Checking Release Tag Naming Violation
         shell: bash
         run: |
@@ -231,30 +230,28 @@ jobs:
           for word in "${PROHIBITED_TAGS[@]}"; do
             if [[ "$TAG" == *"$word"* ]]; then
               echo "🚫 Tag name '$TAG' contains prohibited keyword: '$word'"
-              echo "🗑️ Deleting invalid tag from GitHub..."
+              echo "🗑️ Deleting invalid tag (locally and remotely)..."
 
-              curl -s -X DELETE \
-                -H "Authorization: token ${{ secrets.PAT_GITHUB }}" \
-                -H "Accept: application/vnd.github+json" \
-                https://api.github.com/repos/${{ github.repository }}/git/refs/tags/${TAG}
+              git tag -d "$TAG" || echo "⚠️ Local tag '$TAG' not found or already deleted."
+              git push origin :refs/tags/"$TAG" || echo "⚠️ Remote tag '$TAG' not found or already deleted."
 
               echo "🧹 Tag '$TAG' deleted due to naming violation."
               exit 0
             fi
           done
 
-          # Check against semantic version pattern
+          # Enforce semantic versioning: x.y.z or x.y.z-rc01
           if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
             echo "🚫 Tag '$TAG' does not follow semantic version pattern like '2.2.6' or '2.1.5-rc01'"
-            curl -s -X DELETE \
-              -H "Authorization: token ${{ secrets.PAT_GITHUB }}" \
-              -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/${{ github.repository }}/git/refs/tags/${TAG}
+
+            git tag -d "$TAG" || echo "⚠️ Local tag '$TAG' not found or already deleted."
+            git push origin :refs/tags/"$TAG" || echo "⚠️ Remote tag '$TAG' not found or already deleted."
+
             echo "🧹 Tag '$TAG' deleted due to naming pattern violation."
             exit 0
           fi
 
-          echo "✅ All Clear! Tag '$TAG' is valid."
+          echo "✅ All Clear! Tag '$TAG' passed validation."
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
@@ -294,3 +291,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
+      # ================================
