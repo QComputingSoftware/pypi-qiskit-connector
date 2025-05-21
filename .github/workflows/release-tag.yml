@@ -286,11 +286,27 @@ jobs:
       - name: 🧾 Create GitHub Release with fallback for existing tags
         shell: bash
         run: |
-          echo "🪪 Tag detected: ${{ github.ref_name }}"
+          TAG="${{ github.ref_name }}"
+          PROHIBITED_TAGS=(main stable pypi bug dev prod qa test lab)
+
+          # Block release creation if tag is prohibited or invalid format
+          for word in "${PROHIBITED_TAGS[@]}"; do
+            if [[ "$TAG" == *"$word"* ]]; then
+              echo "🚫 Blocked: Tag '$TAG' contains prohibited keyword '$word'. Release will not be created."
+              exit 0
+            fi
+          done
+
+          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
+            echo "🚫 Blocked: Tag '$TAG' does not follow semantic version pattern. Release will not be created."
+            exit 0
+          fi
+
+          echo "🪪 Tag detected: $TAG"
           echo "⚙️ Attempting to create GitHub Release..."
 
           json=$(
-            jq -n --arg tag "${{ github.ref_name }}" --arg body "Auto‐generated release for tag ${{ github.ref_name }}" '{
+            jq -n --arg tag "$TAG" --arg body "Auto‐generated release for tag $TAG" '{
               tag_name: $tag,
               name: "Release \($tag)",
               body: $body,
