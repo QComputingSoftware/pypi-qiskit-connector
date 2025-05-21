@@ -1,4 +1,4 @@
-# ⚛️ Qiskit Connector
+# Qiskit Connector
 
 [![Python](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/python.svg)](https://www.python.org/downloads) [![Qiskit Connector Quality Check](https://github.com/QComputingSoftware/pypi-qiskit-connector/actions/workflows/quality.yml/badge.svg)](https://github.com/QComputingSoftware/pypi-qiskit-connector) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15349641.svg)](https://doi.org/10.5281/zenodo.15304310) [![Qiskit Connector Code Coverage Analysis](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/coverage.svg)](https://github.com/QComputingSoftware/pypi-qiskit-connector) [![Qiskit Connector Latest Release](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/release.svg)](https://github.com/QComputingSoftware/pypi-qiskit-connector/releases) [![PyPI Downloads](https://static.pepy.tech/badge/qiskit-connector)](https://pepy.tech/projects/qiskit-connector) [![License](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/license-badge.svg)](https://opensource.org/licenses/Apache-2.0) [![Downloads](https://github.com/QComputingSoftware/pypi-qiskit-connector/raw/main/docs/badges/monthly-downloads.svg)](https://pypi.org/project/qiskit-connector)
 
@@ -11,7 +11,7 @@ Qiskit Connector is quantum computing open-source SDK extension. The Qiskit Conn
 <br><br>
 By eliminating manual configurations and connection complexities, Qiskit Connector empowers developers to reduce onboarding time, minimize human error, and accelerate quantum solution delivery. The tool is especially valuable for production-grade quantum development where agility, repeatability, and secure backend access are critical. Whether working in research environments, building enterprise-grade quantum solutions, or designing novel quantum algorithms, developers can now concentrate on high-value tasks without being slowed down by infrastructure setup challenges.
 <br><br>
-This package performs the following:
+⚛️This package performs the following:
 - Loads environment variables from config file (e.g. `.env` if you are local) or load it remotely(depending on detection) to configure your IBM Quantum account plan and make the `backend` object available within your quantum application code for reuse in real-time.
 - Detects your active plan (Open, Standard, Premium, Dedicated) and sets up the correct channel/instance.
 - It has (`qiskit_smart`) to establish connectivity, then to verify QPU resources using (`qpu_verify`), and retrieve a ready-to-use backend using (`connector()`). Presents you with the least-busy backend QPU to run your quantum application code in realtime.
