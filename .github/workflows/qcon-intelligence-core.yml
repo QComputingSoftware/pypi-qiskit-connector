@@ -27,7 +27,8 @@ env:
   EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
 
 jobs:
-  audit-tags:
+  qcon-intelligence-core:
+    name: 🧠 Qcon Intelligence Core
     runs-on: ubuntu-latest
     steps:
       - name: 🧾 Checkout
@@ -72,11 +73,7 @@ jobs:
 
           for TAG in "${VALID_TAGS[@]}"; do
             echo "🚀 Creating release for valid tag: $TAG"
-            PAYLOAD=$(jq -n \
-              --arg tag "$TAG" \
-              --arg name "Release $TAG" \
-              --arg body "Auto-generated release for tag $TAG" \
-              '{
+            PAYLOAD=$(jq -n               --arg tag "$TAG"               --arg name "Release $TAG"               --arg body "Auto-generated release for tag $TAG"               '{
                 tag_name: $tag,
                 name: $name,
                 body: $body,
@@ -84,9 +81,14 @@ jobs:
                 prerelease: ($tag | test("-"))
               }')
 
-            curl -s -X POST \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/${{ github.repository }}/releases \
-              -d "$PAYLOAD"
+            RESPONSE_CODE=$(curl -s -o response.json -w "%{http_code}"               -X POST "https://api.github.com/repos/${{ github.repository }}/releases"               -H "Authorization: token $GH_TOKEN"               -H "Accept: application/vnd.github+json"               -d "$PAYLOAD")
+
+            if [[ "$RESPONSE_CODE" == "201" ]]; then
+              echo "✅ Release created for tag: $TAG"
+            elif [[ "$RESPONSE_CODE" == "422" && $(grep -c "already_exists" response.json) -gt 0 ]]; then
+              echo "ℹ️ Tag release already exists: $TAG"
+            else
+              echo "❌ Unexpected error creating release for tag: $TAG"
+              cat response.json
+            fi
           done
