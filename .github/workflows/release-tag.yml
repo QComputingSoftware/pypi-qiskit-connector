@@ -1,5 +1,5 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
-# @last update: 2025-03-01...
+# @last update: 2025-03-01.
 
 name: Sync Tag → GitHub Release
 
@@ -10,7 +10,7 @@ on:
       - '[0-9]*.[0-9]*.[0-9]*'
   workflow_dispatch: 
   schedule:
-    - cron: '0 10 * * 0'    #
+    - cron: '0 10 * * 0'    # Every Sunday at 10:00 UTC[]
 
 env:
   GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
@@ -219,7 +219,7 @@ jobs:
           done
 
       #=============================================================
-      - name: 🔍 Pre - Checking Release Tag Naming Violation
+      - name: 🔍 Pre Checking Release Tag Naming Violation
         shell: bash
         run: |
           echo "🔎 Validating tag: ${{ github.ref_name }}"
@@ -227,36 +227,55 @@ jobs:
           TAG="${{ github.ref_name }}"
           PROHIBITED_TAGS=(main stable pypi bug dev prod qa test lab)
 
+          should_delete=false
+
           for word in "${PROHIBITED_TAGS[@]}"; do
             if [[ "$TAG" == *"$word"* ]]; then
               echo "🚫 Tag name '$TAG' contains prohibited keyword: '$word'"
-              echo "🗑️ Deleting invalid tag (locally and remotely)..."
-
-              git tag -d "$TAG" || echo "⚠️ Local tag '$TAG' not found or already deleted."
-              git push origin :refs/tags/"$TAG" || echo "⚠️ Remote tag '$TAG' not found or already deleted."
-
-              echo "🧹 Tag '$TAG' deleted due to naming violation."
-              exit 0
+              should_delete=true
+              break
             fi
           done
 
-          # Enforce semantic versioning: x.y.z or x.y.z-rc01
           if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
             echo "🚫 Tag '$TAG' does not follow semantic version pattern like '2.2.6' or '2.1.5-rc01'"
+            should_delete=true
+          fi
 
+          if [ "$should_delete" = true ]; then
+            echo "🗑️ Cleaning up invalid tag and release..."
+
+            # Delete GitHub Release by tag name (if exists)
+            RELEASE_ID=$(curl -s -H "Authorization: token $PAT_GITHUB" \
+              https://api.github.com/repos/${{ github.repository }}/releases \
+              | jq -r ".[] | select(.tag_name==\"$TAG\") | .id")
+
+            if [[ -n "$RELEASE_ID" ]]; then
+              echo "🔻 Deleting GitHub release ID: $RELEASE_ID"
+              curl -s -X DELETE \
+                -H "Authorization: token $PAT_GITHUB" \
+                https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID
+            else
+              echo "⚠️ No GitHub release found for tag '$TAG'"
+            fi
+
+            # Delete tag locally and remotely
             git tag -d "$TAG" || echo "⚠️ Local tag '$TAG' not found or already deleted."
             git push origin :refs/tags/"$TAG" || echo "⚠️ Remote tag '$TAG' not found or already deleted."
 
-            echo "🧹 Tag '$TAG' deleted due to naming pattern violation."
+            echo "✅ Tag '$TAG' and its release (if any) have been deleted."
             exit 0
           fi
 
           echo "✅ All Clear! Tag '$TAG' passed validation."
         env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+          PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
+        #=============================================================
 
-      # ================================
+
+
+      # ================================================
       - name: 🧾 Create GitHub Release with fallback for existing tags
         shell: bash
         run: |
@@ -291,10 +310,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
-      # =============================================================
+      #===================================================================
 
-       #=============================================================
-      - name: 🔍 Post - Checking Release Tag Naming Violation
+
+
+
+      #====================================================================
+      - name: 🔍 Post Checking Release Tag Naming Violation
         shell: bash
         run: |
           echo "🔎 Validating tag: ${{ github.ref_name }}"
@@ -302,31 +324,48 @@ jobs:
           TAG="${{ github.ref_name }}"
           PROHIBITED_TAGS=(main stable pypi bug dev prod qa test lab)
 
+          should_delete=false
+
           for word in "${PROHIBITED_TAGS[@]}"; do
             if [[ "$TAG" == *"$word"* ]]; then
               echo "🚫 Tag name '$TAG' contains prohibited keyword: '$word'"
-              echo "🗑️ Deleting invalid tag (locally and remotely)..."
-
-              git tag -d "$TAG" || echo "⚠️ Local tag '$TAG' not found or already deleted."
-              git push origin :refs/tags/"$TAG" || echo "⚠️ Remote tag '$TAG' not found or already deleted."
-
-              echo "🧹 Tag '$TAG' deleted due to naming violation."
-              exit 0
+              should_delete=true
+              break
             fi
           done
 
-          # Enforce semantic versioning: x.y.z or x.y.z-rc01
           if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
             echo "🚫 Tag '$TAG' does not follow semantic version pattern like '2.2.6' or '2.1.5-rc01'"
+            should_delete=true
+          fi
 
+          if [ "$should_delete" = true ]; then
+            echo "🗑️ Cleaning up invalid tag and release..."
+
+            # Delete GitHub Release by tag name (if exists)
+            RELEASE_ID=$(curl -s -H "Authorization: token $PAT_GITHUB" \
+              https://api.github.com/repos/${{ github.repository }}/releases \
+              | jq -r ".[] | select(.tag_name==\"$TAG\") | .id")
+
+            if [[ -n "$RELEASE_ID" ]]; then
+              echo "🔻 Deleting GitHub release ID: $RELEASE_ID"
+              curl -s -X DELETE \
+                -H "Authorization: token $PAT_GITHUB" \
+                https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID
+            else
+              echo "⚠️ No GitHub release found for tag '$TAG'"
+            fi
+
+            # Delete tag locally and remotely
             git tag -d "$TAG" || echo "⚠️ Local tag '$TAG' not found or already deleted."
             git push origin :refs/tags/"$TAG" || echo "⚠️ Remote tag '$TAG' not found or already deleted."
 
-            echo "🧹 Tag '$TAG' deleted due to naming pattern violation."
+            echo "✅ Tag '$TAG' and its release (if any) have been deleted."
             exit 0
           fi
 
           echo "✅ All Clear! Tag '$TAG' passed validation."
         env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+          PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
+        #====================================================================
