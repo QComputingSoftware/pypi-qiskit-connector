@@ -26,7 +26,7 @@ env:
 jobs:
   find-and-verify-gpg-key:
     runs-on: ubuntu-latest
-    permissions: # <-- Correct placement at the job level
+    permissions: 
       contents: write
       actions: write
       deployments: write
@@ -46,7 +46,6 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
           submodules: recursive
-      # Other steps for the job would go here
 
       - name: Git Hard Reset Main
         run: |
@@ -55,8 +54,8 @@ jobs:
           git config --global user.email "$GPG_NAME_EMAIL"
           git reset --hard origin/main
           git pull origin main
-     #_____________________________________________________
 
+     #_____________________________________________________
       - name: Install jq (JSON processor)
         run: sudo apt-get update && sudo apt-get install -y jq
 
@@ -176,7 +175,6 @@ jobs:
           git config --global commit.gpgsign true
 
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
-
       #_____________________________________________________________________________
 
      
