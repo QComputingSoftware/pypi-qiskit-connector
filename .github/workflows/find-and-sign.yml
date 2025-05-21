@@ -189,7 +189,7 @@ jobs:
           rev_option_4=$(git rev-list --all --not --remotes=origin main)
           rev_option_5=$(git rev-list --since="2 weeks ago" main)
           rev_option_6=$(git rev-list --all)
-          rev_option_7=$(git rev-list --max-count=3 main)
+          rev_option_7=$(git rev-list --max-count=10 main)
 
           for commit in $rev_option_7; do
             sig_output=$(git log --format="%G?:%GS:%GK" -n 1 $commit)
