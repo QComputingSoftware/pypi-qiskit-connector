@@ -1,0 +1,68 @@
+# @Author: Dr. Jeffrey Chijioke-Uche
+# @last update: 2025-03-01
+
+name: Find Only Latest Commit & Sign it with GPG
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["pypi"]
+
+permissions:
+  contents: write
+
+jobs:
+  find-and-sign-latest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "${{ secrets.GPG_NAME_REAL }}"
+          git config --global user.email "${{ secrets.GPG_NAME_EMAIL }}"
+
+      - name: Import GPG Key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "${GPG_PASSPHRASE}" | \
+          gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import <(echo "${GPG_PRIVATE_KEY}")
+
+      - name: Find if latest commit is signed
+        id: check_sig
+        run: |
+          # Get latest commit hash
+          LATEST_COMMIT=$(git rev-parse HEAD)
+          # Check if it's GPG signed
+          if git log --format='%G?' -1 $LATEST_COMMIT | grep -q 'G'; then
+            echo "✅Latest commit is already signed."
+            echo "signed=yes" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "Latest commit is not signed."
+            echo "signed=no" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Amend and sign the latest commit (if not signed)
+        if: steps.check_sig.outputs.signed == 'no'
+        env:
+          GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          export GPG_TTY=$(tty)
+          git commit --amend --no-edit --gpg-sign="$GPG_KEY_ID" || true
+          echo "Now Re-Signed with GPG Key ID: $GPG_KEY_ID"
+          git log -1 --show-signature
+
+      - name: Push amended commit
+        if: steps.check_sig.outputs.signed == 'no'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push --force-with-lease

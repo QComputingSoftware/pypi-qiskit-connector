@@ -13,8 +13,10 @@ on:
 
 permissions:
   contents: write
+  id-token: write
   actions: write
   deployments: write
+  pull-requests: write
   checks: write
   statuses: write
   issues: write
@@ -435,8 +437,14 @@ jobs:
           echo "✅ Coverage badge added to commit.[done]"
 
           echo "Committing changes"
-          git commit --gpg-sign="${GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
-          echo "✅ Changes committed successfully & signing stage completed [done]."
+          activate="off"
+          if [[ "$activate" == "on" ]]; then
+            echo "Signing commit with GPG key ID"
+            git commit --gpg-sign="${GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
+          else
+            echo "Signing Commit without GPG key ID"
+            git commit -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
+            echo "✅ Changes committed successfully & signing stage completed [done]."
 
           echo "Checking for changes..."
           git fetch origin main
