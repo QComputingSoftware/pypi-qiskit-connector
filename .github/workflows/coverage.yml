@@ -429,7 +429,7 @@ jobs:
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
           git config --global user.signingkey "$GPG_KEY_ID" 
-          git config --global commit.gpgsign true
+          git config --global commit.gpgsign false
           echo "✅ Git configured with GPG key details.[done]"
 
           echo "Adding the coverage badge to the commit"
@@ -438,17 +438,17 @@ jobs:
           printf " \n"
 
           echo "Committing changes"
-          activate="off"
+          activate="on"
 
           if [[ "$activate" == "on" ]]; then
-            echo "Signing commit with GPG key ID"
-            # git commit --gpg-sign="${GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
-          else
             echo "==================================================================================="
             echo "Commit without signing with GPG key ID"
             git commit -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
             echo "✅ Changes committed successfully & signing stage completed [done]."
             echo "==================================================================================="
+          else
+            echo "No Commit - GPG signing is not activated."
+            echo "✅ No commit made. GPG signing is not activated."
           fi
 
           echo "Checking for changes..."
