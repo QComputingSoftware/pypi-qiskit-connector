@@ -3,7 +3,7 @@
 # @Last Modified by: Dr. Jeffrey Chijioke-Uche
 # @Last Modified time: 2023-10-01..............
 #_____________________________________________
-name: 🔐 Find and Sign Commit on Demand
+name: 🔐 F & S on Dispatch
 
 on:
   push:
