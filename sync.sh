@@ -142,66 +142,59 @@ bump_version_citation() {
 
 
 # -----------------------------------------------------------------------------
-# Main release::
+# Main release::   DEACTIVATED
 # -----------------------------------------------------------------------------
-# release() {
-#   # 0) Clean up old distributions
-#   banner "${YELLOW}" "🧹 Cleaning up old distributions..."
-#   rm -rf dist/*
-#   echo -e "${YELLOW}Done.${RESET}" && sleep 2
+release() {
+  # 0) Clean up old distributions
+  banner "${YELLOW}" "🧹 Cleaning up old distributions..."
+  rm -rf dist/*
+  echo -e "${YELLOW}Done.${RESET}" && sleep 2
 
-#   # 1) Version bump
-#   banner "${CYAN}" "📝 Bumping versions..."
-#   bump_version setup.py
-#   bump_version pyproject.toml
-#   bump_version_citation
-#   sleep 2
+  # 1) Version bump
+  banner "${CYAN}" "📝 Bumping versions..."
+  bump_version setup.py
+  bump_version pyproject.toml
+  bump_version_citation
+  sleep 2
 
-#   # 2) Build distributions
-#   banner "${CYAN}" "🛠️  Building distribution..."
-#   echo "🔍 Checking for Python 'build' module..."
-#   if python3 -m pip show build > /dev/null 2>&1; then
-#     echo "✅ Python 'build' module exists."
-#   else
-#     echo "⚠️ 'build' module not found. Installing..."
-#     python3 -m pip install --upgrade build || {
-#       echo "❌ Failed to install 'build'."
-#       exit 1
-#     }
-#   fi
-#   python3 -m build
-#   sleep 2
+  # 2) Build distributions
+  banner "${CYAN}" "🛠️  Building distribution..."
+  echo "🔍 Checking for Python 'build' module..."
+  if python3 -m pip show build > /dev/null 2>&1; then
+    echo "✅ Python 'build' module exists."
+  else
+    echo "⚠️ 'build' module not found. Installing..."
+    python3 -m pip install --upgrade build || {
+      echo "❌ Failed to install 'build'."
+      exit 1
+    }
+  fi
+  python3 -m build
+  sleep 2
 
-#   # 3) Check distributions
-#   banner "${YELLOW}" "🔍 Checking distributions..."
-#   twine check dist/*
-#   sleep 2
+  # 3) Check distributions
+  banner "${YELLOW}" "🔍 Checking distributions..."
+  twine check dist/*
+  sleep 2
 
-#   # 4) Release to PyPI (via Trusted Publisher)
-#   banner "${MAGENTA}" "📤 Releasing new version to PyPI..."
-#   echo -e "${YELLOW}Please wait...${RESET}"
-#   # Delegate to trusted publisher actions: Never Allow twine to be run locally
-#   # twine upload --skip-existing dist/* || {}
-#   echo -e "${RED}⛔ Twine release is disabled for local execution.${RESET}"
-#   echo -e "${RED}🔔 Trusted publisher workflow will now release.${RESET}"
-#   sleep 2
+  # 4) Release to PyPI (via Trusted Publisher)
+  banner "${MAGENTA}" "📤 Releasing new version to PyPI..."
+  echo -e "${YELLOW}Please wait...${RESET}"
+  # Delegate to trusted publisher actions: Never Allow twine to be run locally
+  # twine upload --skip-existing dist/* || {}
+  echo -e "${RED}⛔ Twine release is disabled for local execution.${RESET}"
+  echo -e "${RED}🔔 Trusted publisher workflow will now release.${RESET}"
+  sleep 2
 
-#   echo -e "${GREEN}🔔 Release process has been initiated by trusted publisher.${RESET}"
-# }
-  
-# -----------------------------------------------------------------------------
-# Entry point
-# -----------------------------------------------------------------------------
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  #release   # Disabled[]
-  bump_version_citation  # Enabled for Synchronization
-  git pull
-  banner "${BLUE}" "💾 Committing & pushing version bump..."
-  git add -A
-  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $(grep -m1 -E 'version\s*=\s*\"' CITATION.bib |
-                      sed -E 's/.*\"([0-9]+\.[0-9]+\.[0-9]+)\".*/\1/')"
-  git push
+  echo -e "${GREEN}🔔 Release process has been initiated by trusted publisher.${RESET}"
+}
 
+
+#=================================================
+# Update stable branch: DEACTIVATED
+#=================================================
+update_stable_branch() {
+  # Check if the stable branch exists
   banner "${BLUE}" "🔄 Updating stable branch..."
   if git show-ref --verify --quiet refs/heads/stable; then
     echo -e "${GREEN}✅ Stable branch exists.${RESET}"
@@ -212,20 +205,72 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     git checkout -b stable
     git pull origin stable || true
   fi
+
+  # Merge main into stable and push changes
   git merge main --no-edit
   git push origin stable
   git checkout main
-  git pull origin main
   git pull
+}
+
+
+# -----------------------------------------------------------------------------
+#  statuses
+main_release_status="off"
+update_stable_branch_status="off"
+citation_status="on"
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
+# RELEASE SYNCHRONIZATION
+# -----------------------------------------------------------------------------
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+
+  if [[ "$main_release_status" == "on" ]]; then
+    echo "Starting release process..." 
+    release
+  else
+    echo "Release process is not enabled." 
+    echo "We are proceeding with synchronization only."
+  fi
+
+
+  if [[ "$citation_status" == "on" ]]; then
+    echo -e "${GREEN}🔖 Bumping CITATION.bib version...${RESET}"
+    bump_version_citation
+    git pull
+  else
+    echo -e "${YELLOW}⚠️ Skipping CITATION.bib version bump.${RESET}"
+  fi
+
+
+  if [[ "$update_stable_branch_status" == "off" ]]; then
+    echo -e "${RED}⛔ Skipping stable branch update.${RESET}"
+  else
+    echo -e "${GREEN}✅ Stable branch update in progress...${RESET}"
+    update_stable_branch
+  fi
+
+
+#-------------------------------------------------------------------------------------------------
+  banner "${BLUE}" "💾 Committing & pushing sync..."
+  git add -A
+  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $(grep -m1 -E 'version\s*=\s*\"' CITATION.bib |
+                      sed -E 's/.*\"([0-9]+\.[0-9]+\.[0-9]+)\".*/\1/')"
+  echo "Release Signed & Synced."
+  git push
+  git pull
+
+  echo "Please wait while we synchronize with GitHub..."
+  sleep 15
   banner "${GREEN}" "🎉 Release process complete!"
 fi
-git pull
+
+
 # -----------------------------------------------------------------------------
 # Synchronize with GitHub
 # -----------------------------------------------------------------------------
-banner "${YELLOW}" "🔄 Synchronizing with GitHub..."
-banner "${YELLOW}" "🔄 Pulling latest changes from GitHub..."
-banner "${YELLOW}" "🔄 Pushing local changes to GitHub..."
 banner "${YELLOW}" "🔄 Synchronization complete!"
 exit 0
 #--------------------------------------------------------------------------
