@@ -1,20 +1,20 @@
-<svg width="274.4" height="20" viewBox="0 0 2744 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Qiskit Connector Code Coverage Analysis: 89%">
-  <title>Qiskit Connector Code Coverage Analysis: 89%</title>
+<svg width="296.4" height="20" viewBox="0 0 2964 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="🛡️Qiskit Connector Code Coverage Analysis: 89%">
+  <title>🛡️Qiskit Connector Code Coverage Analysis: 89%</title>
   <linearGradient id="a" x2="0" y2="100%">
     <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
-  <mask id="m"><rect width="2744" height="200" rx="30" fill="#FFF"/></mask>
+  <mask id="m"><rect width="2964" height="200" rx="30" fill="#FFF"/></mask>
   <g mask="url(#m)">
-    <rect width="2384" height="200" fill="#555"/>
-    <rect width="360" height="200" fill="#gold" x="2384"/>
-    <rect width="2744" height="200" fill="url(#a)"/>
+    <rect width="2604" height="200" fill="#555"/>
+    <rect width="360" height="200" fill="#DB1" x="2604"/>
+    <rect width="2964" height="200" fill="url(#a)"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
-    <text x="60" y="148" textLength="2284" fill="#000" opacity="0.25">Qiskit Connector Code Coverage Analysis</text>
-    <text x="50" y="138" textLength="2284">Qiskit Connector Code Coverage Analysis</text>
-    <text x="2439" y="148" textLength="260" fill="#000" opacity="0.25">89%</text>
-    <text x="2429" y="138" textLength="260">89%</text>
+    <text x="60" y="148" textLength="2504" fill="#000" opacity="0.25">🛡️Qiskit Connector Code Coverage Analysis</text>
+    <text x="50" y="138" textLength="2504">🛡️Qiskit Connector Code Coverage Analysis</text>
+    <text x="2659" y="148" textLength="260" fill="#000" opacity="0.25">89%</text>
+    <text x="2649" y="138" textLength="260">89%</text>
   </g>
   
 </svg>
