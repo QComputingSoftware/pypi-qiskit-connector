@@ -7,7 +7,7 @@ name: 🔐 F & S on Dispatch
 
 on:
   push:
-    branches: [ pypi ]
+    branches: [ "main" ]
   workflow_dispatch:
   # schedule:
   #   - cron: '0 1 * * 0'  
