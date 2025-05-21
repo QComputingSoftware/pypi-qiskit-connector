@@ -1,0 +1,92 @@
+# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
+# @last update: 2025-03-01
+# @Description: This workflow is triggered on a schedule to check the quality of the software(Qiskit Connector).
+# @ Reference:  This workflow ensures that all necessary checks are performed regularly to maintain software integrity.
+# @Copyright: 2025 Dr. Jeffrey Chijioke-Uche, Quantum Computing Qiskit Connector.
+
+name: 🧠 Qcon Intelligence Core
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '*/15 * * * *'  #
+
+permissions:
+  contents: write 
+  actions: write
+  deployments: write
+  pull-requests: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+  GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+  GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+  UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
+  UNAME_CONTRIBUTOR_03: ${{ secrets.UNAME_CONTRIBUTOR_03 }}
+  EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
+  EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
+
+jobs:
+  audit-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧾 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔐 Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 🧠 Audit Tags & Manage Releases
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          PROHIBITED=(main stable dev test bug qa pypi lab prod)
+          VALID_TAGS=()
+
+          git fetch --tags --force
+
+          echo "🔍 Auditing tags..."
+          for TAG in $(git tag); do
+            echo "⏳ Checking tag: $TAG"
+
+            for BAD in "${PROHIBITED[@]}"; do
+              if [[ "$TAG" == *"$BAD"* ]]; then
+                echo "🚫 Deleting prohibited tag: $TAG"
+                git push origin :refs/tags/"$TAG"
+                continue 2
+              fi
+            done
+
+            if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
+              echo "🚫 Deleting malformed tag: $TAG"
+              git push origin :refs/tags/"$TAG"
+              continue
+            fi
+
+            VALID_TAGS+=("$TAG")
+          done
+
+          echo "✅ Valid tags: ${VALID_TAGS[*]}"
+
+          for TAG in "${VALID_TAGS[@]}"; do
+            echo "🚀 Creating release for valid tag: $TAG"
+            PAYLOAD=$(jq -n \
+              --arg tag "$TAG" \
+              --arg name "Release $TAG" \
+              --arg body "Auto-generated release for tag $TAG" \
+              '{
+                tag_name: $tag,
+                name: $name,
+                body: $body,
+                draft: false,
+                prerelease: ($tag | test("-"))
+              }')
+
+            curl -s -X POST \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/${{ github.repository }}/releases \
+              -d "$PAYLOAD"
+          done
