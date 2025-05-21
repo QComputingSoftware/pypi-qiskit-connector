@@ -442,9 +442,10 @@ jobs:
             echo "Signing commit with GPG key ID"
             git commit --gpg-sign="${GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
           else
-            echo "Signing Commit without GPG key ID"
+            echo "Commit without signing with GPG key ID"
             git commit -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
             echo "✅ Changes committed successfully & signing stage completed [done]."
+          fi
 
           echo "Checking for changes..."
           git fetch origin main
@@ -460,3 +461,13 @@ jobs:
 
           echo "Expected gpg key ID: ${EXPECTED_GPG_KEY_ID} [done]"
           echo "Matched GPG key ID:  ${GPG_KEY_ID} [done]"
+
+      - name: Calling Find and Sign Automation
+        id: find_and_sign
+        uses: ./.github/workflows/find-and-sign.yml
+        with:
+          GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+          GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
