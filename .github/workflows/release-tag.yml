@@ -218,17 +218,21 @@ jobs:
             fi
           done
 
-      #=============================================================
+
+
+      #====================================================================
       - name: 🔍 Pre Checking Release Tag Naming Violation
         shell: bash
         run: |
           echo "🔎 Validating tag: ${{ github.ref_name }}"
+          git pull
 
           TAG="${{ github.ref_name }}"
           PROHIBITED_TAGS=(main stable pypi bug dev prod qa test lab)
 
           should_delete=false
 
+          # Check if tag matches prohibited list
           for word in "${PROHIBITED_TAGS[@]}"; do
             if [[ "$TAG" == *"$word"* ]]; then
               echo "🚫 Tag name '$TAG' contains prohibited keyword: '$word'"
@@ -237,21 +241,22 @@ jobs:
             fi
           done
 
+          # Check semantic versioning pattern
           if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
             echo "🚫 Tag '$TAG' does not follow semantic version pattern like '2.2.6' or '2.1.5-rc01'"
             should_delete=true
           fi
 
           if [ "$should_delete" = true ]; then
-            echo "🗑️ Cleaning up invalid tag and release..."
+            echo "🗑️ Cleaning up invalid tag and draft release..."
 
-            # Delete GitHub Release by tag name (if exists)
+            # 🔍 Find GitHub Release ID for this tag (even if draft)
             RELEASE_ID=$(curl -s -H "Authorization: token $PAT_GITHUB" \
               https://api.github.com/repos/${{ github.repository }}/releases \
               | jq -r ".[] | select(.tag_name==\"$TAG\") | .id")
 
             if [[ -n "$RELEASE_ID" ]]; then
-              echo "🔻 Deleting GitHub release ID: $RELEASE_ID"
+              echo "🔻 Deleting GitHub release (ID: $RELEASE_ID) for tag '$TAG'"
               curl -s -X DELETE \
                 -H "Authorization: token $PAT_GITHUB" \
                 https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID
@@ -259,9 +264,9 @@ jobs:
               echo "⚠️ No GitHub release found for tag '$TAG'"
             fi
 
-            # Delete tag locally and remotely
-            git tag -d "$TAG" || echo "⚠️ Local tag '$TAG' not found or already deleted."
-            git push origin :refs/tags/"$TAG" || echo "⚠️ Remote tag '$TAG' not found or already deleted."
+            # 🗑️ Delete Git tag locally and remotely
+            git tag -d "$TAG" 2>/dev/null || echo "⚠️ Local tag '$TAG' not found or already deleted."
+            git push origin :refs/tags/"$TAG" 2>/dev/null || echo "⚠️ Remote tag '$TAG' not found or already deleted."
 
             echo "✅ Tag '$TAG' and its release (if any) have been deleted."
             exit 0
@@ -271,11 +276,13 @@ jobs:
         env:
           PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
-        #=============================================================
+      #==================================================================================
 
 
 
-      # ================================================
+
+
+      # ===============================================================================
       - name: 🧾 Create GitHub Release with fallback for existing tags
         shell: bash
         run: |
@@ -315,17 +322,20 @@ jobs:
 
 
 
+
       #====================================================================
       - name: 🔍 Post Checking Release Tag Naming Violation
         shell: bash
         run: |
           echo "🔎 Validating tag: ${{ github.ref_name }}"
+          git pull
 
           TAG="${{ github.ref_name }}"
           PROHIBITED_TAGS=(main stable pypi bug dev prod qa test lab)
 
           should_delete=false
 
+          # Check if tag matches prohibited list
           for word in "${PROHIBITED_TAGS[@]}"; do
             if [[ "$TAG" == *"$word"* ]]; then
               echo "🚫 Tag name '$TAG' contains prohibited keyword: '$word'"
@@ -334,21 +344,22 @@ jobs:
             fi
           done
 
+          # Check semantic versioning pattern
           if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
             echo "🚫 Tag '$TAG' does not follow semantic version pattern like '2.2.6' or '2.1.5-rc01'"
             should_delete=true
           fi
 
           if [ "$should_delete" = true ]; then
-            echo "🗑️ Cleaning up invalid tag and release..."
+            echo "🗑️ Cleaning up invalid tag and draft release..."
 
-            # Delete GitHub Release by tag name (if exists)
+            # 🔍 Find GitHub Release ID for this tag (even if draft)
             RELEASE_ID=$(curl -s -H "Authorization: token $PAT_GITHUB" \
               https://api.github.com/repos/${{ github.repository }}/releases \
               | jq -r ".[] | select(.tag_name==\"$TAG\") | .id")
 
             if [[ -n "$RELEASE_ID" ]]; then
-              echo "🔻 Deleting GitHub release ID: $RELEASE_ID"
+              echo "🔻 Deleting GitHub release (ID: $RELEASE_ID) for tag '$TAG'"
               curl -s -X DELETE \
                 -H "Authorization: token $PAT_GITHUB" \
                 https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID
@@ -356,9 +367,9 @@ jobs:
               echo "⚠️ No GitHub release found for tag '$TAG'"
             fi
 
-            # Delete tag locally and remotely
-            git tag -d "$TAG" || echo "⚠️ Local tag '$TAG' not found or already deleted."
-            git push origin :refs/tags/"$TAG" || echo "⚠️ Remote tag '$TAG' not found or already deleted."
+            # 🗑️ Delete Git tag locally and remotely
+            git tag -d "$TAG" 2>/dev/null || echo "⚠️ Local tag '$TAG' not found or already deleted."
+            git push origin :refs/tags/"$TAG" 2>/dev/null || echo "⚠️ Remote tag '$TAG' not found or already deleted."
 
             echo "✅ Tag '$TAG' and its release (if any) have been deleted."
             exit 0
@@ -368,4 +379,4 @@ jobs:
         env:
           PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
-        #====================================================================
+      #==================================================================================
