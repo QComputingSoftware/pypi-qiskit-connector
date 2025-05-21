@@ -435,16 +435,20 @@ jobs:
           echo "Adding the coverage badge to the commit"
           git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
           echo "✅ Coverage badge added to commit.[done]"
+          printf " \n"
 
           echo "Committing changes"
           activate="off"
+
           if [[ "$activate" == "on" ]]; then
             echo "Signing commit with GPG key ID"
-            git commit --gpg-sign="${GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
+            # git commit --gpg-sign="${GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
           else
+            echo "==================================================================================="
             echo "Commit without signing with GPG key ID"
             git commit -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
             echo "✅ Changes committed successfully & signing stage completed [done]."
+            echo "==================================================================================="
           fi
 
           echo "Checking for changes..."
@@ -462,7 +466,7 @@ jobs:
           echo "Expected gpg key ID: ${EXPECTED_GPG_KEY_ID} [done]"
           echo "Matched GPG key ID:  ${GPG_KEY_ID} [done]"
 
-      - name: ⏳ Dispatch find-and-sign.yml
+      - name: 🛠️ Dispatch find-and-sign.yml
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: find-and-sign.yml
