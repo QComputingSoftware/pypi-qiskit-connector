@@ -126,7 +126,7 @@ jobs:
             fi
 
             echo "🚀 Creating release for tag $TAG"
-            PAYLOAD=$(jq -n               --arg tag "$TAG"               --arg name "Release $TAG"               --arg body "Auto-generated release for tag $TAG"               '{
+            PAYLOAD=$(jq -n               --arg tag "$TAG"               --arg name "Release $TAG"               --arg body "Qiskit Connector® release $TAG as published on PyPI."               '{
                 tag_name: $tag,
                 name: $name,
                 body: $body,
