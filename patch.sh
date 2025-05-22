@@ -4,15 +4,11 @@
 # @Date: 2023-10-01
 # @Last Modified by: Dr. Jeffrey Chijioke-Uche
 # @Last Modified time: 2025-04-27
+# Purpose: This script automates patches.
 # -----------------------------------------------------------------------------
 #   Commit Code Update to Github
 # -----------------------------------------------------------------------------
 set -euo pipefail
-
-
-git fetch origin
-git pull origin main --no-edit
-git pull origin stable --no-edit
 
 source ./pvars.sh
 
@@ -45,6 +41,7 @@ MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
 RESET='\033[0m'
 
+
 #-------------------------------------------------------------------------------
 # Utility banner
 #--------------------------------------------------------------------------------
@@ -56,12 +53,17 @@ banner() {
   echo -e "${color}===================================================================================================${RESET}"
 }
 
+# -----------------------------------------------------------------------------
+# Refresh git repository
+# -----------------------------------------------------------------------------
+banner "${GREEN}" "🔄 Pulling latest changes from remote repository..."
+git fetch origin
+git pull origin main --no-edit
+git merge origin/main --allow-unrelated-histories || true
+#git pull origin stable --no-edit
+
 #-------------------------------------------------------------------------------
 # Function to check if the script is run from the root directory of the repository
-# and if there are any changes to commit
-# and if the user is on the main branch
-# This function is called at the beginning of the script
-# to ensure that the script is run in the correct context
 #-------------------------------------------------------------------------------
 change_management() {
   # Check if the script is run from the root directory of the repository
@@ -98,62 +100,96 @@ change_management() {
 }
 
 # -----------------------------------------------------------------------------
-commit() {
+patch() {
   # Check if the script is run from the root directory of the repository
   change_management
-  git pull origin main
+  #git pull origin main
   # Add all changes to version control
-  banner "${YELLOW}" "🧹 Adding code to version control..."
+  banner "${YELLOW}" "🧹 Adding code to version control, please wait..."
   git add -A
-  # Make commit comment with today's date and time and a message
-  banner "${GREEN}" "📝 Committing changes..."
+  git merge origin/main --allow-unrelated-histories || true
+  sleep 5
+  echo -e "${GREEN}✅ All changes added to version control successfully.${RESET}"
+  banner "${GREEN}" "📝 Signing & Committing changes..."
   git commit -S --gpg-sign="$GPG_KEY_ID" -m "Quantum Connector Update - $(date +'%Y-%m-%d %H:%M:%S')"
-
+  echo -e "${GREEN}✅ Changes signed & committed successfully.${RESET}"
+  echo ""
   
   # Push to the main branch
   banner "${CYAN}" "🚀 Pushing changes to remote repository..."
   git push origin main
 
-  # Push to Stable branch in remote & stable does not exist locally
-  # If stable branch does not exist locally, create it from main
-  if ! git show-ref --verify --quiet refs/heads/stable; then
-    banner "${YELLOW}" "🔄 Creating stable branch from main..."
-    git checkout -b stable
-  else
-    banner "${YELLOW}" "🔄 Switching to stable branch..."
-    git checkout stable
-    git pull origin stable
-  fi
-
   #_______________________________________________________________________________________________
   # Merge main to the stable branch & this is the branch that will be used for the stable version
   #_______________________________________________________________________________________________
-  banner "${MAGENTA}" "🔄 Merging main into stable branch..."
-  git merge main --no-edit
-  # Check if there are any merge conflicts....................................................
+  # # Push to Stable branch in remote & stable does not exist locally
+  # # If stable branch does not exist locally, create it from main
+  # if ! git show-ref --verify --quiet refs/heads/stable; then
+  #   banner "${YELLOW}" "🔄 Creating stable branch from main..."
+  #   git checkout -b stable
+  # else
+  #   banner "${YELLOW}" "🔄 Switching to stable branch..."
+  #   git checkout stable
+  #   git pull origin stable
+  # fi
 
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}⛔ Merge conflicts detected. Please resolve them and try again.${RESET}"
-    exit 1
+
+  # DISBALED:  ALL PULL REQUESTS TO MERGE INTO ANOTHER BRANCH FROM MAIN MUST BE VIA GITHUB UI
+  #_______________________________________________________________________________________________
+  # Merge main to the stable branch & this is the branch that will be used for the stable version
+  #_______________________________________________________________________________________________
+  # banner "${MAGENTA}" "🔄 Merging main into stable branch..."
+  # git merge main --no-edit
+  # # Check if there are any merge conflicts
+
+  # if [ $? -ne 0 ]; then
+  #   echo -e "${RED}⛔ Merge conflicts detected. Please resolve them and try again.${RESET}"
+  #   exit 1
+  # fi
+
+  # banner "${GREEN}" "🚀 Pushing changes to stable branch..."
+  # git push origin stable
+  # if [ $? -ne 0 ]; then
+  #   echo -e "${RED}⛔ Failed to push changes to the stable branch. Please resolve any issues and try again.${RESET}"
+  #   exit 1
+  # fi
+
+  # # Switch back to main branch
+  # banner "${YELLOW}" "🔄 Switching back to main branch..."
+  # git checkout main
+  # git pull origin main
+  # echo -e "${GREEN}✅ Successfully switched back to main branch.${RESET}"
+
+
+banner "${GREEN}" "🎉 Release process complete!"
+  if [ -n "$(git status --porcelain)" ]; then
+    echo -e "${YELLOW}⚠️ You have uncommitted changes in the main branch.${RESET}"
+    git commit -S --gpg-sign="$GPG_KEY_ID" -m "Quantum Connector Update - $(date +'%Y-%m-%d %H:%M:%S')"
+    git merge origin/main --allow-unrelated-histories || true
+    git push origin main
   fi
 
-
-  banner "${GREEN}" "🚀 Pushing changes to stable branch..."
-  git push origin stable
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}⛔ Failed to push changes to the stable branch. Please resolve any issues and try again.${RESET}"
-    exit 1
-  fi
-
-  # Switch back to main branch
-  banner "${YELLOW}" "🔄 Switching back to main branch..."
-  git checkout main
-  git pull origin main
-  echo -e "${GREEN}✅ Successfully switched back to main branch.${RESET}"
+  banner "${GREEN}" "✅ Successfully committed changes to the main branch."
+  banner "${CYAN}" "🚀 Successfully pushed changes to the remote repository."
+  banner "${GREEN}" "🔄 Successfully merged main into stable branch."
 }
-commit
+
+
+
+#Call
+#----
+patch
+
+
+
+
+
+
+
 sleep 3
-git pull
+git pull origin main --no-edit
+banner "${GREEN}" "🎉 Patch process complete!"
+echo -e "${GREEN}🔄 All operations completed successfully.${RESET}"
 # -----------------------------------------------------------------------------
 #   End of Commit Code Update to Github
 # -----------------------------------------------------------------------------
