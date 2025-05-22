@@ -145,3 +145,14 @@ jobs:
               cat response.json
             fi
           done
+
+# PAYLOAD=$(jq -n \
+#   --arg tag "$TAG" \
+#   --arg name "Release $TAG" \
+#   '{
+#     tag_name: $tag,
+#     name: $name,
+#     draft: false,
+#     generate_release_notes: true,
+#     prerelease: ($tag | test("-(rc|beta|alpha)[0-9]*$"))
+#   }')
