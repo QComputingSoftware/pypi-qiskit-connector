@@ -90,11 +90,20 @@ jobs:
           git config --global user.signingkey "$EXPECTED_GPG_KEY_ID"
           git config --global commit.gpgsign true
 
+      - name: 🔐 Qcon Software Descriptor
+        id: qcon-software-descriptor
+        run: |
+          QCON_NOTE="Quantum Computing Qiskit Connector For IBM Quantum Backend Realtime. Qiskit Connector is quantum computing open-source SDK extension. The Qiskit Connector transforms how quantum developers connect to IBM Quantum backends by automating every step of the authentication, plan detection, and backend selection process. Instead of writing extensive boilerplate setup code for each project, developers can now seamlessly authenticate, dynamically detect whether they are using an Open or Paid plan, and instantly access the optimal backend QPUresource which is least-busy using a single intuitive keyword: backend. The connector intelligently manages quantum computing plan environment variables and Qiskit runtime service configuration for sticky reusability of QPU resources from the backend, allowing quantum developers to streamline connection workflows and immediately focus on building, testing, and scaling quantum applications.
+          [Qiskit Connector® on PyPI](https://pypi.org/project/qiskit-connector)"
+          echo "QCON_NOTE=$QCON_NOTE" >> $GITHUB_ENV
+          echo "QCON_NOTE=$QCON_NOTE" >> $GITHUB_OUTPUT
+
       - name: 🧠 Qcon Intelligence Core - Audit and Manage Signed Releases
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
           EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          QCON_NOTE: ${{ env.QCON_NOTE }}
         run: |
           PROHIBITED=(main stable dev test bug qa pypi lab prod)
           VALID_TAGS=()
@@ -132,7 +141,7 @@ jobs:
               --arg tag "$TAG" \
               --arg name "Release $TAG" \
               --arg body "Qiskit Connector® release $TAG as published on PyPI." \
-              --arg body_html "Quantum Computing Qiskit Connector® For Quantum Backend Realtime. [Qiskit Connector® on PyPI](https://pypi.org/project/qiskit-connector)" \
+              --arg body_html "$QCON_NOTE" \
               '{
                 tag_name: $tag,
                 name: $name,
