@@ -1,7 +1,7 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01
 
-name: 🧠 Qcon Intelligent Core  - Sync PyPI Releases to GitHub
+name: 🧠 Qcon Intelligent Core  - Sync PyPI Releases → GitHub
 
 on:
   push:
