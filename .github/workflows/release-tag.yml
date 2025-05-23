@@ -1,18 +1,21 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01 [].........[]
 
-name: Sync Tag → GitHub Release
+name: 🧠 Qcon Intelligent Core  - Sync Tag → GitHub Release
 
 on:
   push:
+    branches:
+      - pypi
     tags:
       - 'v[0-9]*.[0-9]*.[0-9]*'
       - '[0-9]*.[0-9]*.[0-9]*'
   workflow_dispatch: 
   schedule:
-    - cron: '0 10 * * 0'    # Every Sunday at 10:00 UTC[]
+    - cron: '0 10 * * 0'     
 
 env:
+  PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
   GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
   GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
   GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
@@ -219,191 +222,151 @@ jobs:
           done
 
 
-
-      #====================================================================
-      - name: 🔍 Pre Checking Release Tag Naming Violation
-        shell: bash
-        run: |
-          echo "🔎 Validating tag: ${{ github.ref_name }}"
-          git pull
-
-          TAG="${{ github.ref_name }}"
-          PROHIBITED_TAGS=(main stable pypi bug dev prod qa test lab)
-
-          should_delete=false
-
-          # Check if tag matches prohibited list
-          for word in "${PROHIBITED_TAGS[@]}"; do
-            if [[ "$TAG" == *"$word"* ]]; then
-              echo "🚫 Tag name '$TAG' contains prohibited keyword: '$word'"
-              should_delete=true
-              break
-            fi
-          done
-
-          # Check semantic versioning pattern
-          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
-            echo "🚫 Tag '$TAG' does not follow semantic version pattern like '2.2.6' or '2.1.5-rc01'"
-            should_delete=true
-          fi
-
-          if [ "$should_delete" = true ]; then
-            echo "🗑️ Cleaning up invalid tag and draft release..."
-
-            # 🔍 Find GitHub Release ID for this tag (even if draft)
-            RELEASE_ID=$(curl -s -H "Authorization: token $PAT_GITHUB" \
-              https://api.github.com/repos/${{ github.repository }}/releases \
-              | jq -r ".[] | select(.tag_name==\"$TAG\") | .id")
-
-            if [[ -n "$RELEASE_ID" ]]; then
-              echo "🔻 Deleting GitHub release (ID: $RELEASE_ID) for tag '$TAG'"
-              curl -s -X DELETE \
-                -H "Authorization: token $PAT_GITHUB" \
-                https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID
-            else
-              echo "⚠️ No GitHub release found for tag '$TAG'"
-            fi
-
-            # 🗑️ Delete Git tag locally and remotely
-            git tag -d "$TAG" 2>/dev/null || echo "⚠️ Local tag '$TAG' not found or already deleted."
-            git push origin :refs/tags/"$TAG" 2>/dev/null || echo "⚠️ Remote tag '$TAG' not found or already deleted."
-
-            echo "✅ Tag '$TAG' and its release (if any) have been deleted."
-            exit 0
-          fi
-
-          echo "✅ All Clear! Tag '$TAG' passed validation."
-        env:
-          PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
       #==================================================================================
+      - name: 🧠 Qcon® Software Descriptor
+        id: qcon-software-descriptor
+        env:
+          TAG: ${{ env.TAG }}
+        run: |
+          python <<EOF
+          import os
 
+          NOTE_FILE = os.path.join('.github', 'scripts', 'DESCRIPTOR.s')
+          with open(NOTE_FILE, encoding="utf-8") as qcon:
+              QCON_NOTE = qcon.read()
 
+          version = os.environ.get("TAG", "unknown")
+          body_html = QCON_NOTE.format(version=version)
 
+          # Write to GITHUB_ENV for subsequent steps
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as envf:
+              envf.write(f"QCON_NOTE<<EOF\n{body_html}\nEOF\n")
+
+          # Write to GITHUB_OUTPUT for this step's output
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as outf:
+              outf.write(f"QCON_NOTE<<EOF\n{body_html}\nEOF\n")
+          EOF
 
 
       # ===============================================================================
-      - name: 🧾 Create GitHub Release with fallback for existing tags
-        shell: bash
-        run: |
-          TAG="${{ github.ref_name }}"
-          PROHIBITED_TAGS=(main stable pypi bug dev prod qa test lab)
-
-          # Block release creation if tag is prohibited or invalid format
-          for word in "${PROHIBITED_TAGS[@]}"; do
-            if [[ "$TAG" == *"$word"* ]]; then
-              echo "🚫 Blocked: Tag '$TAG' contains prohibited keyword '$word'. Release will not be created."
-              exit 0
-            fi
-          done
-
-          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
-            echo "🚫 Blocked: Tag '$TAG' does not follow semantic version pattern. Release will not be created."
-            exit 0
-          fi
-
-          echo "🪪 Tag detected: $TAG"
-          echo "⚙️ Attempting to create GitHub Release..."
-
-          json=$(
-            jq -n --arg tag "$TAG" --arg body "Auto‐generated release for tag $TAG" '{
-              tag_name: $tag,
-              name: "Release \($tag)",
-              body: $body,
-              draft: false,
-              prerelease: ($tag | test("-"))
-            }'
-          )
-
-          response=$(curl -s -o response.json -w "%{http_code}" \
-            -X POST "https://api.github.com/repos/${{ github.repository }}/releases" \
-            -H "Authorization: token ${{ secrets.PAT_GITHUB }}" \
-            -H "Accept: application/vnd.github+json" \
-            -d "$json")
-
-          if [[ "$response" == "201" ]]; then
-            echo "✅ Release created successfully."
-          elif [[ "$response" == "422" ]]; then
-            echo "⚠️ Release already exists. Skipping creation."
-          else
-            echo "❌ Unexpected error occurred:"
-            cat response.json
-            exit 1
-          fi
+      - name: 🧠 Qcon® Intelligence Core - Release Tag Audit (CRT)
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
+          EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          PROHIBITED=(main stable dev test bug qa pypi lab prod)
+          VALID_TAGS=()
+          QCON_NOTE="${{ steps.qcon-software-descriptor.outputs.QCON_NOTE }}"
+          if [[ -z "$QCON_NOTE" ]]; then
+            echo "QCON_NOTE is empty. Exiting - Update the descriptor & try again."
+            exit 1
+          fi
+
+          # Fetch all tags and Delete Prohibited Tags:
+          git fetch --tags --force
+          for TAG in $(git tag); do
+            is_bad=false
+            for BAD in "${PROHIBITED[@]}"; do
+              if [[ "$TAG" == *"$BAD"* ]]; then
+                echo "🚫 Deleting prohibited tag: $TAG"
+                git tag -d "$TAG" 2>/dev/null || true
+                git push origin --delete "$TAG" || true
+                is_bad=true
+                break
+              fi
+            done
+            if [ "$is_bad" = true ]; then
+              continue
+            fi
+
+            if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
+              echo "🚫 Deleting invalid format tag: $TAG"
+              git tag -d "$TAG" 2>/dev/null || true
+              git push origin --delete "$TAG" || true
+              continue
+            else
+              echo "✅ Valid tag and format: $TAG"
+            fi
+
+            VALID_TAGS+=("$TAG")
+          done
+
+
+          # Sign the Valid Tags with the GPG Key:
+          for TAG in "${VALID_TAGS[@]}"; do
+            if git tag -v "$TAG" 2>&1 | grep -q "$EXPECTED_GPG_KEY_ID"; then
+              echo "✅ Tag '$TAG' already signed."
+            else
+              echo "🖊️ Re-signing tag '$TAG'"
+              git tag -d "$TAG"
+              git tag -s "$TAG" -m "Signed tag $TAG" -u "$EXPECTED_GPG_KEY_ID" --pinentry-mode loopback --batch
+              git push --force origin "refs/tags/$TAG"
+            fi
+
+            echo "🚀 Creating release for tag $TAG"
+            PAYLOAD=$(jq -n \
+              --arg tag "$TAG" \
+              --arg name "Qiskit Connector $TAG" \
+              --arg body_header "Quantum Computing Qiskit Connector® For IBM Quantum Backend In Realtime." \
+              --arg body_html "$QCON_NOTE" \
+              '{
+                tag_name: $tag,
+                name: $name,
+                body: $body_header,
+                body_html: $body_html,
+                draft: false,
+                generate_release_notes: true,
+                prerelease: ($tag | test("-(rc|beta|alpha)[0-9]*$"))
+              }'
+            )
+
+            RESPONSE_CODE=$(curl -s -o response.json -w "%{http_code}" \
+              -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -d "$PAYLOAD"
+            )
+
+            if [[ "$RESPONSE_CODE" == "201" ]]; then
+              echo "✅ Release created for tag: $TAG"
+            elif [[ "$RESPONSE_CODE" == "422" && $(grep -c "already_exists" response.json) -gt 0 ]]; then
+              echo "ℹ️ Tag release already exists: $TAG"
+            else
+              echo "❌ Error creating release for tag: $TAG"
+              cat response.json
+            fi
+          done
+          exit 0
       #===================================================================
 
 
 
 
 
-      #====================================================================
-      - name: 🔍 Post Checking Release Tag Naming Violation
-        shell: bash
-        run: |
-          echo "🔎 Validating tag: ${{ github.ref_name }}"
-          git pull
-
-          TAG="${{ github.ref_name }}"
-          PROHIBITED_TAGS=(main stable pypi bug dev prod qa test lab)
-
-          should_delete=false
-
-          # Check if tag matches prohibited list
-          for word in "${PROHIBITED_TAGS[@]}"; do
-            if [[ "$TAG" == *"$word"* ]]; then
-              echo "🚫 Tag name '$TAG' contains prohibited keyword: '$word'"
-              should_delete=true
-              break
-            fi
-          done
-
-          # Check semantic versioning pattern
-          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
-            echo "🚫 Tag '$TAG' does not follow semantic version pattern like '2.2.6' or '2.1.5-rc01'"
-            should_delete=true
-          fi
-
-          if [ "$should_delete" = true ]; then
-            echo "🗑️ Cleaning up invalid tag and draft release..."
-
-            # 🔍 Find GitHub Release ID for this tag (even if draft)
-            RELEASE_ID=$(curl -s -H "Authorization: token $PAT_GITHUB" \
-              https://api.github.com/repos/${{ github.repository }}/releases \
-              | jq -r ".[] | select(.tag_name==\"$TAG\") | .id")
-
-            if [[ -n "$RELEASE_ID" ]]; then
-              echo "🔻 Deleting GitHub release (ID: $RELEASE_ID) for tag '$TAG'"
-              curl -s -X DELETE \
-                -H "Authorization: token $PAT_GITHUB" \
-                https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID
-            else
-              echo "⚠️ No GitHub release found for tag '$TAG'"
-            fi
-
-            # 🗑️ Delete Git tag locally and remotely
-            git tag -d "$TAG" 2>/dev/null || echo "⚠️ Local tag '$TAG' not found or already deleted."
-            git push origin :refs/tags/"$TAG" 2>/dev/null || echo "⚠️ Remote tag '$TAG' not found or already deleted."
-
-            echo "✅ Tag '$TAG' and its release (if any) have been deleted."
-            exit 0
-          fi
-
-          echo "✅ All Clear! Tag '$TAG' passed validation."
-        env:
-          PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
       #==================================================================================
-
-      - name: ✅ Qcon Intelligence Core Dispatch Activated
+      - name: 🧠 Qcon Intelligence Core Dispatch Activated
         shell: bash
         run: |
-          echo "⏳ Waiting for 45 seconds before dispatching Qcon Intelligence Core..."
-          sleep 45
+          echo "⏳ Waiting for 50 seconds before dispatching Qcon Intelligence Core..."
+          sleep 50
+      
+      #[D1]
+      - name: 🧠  Dispatch Qcon Find and Sign Commit
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-fsc.yml
+          token: ${{ secrets.PAT_GITHUB }}
 
-      - name: ✅ Dispatch Qcon Intelligence Core
+      #[D2]
+      - name: 🧠  Dispatch Qcon Find and Sign Tags
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-fst.yml
+          token: ${{ secrets.PAT_GITHUB }}
+      
+      #[D3]
+      - name: 🧠 Dispatch Qcon Intelligence Core - Release Manager
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: qcon-intelligence-core.yml

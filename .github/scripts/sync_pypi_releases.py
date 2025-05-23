@@ -1,9 +1,22 @@
+# @Author: Dr. Jeffrey Chijioke-Uche, Computer Scientist, Quantum Computing
+# @Date: 2023-10-01
+# @Last Modified by: Dr. Jeffrey Chijioke-Uche
+# @Last Modified time: 2025-05-22
+# @Description: This script syncs PyPI releases with GitHub releases for the Qiskit Connector project.
+# @Copyright ©2025 Qiskit Connector. All rights reserved.
+#-------------------------------------------------------------------------------------
+
 import requests
 import os
+import re
+import sys
 
 GITHUB_API = "https://api.github.com"
 REPO = "QComputingSoftware/pypi-qiskit-connector"
 PYPI_PROJECT = "qiskit-connector"
+NOTE_FILE = os.path.join(os.path.dirname(__file__), "DESCRIPTOR.s")
+with open(NOTE_FILE, encoding="utf-8") as qcon:
+    QCON_NOTE = qcon.read()
 
 def get_pypi_versions():
     url = f"https://pypi.org/pypi/{PYPI_PROJECT}/json"
@@ -19,18 +32,33 @@ def get_github_releases():
     response.raise_for_status()
     return [release["tag_name"] for release in response.json()]
 
+prohibited_tag_list = ["main", "master", "stable", "dev", "test", "bug", "qa", "pypi", "lab", "prod"]
+def check_prohibited_tag(version):
+    for bad in prohibited_tag_list:
+        if bad.lower() in version.lower():
+            print(f"🚫 Version '{version}' violates prohibited tag list ('{bad}').")
+            print(f"🚫 Version '{version}' is not eligible!")
+            sys.exit(1)
+    print(f"✅ Version '{version}' is eligible!")
+
 def create_github_release(version, is_latest=False):
+    check_prohibited_tag(version)
     url = f"{GITHUB_API}/repos/{REPO}/releases"
     headers = {
         "Authorization": f"token {os.environ['GH_TOKEN']}",
         "Accept": "application/vnd.github.v3+json"
     }
+    body_html = QCON_NOTE.format(version=version)
+    body_header = f"Quantum Computing Qiskit Connector® For IBM Quantum Backend In Realtime.\n\n"
+    prerelease = bool(re.search(r"-(rc|beta|alpha)[0-9]*$", version))
     data = {
         "tag_name": version,
-        "name": f"Release {version}",
-        "body": f"Release {version} as published on PyPI.",
+        "name": f"Qiskit Connector {version}",
+        "body": body_header,
+        "body_html": body_html,
         "draft": False,
-        "prerelease": "-" in version  # e.g., 2.1.1-beta
+        "generate_release_notes": False,
+        "prerelease": prerelease
     }
 
     response = requests.post(url, headers=headers, json=data)
@@ -45,6 +73,7 @@ def create_github_release(version, is_latest=False):
         print(f"❌ Unexpected error creating release {version}: {response.status_code}")
         print(response.json())
         response.raise_for_status()
+
 
 def main():
     pypi_versions = get_pypi_versions()
@@ -62,7 +91,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# This script syncs PyPI releases with GitHub releases for the specified repository.
-# It checks for missing releases on GitHub and creates them if necessary.
-# It also marks the latest version as the latest release on GitHub.

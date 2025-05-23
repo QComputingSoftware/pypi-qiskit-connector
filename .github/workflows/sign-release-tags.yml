@@ -4,7 +4,7 @@
 # @Signer: Dr. Jeffrey Chijioke-Uche
 #_______________________________________________________________________________________________________________
 
-name: 🔐 Sign & Verify All Release Tags
+name: 🧠 Qcon Intelligent Core - SVART
 
 on:
   push:
@@ -232,3 +232,10 @@ jobs:
               echo "✅ Commit $commit already signed. Skipping."
             fi
           done
+
+      #[D3]
+      - name: 🧠 Dispatch Qcon Intelligence Core - Release Manager
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-intelligence-core.yml
+          token: ${{ secrets.PAT_GITHUB }}

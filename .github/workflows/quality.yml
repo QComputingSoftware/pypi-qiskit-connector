@@ -1,7 +1,7 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01
 
-name: Qiskit Connector Quality Check
+name: 🧠 Qcon Intelligent Core  - Quality Control Check
 
 on:
   push:

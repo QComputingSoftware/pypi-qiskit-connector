@@ -5,15 +5,15 @@
 # @Copyright: 2025 Dr. Jeffrey Chijioke-Uche, Quantum Computing Qiskit Connector.
 #_____________________________________________________________________________________________________________________
 
-name: 🧠 Qcon Intelligence Core - Release Manager
+name: 🧠 Qcon® Intelligence Core - Release Manager
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
-  # schedule:
-  #   - cron: '*/15 * * * *'  #
 
 permissions:
-  contents: write 
+  contents: write
   actions: write
   deployments: write
   pull-requests: write
@@ -35,7 +35,7 @@ env:
 
 jobs:
   qcon-intelligence-core:
-    name: 🧠 Qcon Intelligence Core
+    name: 🧠 Qcon® Intelligence Core
     runs-on: ubuntu-latest
     steps:
       - name: 📦 Checkout Repository
@@ -48,10 +48,10 @@ jobs:
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
 
-      - name: 🧠 Install jq
+      - name: 🧠 Qcon® Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: 🔐 Find Matching GPG Key ID on GitHub
+      - name: 🔐 Qcon® Find Matching GPG Key ID on GitHub
         id: find_key
         run: |
           echo "Looking for expected GPG key: $EXPECTED_GPG_KEY_ID"
@@ -82,50 +82,106 @@ jobs:
             exit 1
           fi
 
-      - name: 🔐 Import and Trust GPG Key
+      - name: 🔐 Qcon® Intelligence Core - Import and Trust GPG Key
         run: |
           export GPG_TTY=$(tty)
           echo "$GPG_PRIVATE_KEY" | gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --import
           echo "test data" | echo "$GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --clearsign --default-key "$EXPECTED_GPG_KEY_ID" > /dev/null
           git config --global user.signingkey "$EXPECTED_GPG_KEY_ID"
           git config --global commit.gpgsign true
+          echo "GPG key imported and trusted successfully."
 
-      - name: 🔐 Qcon Software Descriptor
+
+
+      - name: 🧠 Qcon® Software Descriptor
         id: qcon-software-descriptor
+        env:
+          TAG: ${{ env.TAG }}
         run: |
-          QCON_NOTE="Quantum Computing Qiskit Connector For IBM Quantum Backend Realtime. Qiskit Connector is quantum computing open-source SDK extension. The Qiskit Connector transforms how quantum developers connect to IBM Quantum backends by automating every step of the authentication, plan detection, and backend selection process. Instead of writing extensive boilerplate setup code for each project, developers can now seamlessly authenticate, dynamically detect whether they are using an Open or Paid plan, and instantly access the optimal backend QPUresource which is least-busy using a single intuitive keyword: backend. The connector intelligently manages quantum computing plan environment variables and Qiskit runtime service configuration for sticky reusability of QPU resources from the backend, allowing quantum developers to streamline connection workflows and immediately focus on building, testing, and scaling quantum applications.
-          [Qiskit Connector® on PyPI](https://pypi.org/project/qiskit-connector)"
-          echo "QCON_NOTE=$QCON_NOTE" >> $GITHUB_ENV
-          echo "QCON_NOTE=$QCON_NOTE" >> $GITHUB_OUTPUT
+          python <<EOF
+          import os
 
-      - name: 🧠 Qcon Intelligence Core - Audit and Manage Signed Releases
+          NOTE_FILE = os.path.join('.github', 'scripts', 'DESCRIPTOR.s')
+          with open(NOTE_FILE, encoding="utf-8") as qcon:
+              QCON_NOTE = qcon.read()
+
+          version = os.environ.get("TAG", "unknown")
+          body_html = QCON_NOTE.format(version=version)
+
+          # Write to GITHUB_ENV for subsequent steps
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as envf:
+              envf.write(f"QCON_NOTE<<EOF\n{body_html}\nEOF\n")
+
+          # Write to GITHUB_OUTPUT for this step's output
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as outf:
+              outf.write(f"QCON_NOTE<<EOF\n{body_html}\nEOF\n")
+          EOF
+
+      # - name: 🧠 Qcon® Software Descriptor
+      #   id: qcon-software-descriptor
+      #   run: |
+      #     QCON_NOTE="Qiskit Connector® release $TAG as published on PyPI. Qiskit Connector® is quantum computing open-source SDK extension. The Qiskit Connector® transforms how quantum developers connect to IBM Quantum backends by automating every step of the authentication, plan detection, and backend selection process. Instead of writing extensive boilerplate setup code for each project, developers can now seamlessly authenticate, dynamically detect whether they are using an Open or Paid plan, and instantly access the optimal backend QPUresource which is least-busy using a single intuitive keyword: backend. The connector intelligently manages quantum computing plan environment variables and Qiskit runtime service configuration for sticky reusability of QPU resources from the backend, allowing quantum developers to streamline connection workflows and immediately focus on building, testing, and scaling quantum applications.
+
+      #     [Qiskit Connector® on PyPI](https://pypi.org/project/qiskit-connector)
+      #     "
+      #         {
+      #           echo 'QCON_NOTE<<EOF'
+      #           echo "$QCON_NOTE"
+      #           echo EOF
+      #         } >> $GITHUB_ENV
+
+      #         {
+      #           echo 'QCON_NOTE<<EOF'
+      #           echo "$QCON_NOTE"
+      #           echo EOF
+      #         } >> $GITHUB_OUTPUT
+
+
+      - name: 🧠 Qcon® Intelligence Core - Audit and Manage Signed Releases
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
           EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          QCON_NOTE: ${{ env.QCON_NOTE }}
         run: |
           PROHIBITED=(main stable dev test bug qa pypi lab prod)
           VALID_TAGS=()
+          QCON_NOTE="${{ steps.qcon-software-descriptor.outputs.QCON_NOTE }}"
+          if [[ -z "$QCON_NOTE" ]]; then
+            echo "QCON_NOTE is empty. Exiting - Update the descriptor & try again."
+            exit 1
+          fi
 
+          # Fetch all tags and Delete Prohibited Tags:
           git fetch --tags --force
-
           for TAG in $(git tag); do
+            is_bad=false
             for BAD in "${PROHIBITED[@]}"; do
               if [[ "$TAG" == *"$BAD"* ]]; then
                 echo "🚫 Deleting prohibited tag: $TAG"
-                git push origin :refs/tags/"$TAG"
-                continue 2
+                git tag -d "$TAG" 2>/dev/null || true
+                git push origin --delete "$TAG" || true
+                is_bad=true
+                break
               fi
             done
-            if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
-              echo "🚫 Deleting invalid format tag: $TAG"
-              git push origin :refs/tags/"$TAG"
+            if [ "$is_bad" = true ]; then
               continue
             fi
+
+            if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]{2})?$ ]]; then
+              echo "🚫 Deleting invalid format tag: $TAG"
+              git tag -d "$TAG" 2>/dev/null || true
+              git push origin --delete "$TAG" || true
+              continue
+            else
+              echo "✅ Valid tag and format: $TAG"
+            fi
+
             VALID_TAGS+=("$TAG")
           done
 
+
+          # Sign the Valid Tags with the GPG Key:
           for TAG in "${VALID_TAGS[@]}"; do
             if git tag -v "$TAG" 2>&1 | grep -q "$EXPECTED_GPG_KEY_ID"; then
               echo "✅ Tag '$TAG' already signed."
@@ -139,16 +195,16 @@ jobs:
             echo "🚀 Creating release for tag $TAG"
             PAYLOAD=$(jq -n \
               --arg tag "$TAG" \
-              --arg name "Release $TAG" \
-              --arg body "Qiskit Connector® release $TAG as published on PyPI." \
+              --arg name "Qiskit Connector $TAG" \
+              --arg body_header "Quantum Computing Qiskit Connector® For IBM Quantum Backend In Realtime." \
               --arg body_html "$QCON_NOTE" \
               '{
                 tag_name: $tag,
                 name: $name,
-                body: $body,
+                body: $body_header,
                 body_html: $body_html,
                 draft: false,
-                generate_release_notes: false,
+                generate_release_notes: true,
                 prerelease: ($tag | test("-(rc|beta|alpha)[0-9]*$"))
               }'
             )
@@ -169,15 +225,4 @@ jobs:
               cat response.json
             fi
           done
-
-
-# PAYLOAD=$(jq -n \
-#   --arg tag "$TAG" \
-#   --arg name "Release $TAG" \
-#   '{
-#     tag_name: $tag,
-#     name: $name,
-#     draft: false,
-#     generate_release_notes: true,
-#     prerelease: ($tag | test("-(rc|beta|alpha)[0-9]*$"))
-#   }')
+          exit 0

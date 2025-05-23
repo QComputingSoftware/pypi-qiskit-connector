@@ -1,10 +1,9 @@
-# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
-# @last update: 2025-03-01
-# @Description: This workflow is triggered on a schedule to check the quality of the software.
-# @ Reference:  This workflow ensures that all necessary checks are performed regularly to maintain software integrity.
-#____________________________________________________________________________________________________________________
-
-name: 🧠 Qcon GPG (GNU Privacy Guard) Intelligence Core
+# @Author: Dr. Jeffrey Chijioke-Uche
+# @Date: 2023-10-01
+# @Last Modified by: Dr. Jeffrey Chijioke-Uche
+# @Last Modified time: 2023-10-01..............
+#_____________________________________________
+name: 🧠 Qcon Intelligence Core - F & S
 
 on:
   workflow_dispatch: 
@@ -19,10 +18,9 @@ env:
   UNAME_CONTRIBUTOR_03: ${{ secrets.UNAME_CONTRIBUTOR_03 }}
   EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
   EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
-  
+
 jobs:
-  qcon-gpg-intelli-core:
-    name: 🧠 Qcon GPG Intelligence Core
+  find-and-verify-gpg-key:
     runs-on: ubuntu-latest
     permissions: 
       contents: write
@@ -37,7 +35,6 @@ jobs:
       packages: write
       security-events: write
       repository-projects: write
-    
     steps:
       - name: 📦 Checkout Repository
         uses: actions/checkout@v4
@@ -45,19 +42,21 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
           submodules: recursive
+      
 
-      - name: 🧠 Git Set Intelli
+      - name: Git Hard Reset Main
         run: |
           echo "Setting up Git user..."
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
           git reset --hard origin/main
           git pull origin main
-   
-      - name: 🧠 Install jq (JSON processor)
+     #_____________________________________________________
+
+      - name: Install jq (JSON processor)
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: 🧠 Fetch GitHub GPG Keys and Find Matching Key ID
+      - name: Fetch GitHub GPG Keys and Find Matching Key ID
         id: find_key
         run: |
           # EXPECTED_GPG_KEY_ID from secrets should be the 16-character GPG Key ID.
@@ -173,5 +172,52 @@ jobs:
           git config --global commit.gpgsign true
 
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
-        #_____________________________________________________________________________
-        #_____________________________________________________________________________
+
+      #_____________________________________________________________________________
+
+     
+      - name: 🖊️ Sign The Latest Commit
+        run: |
+          echo "🔍 Scanning all commits for unsigned or unverified signatures..."
+          LIMIT=3
+          rev_option_1=$(git rev-parse HEAD main)
+          rev_option_2=$(git rev-list --all --remotes=origin main)
+          rev_option_3=$(git rev-list --all --max-count=$LIMIT --remotes=origin main)
+          rev_option_4=$(git rev-list --all --not --remotes=origin main)
+          rev_option_5=$(git rev-list --since="2 weeks ago" main)
+          rev_option_6=$(git rev-list --all)
+          rev_option_7=$(git rev-list --max-count=$LIMIT main)
+
+          for commit in $rev_option_7; do
+            sig_output=$(git log --format="%G?:%GS:%GK" -n 1 $commit)
+            status=$(echo "$sig_output" | cut -d: -f1)
+            signer=$(echo "$sig_output" | cut -d: -f2)
+            keyid=$(echo "$sig_output" | cut -d: -f3)
+
+            if [[ "$status" == "B" || "$status" == "U" || "$status" == "N" ]]; then
+              echo "🔄 Re-signing commit: $commit (status: $status, signer: $signer, key: $keyid)"
+              GIT_COMMITTER_DATE="$(git show -s --format=%ci $commit)" \
+              GIT_AUTHOR_DATE="$(git show -s --format=%ci $commit)" \
+              GIT_AUTHOR_NAME="$GPG_NAME_REAL" \
+              GIT_AUTHOR_EMAIL="$GPG_NAME_EMAIL" \
+              GIT_COMMITTER_NAME="$GPG_NAME_REAL" \
+              GIT_COMMITTER_EMAIL="$GPG_NAME_EMAIL" \
+
+              git commit --amend --no-edit --gpg-sign="$GPG_KEY_ID" || true
+              echo "Now Re-Signed with GPG Key ID: $GPG_KEY_ID"
+
+              echo "fetching latest changes from origin..."
+              git fetch origin main
+
+              echo "Merging changes from origin/main..."
+              git merge origin/main --no-edit --allow-unrelated-histories || echo "⚠️ No unrelated histories to merge"
+
+              echo "Checking for changes to push..."
+              sleep 3
+
+              echo "📤 Pushing commit: $commit"
+              git push -f origin HEAD:${{ github.ref_name }}
+            else
+              echo "✅ Commit $commit already signed and verified. Skipping."
+            fi
+          done

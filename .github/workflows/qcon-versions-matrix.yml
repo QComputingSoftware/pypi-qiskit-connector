@@ -9,8 +9,8 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: '27 7 * * 1-5'  # 2:27 AM EST (7:27 UTC) Monday to Friday
-    - cron: '27 9 * * 1-5'  # 4:27 AM EST (9:27 UTC) Monday to Friday
+    - cron: '27 7 * * 1-5'   
+    - cron: '27 9 * * 1-5'   
 
 jobs:
   qcon-version-matrix-test:

@@ -3,15 +3,15 @@
 # @Last Modified: 2025-05-17
 # @Purpose: Test qiskit-connector PyPI compatibility across LinuxOS, macOS, WindowsOS
 
-name: 🧪 Qiskit Connector OS Compatibility Test
+name: 🧠 Qcon Intelligent Core  -  OS Compatibility Test 🧪
 
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: '27 7 * * 1-5'  # 2:27 AM EST (7:27 UTC) Monday to Friday
-    - cron: '27 9 * * 1-5'  # 4:27 AM EST (9:27 UTC) Monday to Friday
+    - cron: '27 7 * * 1-5'   
+    - cron: '27 9 * * 1-5'   
 
 jobs:
   os-matrix-test:
