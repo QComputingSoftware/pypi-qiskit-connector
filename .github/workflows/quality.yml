@@ -1,7 +1,7 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01
 
-name: 🧠 Qcon Intelligent Core  - Quality Control Check
+name: QCon Intelligent Core  - Quality Control Check
 
 on:
   push:
@@ -55,7 +55,7 @@ jobs:
               exit(1)
           PYCODE
 
-      - name: Qiskit Connector Active State
+      - name: 🧠 Qiskit Connector Active State
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
