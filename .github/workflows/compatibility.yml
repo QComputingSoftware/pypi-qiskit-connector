@@ -1,7 +1,7 @@
-# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador...
+# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01
 
-name: Python Compatibility
+name: 🧠 Qcon Intelligent Core  - Python Compatibility
 
 on:
   push:
@@ -10,9 +10,10 @@ on:
   schedule:
     - cron: '0 4 * * 1-5'    
     - cron: '0 6 * * 1-5'    
-    - cron: '0 8 * * 1-5'    
+    - cron: '0 8 * * 1-5'   
     - cron: '0 12 * * 1-5'   
    
+  
 permissions:
   contents: write
   actions: write
@@ -102,10 +103,10 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🏷️ Generate Python compatibility badge
+      - name: 🏷️ Generate Python Compatibility Badge
         uses: emibcn/badge-action@v2
         with:
-          label: '🐍 python'
+          label: '🐍 Python'
           status: '3.9 | 3.10 | 3.11 | 3.12 | 3.13'
           color: green
           style: flat

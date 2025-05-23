@@ -1,7 +1,7 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01
 
-name: Qiskit Connector Latest Release
+name: 🧠 Qcon Intelligent Core  - Latest Release
 
 on:
   push:
@@ -226,4 +226,25 @@ jobs:
           # git commit -S -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
           # git remote set-url origin https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}
           # git push -f origin HEAD:${{ github.ref_name }} && echo "Push successful" || echo "No changes to push"
+
+      #[D1]
+      - name: 🧠  Dispatch Qcon Find and Sign Commit
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-fsc.yml
+          token: ${{ secrets.PAT_GITHUB }}
+
+      #[D2]
+      - name: 🧠  Dispatch Qcon Find and Sign Tags
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-fst.yml
+          token: ${{ secrets.PAT_GITHUB }}
+      
+      #[D3]
+      - name: 🧠 Dispatch Qcon Intelligence Core - Release Manager
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-intelligence-core.yml
+          token: ${{ secrets.PAT_GITHUB }}
 

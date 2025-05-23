@@ -4,17 +4,17 @@
 # @Usage: Triggered on schedule or manually; uses Pepy.tech Pro API securely.
 #_________________________________________________________________________________________________________
 
-name: 📿 Monthly Downloads
+name: 🧠 Qcon Intelligent Core --> M-CAL-Tracker
 
 on:
   push:
     branches: ["pypi"]
   workflow_dispatch:
   schedule:
-    - cron: '59 12 * * 1-6'   
-    - cron: '59 16 * * 1-6'  
-    - cron: '59 20 * * 1-6'  
-    - cron: '59 23 * * 1-6'  
+      - cron: '53 12 * * 1-6'    
+      - cron: '53 16 * * 1-6'   
+      - cron: '53 20 * * 1-6'   
+      - cron: '53 23 * * 1-6'   
 
 permissions:
   contents: write

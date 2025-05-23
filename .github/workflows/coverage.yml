@@ -1,22 +1,20 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01
 
-name: Qiskit Connector Code Coverage Analysis
+name: 🧠 Qcon Intelligent Core - Code Coverage Analysis
 
 on:
   push:
     branches: ["pypi"]
   workflow_dispatch:  
   schedule:
-    - cron: '15 6 * * 1-5'  #  Mon-Fri at 06:15 UTC
-    - cron: '39 11 * * 1-5' #  Mon-Fri at 11:39 UTC
+    - cron: '15 6 * * 1-5'   
+    - cron: '39 11 * * 1-5'  
 
 permissions:
   contents: write
-  id-token: write
   actions: write
   deployments: write
-  pull-requests: write
   checks: write
   statuses: write
   issues: write
@@ -81,9 +79,7 @@ jobs:
       # This step is for setting up GPG keys for signing commits.
       #_____________________________________________________________________________
       - name: Install jq (JSON processor)
-        run: |
-          sudo apt-get update && sudo apt-get install -y jq
-
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Fetch GitHub GPG Keys and Find Matching Key ID
         id: find_key
@@ -152,53 +148,29 @@ jobs:
           done
 
           if [[ "$key_found" == "true" ]]; then
+            echo "Successfully matched API Key ID: $GPG_KEY_ID_MATCHED"
             echo "GPG_KEY_ID=$GPG_KEY_ID_MATCHED" >> $GITHUB_ENV
-            echo "GPG_KEY_ID=$GPG_KEY_ID_MATCHED" >> $GITHUB_OUTPUT
-            echo "✅ Successfully matched API Key ID: $GPG_KEY_ID_MATCHED"
-            echo "✅ GPG key imported successfully."
-            echo "✅ GPG key imported."
-            echo "Configuring git with GPG key details..."
-            git config --global user.name "$GPG_NAME_REAL"
-            git config --global user.email "$GPG_NAME_EMAIL"
-            git config --global user.signingkey "$GPG_KEY_ID" 
-            git config --global commit.gpgsign true 
           else
             # This error message now clearly states what was being looked for.
             echo "::error::Expected GPG Key ID '$EXPECTED_GPG_KEY_ID' (from secrets) not found directly in any of the 'key_id' fields returned by the GitHub API after checking all pages."
             exit 1
           fi
 
-      - name: Verify Found Key ID and Configure Git
-        env:
-          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
-        id: gpg_id_01
+      - name: Verify Found Key ID in Environment
         run: |
           if [[ -z "$GPG_KEY_ID" ]]; then
             echo "::error::GPG_KEY_ID environment variable was not set."
             exit 1
           else
-            echo "✅Verified: GPG Key ID '$GPG_KEY_ID'."
-            echo "✅GPG_KEY_ID is ready for use in subsequent GPG operations."
-
-            echo "Configuring git with GPG key details..."
-            git config --global user.name "$GPG_NAME_REAL"
-            git config --global user.email "$GPG_NAME_EMAIL"
-            git config --global user.signingkey "$GPG_KEY_ID" 
-            git config --global commit.gpgsign true 
-
-            test_gpg_key_id="0000000000000"
-            echo "gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
-            echo "gpg_key_id=$GPG_KEY_ID" >> $GITHUB_OUTPUT
-            echo "test_gpg_key_id=$test_gpg_key_id" >> $GITHUB_OUTPUT
-            echo "test_gpg_key_id=$test_gpg_key_id" >> $GITHUB_ENV
-            echo "✅ Git and GPG configured. Commits and tags will be signed using key."
+            echo "Verified: GPG Key ID '$GPG_KEY_ID'."
+            echo "GPG_KEY_ID is ready for use in subsequent GPG operations."
           fi
-          
+
       - name: Import GPG Key, Configure Git, and Prepare for Signing
+        id: gpg_id_01
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
         run: |
           echo "Setting GPG_TTY..."
           export GPG_TTY=$(tty)
@@ -208,31 +180,29 @@ jobs:
           if [ $? -ne 0 ]; then
               echo "::error::GPG key import failed."
               exit 1
-          else
-              echo "✅ GPG key imported successfully."
-              echo "✅ GPG key imported."
-              echo "Configuring git with GPG key details..."
-              git config --global user.name "$GPG_NAME_REAL"
-              git config --global user.email "$GPG_NAME_EMAIL"
-              git config --global user.signingkey "$GPG_KEY_ID" 
-              git config --global commit.gpgsign true 
           fi
+          echo "✅ GPG key imported."
 
           echo "Testing GPG key with a simple sign operation using GPG_KEY_ID: ${GPG_KEY_ID}"
           echo "test data" | echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --clearsign --default-key "${GPG_KEY_ID}" > /dev/null
           if [ $? -ne 0 ]; then
               echo "::error::GPG sign test failed. Passphrase might not be available or key ID ('${GPG_KEY_ID}') is incorrect/ambiguous for GPG."
               exit 1
-          else
-              echo "✅ GPG sign test successful."
-              echo "✅ GPG key imported successfully."
-              echo "✅ GPG key imported."
-              echo "Configuring git with GPG key details..."
-              git config --global user.name "$GPG_NAME_REAL"
-              git config --global user.email "$GPG_NAME_EMAIL"
-              git config --global user.signingkey "$GPG_KEY_ID" 
-              git config --global commit.gpgsign true 
           fi
+          echo "✅ GPG key test successful."
+
+          echo "Configuring git with GPG key details..."
+          git config --global user.name "$GPG_NAME_REAL"
+          git config --global user.email "$GPG_NAME_EMAIL"
+          git config --global user.signingkey "$GPG_KEY_ID" 
+          git config --global commit.gpgsign false  # See Override
+
+          test_gpg_key_id="0000000000000"
+          echo "gpg_key_id=$GPG_KEY_ID" >> $GITHUB_ENV
+          echo "gpg_key_id=$GPG_KEY_ID" >> $GITHUB_OUTPUT
+          echo "test_gpg_key_id=$test_gpg_key_id" >> $GITHUB_OUTPUT
+          echo "test_gpg_key_id=$test_gpg_key_id" >> $GITHUB_ENV
+          echo "✅ Git and GPG configured. Commits and tags will be signed using key."
       #_____________________________________________________________________________
       # End of GPG key setup
       #____________________________________________________________________________
@@ -244,9 +214,6 @@ jobs:
           python-version: '3.11'
 
       - name: 📦 Install dependencies
-        env:
-          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
-          TEST_GPG_KEY_ID: ${{ env.TEST_GPG_KEY_ID }}
         run: |
           pip install --upgrade pip setuptools wheel
           pip install pytest
@@ -263,7 +230,6 @@ jobs:
       - name: 🧪 Run pkg tests with coverage
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
-          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
         run: |
           set -e
           SOURCE_DIR="qiskit-connector" # URL argument for coverage accepted as well.
@@ -398,8 +364,6 @@ jobs:
 
 
       - name: 📂 Ensure badge directory exists
-        env:
-          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
         run: |
           mkdir -p docs/badges
           echo "✅ Badge directory created or already exists."
@@ -421,53 +385,30 @@ jobs:
 
       - name: 🚀 Commit Badge to Repos
         env:
-          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
-          TEST_GPG_KEY_ID: ${{ env.TEST_GPG_KEY_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "@OVERRIDE: Setting up Git user..."
+          TEST_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.test_gpg_key_id }}"
+          REAL_GPG_KEY_ID="{{ steps.gpg_id_01.outputs.gpg_key_id }}"
           echo "Configuring git with GPG key details..."
           git config --global user.name "$GPG_NAME_REAL"
           git config --global user.email "$GPG_NAME_EMAIL"
-          git config --global user.signingkey "$GPG_KEY_ID" 
-          git config --global commit.gpgsign false
-          echo "✅ Git configured with GPG key details.[done]"
+          git config --global user.signingkey "$REAL_GPG_KEY_ID" 
+          git config --global commit.gpgsign true
 
           echo "Adding the coverage badge to the commit"
           git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
-          echo "✅ Coverage badge added to commit.[done]"
-          printf " \n"
 
           echo "Committing changes"
-          activate="on"
-
-          if [[ "$activate" == "on" ]]; then
-            echo "==================================================================================="
-            echo "Commit without signing with GPG key ID"
-            git commit -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
-            echo "✅ Changes committed successfully & signing stage completed [done]."
-            echo "==================================================================================="
-          else
-            echo "No Commit - GPG signing is not activated."
-            echo "✅ No commit made. GPG signing is not activated."
-          fi
+          git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
+          echo "✅ Changes committed successfully & signing stage completed."
 
           echo "Checking for changes..."
           git fetch origin main
-          echo "✅ Fetched changes from origin/main [done]."
 
           echo "Merging changes from origin/main..."
           git merge origin/main --no-edit --allow-unrelated-histories || echo "⚠️ No unrelated histories to merge"
-          echo "✅ Merged changes from origin/main [done]."
 
           echo "Pushing changes to origin..."
           git push -f origin HEAD:${{ github.ref_name }}
-          echo "✅ Changes pushed successfully [done]."
-
-          echo "Expected gpg key ID: ${EXPECTED_GPG_KEY_ID} [done]"
-          echo "Matched GPG key ID:  ${GPG_KEY_ID} [done]"
-
-      - name: 🛠️ Dispatched F & S
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: find-and-sign.yml
-          token: ${{ secrets.PAT_GITHUB }}
+          echo "✅ Changes pushed successfully."

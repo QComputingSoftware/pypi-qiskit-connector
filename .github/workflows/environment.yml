@@ -1,7 +1,7 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01
 
-name: PyPI Deployment Environment
+name: 🧠 Qcon Intelligent Core  - Deployment Environment
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:  
   schedule:
     - cron: '14 8 * * 1-5'    
-    - cron: '14 10 * * 1-5'  
+    - cron: '14 10 * * 1-5'   
 
 permissions:
   contents: write

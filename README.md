@@ -5,9 +5,10 @@
 
 ###### Install from Pypi: [https://pypi.org/project/qiskit-connector](https://pypi.org/project/qiskit-connector)
 
-**🖥️ Quantum Computing Qiskit Connector® For IBM Quantum Backend Realtime**
 
-Qiskit Connector is quantum computing open-source SDK extension. The Qiskit Connector transforms how quantum developers connect to IBM Quantum backends by automating every step of the authentication, plan detection, and backend selection process. Instead of writing extensive boilerplate setup code for each project, developers can now seamlessly authenticate, dynamically detect whether they are using an `Open` or `Paid` plan, and instantly access the optimal backend `QPU`resource which is least-busy using a single intuitive keyword: `backend`. The connector intelligently manages quantum computing plan environment variables and Qiskit runtime service configuration for sticky reusability of QPU resources from the backend, allowing quantum developers to streamline connection workflows and immediately focus on building, testing, and scaling quantum applications.
+**🖥️ Qiskit Connector® - Seamless Real-Time Connector for IBM Quantum Computing QPU**
+
+Qiskit Connector® is quantum computing open-source SDK extension. The Qiskit Connector® transforms how quantum developers connect to IBM Quantum backends by automating every step of the authentication, plan detection, and backend selection process. Instead of writing extensive boilerplate setup code for each project, developers can now seamlessly authenticate, dynamically detect whether they are using an `Open` or `Paid` plan, and instantly access the optimal backend `QPU`resource which is least-busy using a single intuitive keyword: `backend`. The connector intelligently manages quantum computing plan environment variables and Qiskit runtime service configuration for sticky reusability of QPU resources from the backend, allowing quantum developers to streamline connection workflows and immediately focus on building, testing, and scaling quantum applications.
 <br><br>
 By eliminating manual configurations and connection complexities, Qiskit Connector empowers developers to reduce onboarding time, minimize human error, and accelerate quantum solution delivery. The tool is especially valuable for production-grade quantum development where agility, repeatability, and secure backend access are critical. Whether working in research environments, building enterprise-grade quantum solutions, or designing novel quantum algorithms, developers can now concentrate on high-value tasks without being slowed down by infrastructure setup challenges.
 <br><br>
@@ -16,7 +17,7 @@ By eliminating manual configurations and connection complexities, Qiskit Connect
 - Detects your active plan (Open, Standard, Premium, Dedicated) and sets up the correct channel/instance.
 - It has (`qiskit_smart`) to establish connectivity, then to verify QPU resources using (`qpu_verify`), and retrieve a ready-to-use backend using (`connector()`). Presents you with the least-busy backend QPU to run your quantum application code in realtime.
 
-###### 🐍 Software built and maintained by Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Research Scientist.
+###### 🐍 Software built and maintained by ©2025 Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Research Scientist.
 ---
 
 #### 📋 Built-in classes & functions

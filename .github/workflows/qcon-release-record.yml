@@ -1,14 +1,10 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01
 
-name: 🧠 Qcon Intelligent Core  - Sync PyPI Releases to GitHub
+name: 🧠 Qcon Intelligent Core  - Sync PyPI Releases On-Dispatch
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch: 
-  schedule:
-    - cron: '33 0 * * 6'   
 
 permissions:
   contents: write
@@ -76,6 +72,7 @@ jobs:
     steps:
       - name: 🧠 Qcon Checkout repository
         uses: actions/checkout@v4
+
       #[D1]
       - name: 🧠 Qcon Dispatch Qcon Find and Sign Commit
         uses: benc-uk/workflow-dispatch@v1

@@ -3,7 +3,8 @@
 # @Last Modified by: Dr. Jeffrey Chijioke-Uche
 # @Last Modified time: 2023-10-01..............
 #_____________________________________________
-name: 🔐 Verify & Sign All Software
+
+name: 🧠 Qcon Intelligent Core - Re-Sign C&T
 
 on:
   push:
@@ -251,3 +252,25 @@ jobs:
               echo "✅ Commit $commit already signed and verified. Skipping."
             fi
           done
+
+
+      #[D1]
+      - name: 🧠  Dispatch Qcon Find and Sign Commit
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-fsc.yml
+          token: ${{ secrets.PAT_GITHUB }}
+
+      #[D2]
+      - name: 🧠  Dispatch Qcon Find and Sign Tags
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-fst.yml
+          token: ${{ secrets.PAT_GITHUB }}
+      
+      #[D3]
+      - name: 🧠 Dispatch Qcon Intelligence Core - Release Manager
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-intelligence-core.yml
+          token: ${{ secrets.PAT_GITHUB }}
