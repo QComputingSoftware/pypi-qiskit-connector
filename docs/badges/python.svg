@@ -1,14 +1,14 @@
-<svg width="242.5" height="20" viewBox="0 0 2425 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="🐍 python: 3.9 | 3.10 | 3.11 | 3.12 | 3.13">
-  <title>🐍 python: 3.9 | 3.10 | 3.11 | 3.12 | 3.13</title>
+<svg width="242.2" height="20" viewBox="0 0 2422 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="🐍 Python: 3.9 | 3.10 | 3.11 | 3.12 | 3.13">
+  <title>🐍 Python: 3.9 | 3.10 | 3.11 | 3.12 | 3.13</title>
   <g>
-    <rect fill="#555" width="633" height="200"/>
-    <rect fill="#3C1" x="633" width="1792" height="200"/>
+    <rect fill="#555" width="630" height="200"/>
+    <rect fill="#3C1" x="630" width="1792" height="200"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
-    <text x="60" y="148" textLength="533" fill="#000" opacity="0.1">🐍 python</text>
-    <text x="50" y="138" textLength="533">🐍 python</text>
-    <text x="688" y="148" textLength="1692" fill="#000" opacity="0.1">3.9 | 3.10 | 3.11 | 3.12 | 3.13</text>
-    <text x="678" y="138" textLength="1692">3.9 | 3.10 | 3.11 | 3.12 | 3.13</text>
+    <text x="60" y="148" textLength="530" fill="#000" opacity="0.1">🐍 Python</text>
+    <text x="50" y="138" textLength="530">🐍 Python</text>
+    <text x="685" y="148" textLength="1692" fill="#000" opacity="0.1">3.9 | 3.10 | 3.11 | 3.12 | 3.13</text>
+    <text x="675" y="138" textLength="1692">3.9 | 3.10 | 3.11 | 3.12 | 3.13</text>
   </g>
   
 </svg>
