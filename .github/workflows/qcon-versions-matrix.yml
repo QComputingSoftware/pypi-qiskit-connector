@@ -2,7 +2,7 @@
 # @Last Modified: 2025-05-19
 # @Purpose: Test qiskit-connector version stability Check
 
-name: 🧪 Qiskit Connector Version Stability Matrix Check
+name: 🧠 Qiskit Connector Version Stability Matrix Check
 
 on:
   push:
