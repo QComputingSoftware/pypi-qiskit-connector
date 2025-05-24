@@ -13,14 +13,6 @@
 
 set -euo pipefail
 
-# -----------------------------------------------------------------------------
-#  statuses
-main_release_status="off"
-update_stable_branch_status="off"
-citation_status="on"
-sync_status="on"
-# -----------------------------------------------------------------------------
-
 
 # Get the directory:
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -256,6 +248,13 @@ syncpad(){
 # -----------------------------------------------------------------------------
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 
+  # Ensure all control variables are set (default to "on")
+  main_release_status="${main_release_status:-on}"
+  citation_status="${citation_status:-on}"
+  update_stable_branch_status="${update_stable_branch_status:-on}"
+  sync_status="${sync_status:-on}"
+
+  # MAIN RELEASE PROCESS
   if [[ "$main_release_status" == "off" ]]; then
     echo -e "${YELLOW}⛔ Skipping main release process.${RESET}"
     echo "We are proceeding with synchronization only."
@@ -264,16 +263,16 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     release
   fi
 
-
+  # CITATION VERSION BUMP
   if [[ "$citation_status" == "off" ]]; then
     echo -e "${YELLOW}⛔ Skipping CITATION.bib version bump.${RESET}"
   else
     echo -e "${GREEN}🔖 Bumping CITATION.bib version...${RESET}"
     bump_version_citation
-    git pull
+    git pull --no-edit
   fi
 
-
+  # STABLE BRANCH UPDATE
   if [[ "$update_stable_branch_status" == "off" ]]; then
     echo -e "${RED}⛔ Skipping stable branch update.${RESET}"
   else
@@ -281,12 +280,12 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     update_stable_branch
   fi
 
-
+  # SYNCHRONIZATION PAD
   if [[ "$sync_status" == "off" ]]; then
-   echo -e "${RED}⛔ Skipping synchronization - Syncpad Disabled.${RESET}"
+    echo -e "${RED}⛔ Skipping synchronization - Syncpad Disabled.${RESET}"
   else
-   echo -e "${GREEN}✅ Syncpad update in progress...${RESET}"
-   syncpad
-   echo -e "${GREEN}🔄 Syncpad done![D89-00] ${RESET}"
+    echo -e "${GREEN}✅ Syncpad update in progress...${RESET}"
+    syncpad
+    echo -e "${GREEN}🔄 Syncpad done![D89-00] ${RESET}"
   fi
 fi
