@@ -10,6 +10,7 @@
 # -----------------------------------------------------------------------------
 set -euo pipefail
 source ./pvars.sh
+git pull --no-edit
 git fetch
 
 
