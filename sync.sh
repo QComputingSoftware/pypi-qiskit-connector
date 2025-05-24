@@ -256,8 +256,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 #-------------------------------------------------------------------------------------------------
   banner "${BLUE}" "💾 Committing & pushing sync..."
   git add -A
-  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $(grep -m1 -E 'version\s*=\s*\"' CITATION.bib |
-                      sed -E 's/.*\"([0-9]+\.[0-9]+\.[0-9]+)\".*/\1/')"
+  VERSION=$(grep -m1 -E 'version\s*=\s*"' CITATION.bib | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION"
   echo "Release Signed & Synced."
   git push
   git pull
