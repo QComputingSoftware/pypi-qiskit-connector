@@ -48,8 +48,8 @@ jobs:
     
       - name: Waiting 
         run: |
-          echo "Waiting for 3min as instructed, please wait..."
-          sleep 3m
+          echo "Waiting for 20 seconds as instructed, please wait..."
+          sleep 20
 
       - name: Git Hard Reset Main
         run: |
