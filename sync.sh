@@ -234,9 +234,8 @@ syncpad(){
   else
     echo "Using GPG_KEY_ID: $GPG_KEY_ID"
   fi
-  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION" || echo "No changes to commit, or commit failed."
+  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION" && git -f push || echo "No changes to commit, or commit failed."
   echo "Release Signed & Synced."
-  git push
   git pull
   echo "Please wait while we synchronize with GitHub..."
   sleep 15
