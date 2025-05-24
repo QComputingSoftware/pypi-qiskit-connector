@@ -9,12 +9,11 @@
 # @Version Pattern:  major.minor.patch (x.y.z)
 # @Version Bump Logic: patch: 0→9, then bump minor; minor: 0→90, then bump major
 # @Semantic Versioning: https://semver.org/
-#_________________________________________________________________________________
+#_____________________________________________________________________________
 
 set -euo pipefail
 
-
-# Get the directory:
+# Get the directory where this script lives
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PVARS="$SCRIPT_DIR/pvars.sh"
 if [[ ! -f "$PVARS" ]]; then
@@ -24,7 +23,7 @@ else
   source "$PVARS"
 fi
 
-# git reset --hard origin/main
+# Git operations
 git pull --no-edit
 git fetch
 
@@ -43,7 +42,6 @@ echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
 gpgconf --kill gpg-agent
 gpgconf --launch gpg-agent
 
-export GPG_TTY=$(tty)
 export GIT_COMMITTER_DATE="$(date -R)"
 
 # ANSI color codes
@@ -63,13 +61,7 @@ banner() {
 }
 
 # -----------------------------------------------------------------------------
-# Refresh git repository
-# -----------------------------------------------------------------------------
-git pull origin main
-git fetch --all
-
-# -----------------------------------------------------------------------------
-# Bump version in a file: setup.py or pyproject.toml
+# Bump version in setup.py or pyproject.toml
 # -----------------------------------------------------------------------------
 bump_version() {
   local file="$1"
@@ -230,6 +222,7 @@ update_stable_branch() {
 # Sync Pad:
 #=================================================
 syncpad(){
+  set -x
   git add -A
   VERSION=$(grep -m1 -E 'version\s*=\s*"' CITATION.bib | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
   git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION"
@@ -239,18 +232,26 @@ syncpad(){
   echo "Please wait while we synchronize with GitHub..."
   sleep 15
   banner "${GREEN}" "🎉 Release process complete!"
+  set +x
 }
+
 
 # -----------------------------------------------------------------------------
 # RELEASE SYNCHRONIZATION
 # -----------------------------------------------------------------------------
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 
-  # Ensure all control variables are set (default to "on")
+  # Default control variables to "on" if not set
   main_release_status="${main_release_status:-on}"
   citation_status="${citation_status:-on}"
   update_stable_branch_status="${update_stable_branch_status:-on}"
   sync_status="${sync_status:-on}"
+
+  # Show all current statuses for debug
+  echo -e "${CYAN}Current main_release_status: $main_release_status${RESET}"
+  echo -e "${CYAN}Current citation_status: $citation_status${RESET}"
+  echo -e "${CYAN}Current update_stable_branch_status: $update_stable_branch_status${RESET}"
+  echo -e "${CYAN}Current sync_status: $sync_status${RESET}"
 
   # # MAIN RELEASE PROCESS
   # if [[ "$main_release_status" == "off" ]]; then
