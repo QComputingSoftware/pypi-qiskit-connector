@@ -19,7 +19,7 @@ permissions:
   pull-requests: write
 
 env:
-  GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+  PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
   GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
   GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
   GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -143,7 +143,7 @@ jobs:
 
       - name: 🧠 Qcon® Intelligence Core - Audit and Manage Signed Releases
         env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+          PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
           EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
@@ -214,7 +214,7 @@ jobs:
 
             RESPONSE_CODE=$(curl -s -o response.json -w "%{http_code}" \
               -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" \
-              -H "Authorization: token $GH_TOKEN" \
+              -H "Authorization: token $PAT_GITHUB" \
               -H "Accept: application/vnd.github+json" \
               -d "$PAYLOAD"
             )
