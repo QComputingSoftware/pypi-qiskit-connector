@@ -54,19 +54,6 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      #[D0-1]
-      - name: 🧠 Pre Qcon Dispatch Qcon Find and Sign Commit
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: qcon-fsc.yml
-          token: ${{ secrets.PAT_GITHUB }}
-      #[D0-2]
-      - name: 🧠 Pre Qcon Dispatch Qcon Find and Sign Tags
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: qcon-fst.yml
-          token: ${{ secrets.PAT_GITHUB }}
-
   qcon-sync-pypi:
     needs: qcon-sync-entrypoint
     name: 🧠 Qcon Sync PyPI releases to GitHub
