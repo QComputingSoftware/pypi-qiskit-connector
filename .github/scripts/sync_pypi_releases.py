@@ -16,8 +16,21 @@ GITHUB_API = "https://api.github.com"
 REPO = "QComputingSoftware/pypi-qiskit-connector"
 PYPI_PROJECT = "qiskit-connector"
 NOTE_FILE = os.path.join(os.path.dirname(__file__), "DESCRIPTOR.s")
+
+# Read descriptor text (with placeholders)
 with open(NOTE_FILE, encoding="utf-8") as qcon:
     QCON_NOTE = qcon.read()
+
+prohibited_tag_list = [
+    "main", "master", "stable", "dev", "test", "bug", "qa", "pypi", "lab", "prod"
+]
+
+def get_pat_github():
+    """Fetch the PAT_GITHUB token or raise an error if not set."""
+    token = os.environ.get("PAT_GITHUB")
+    if not token:
+        raise EnvironmentError("PAT_GITHUB environment variable is not set!")
+    return token
 
 def get_pypi_versions():
     url = f"https://pypi.org/pypi/{PYPI_PROJECT}/json"
@@ -28,12 +41,12 @@ def get_pypi_versions():
 
 def get_github_releases():
     url = f"{GITHUB_API}/repos/{REPO}/releases"
-    headers = {"Authorization": f"token {os.environ['PAT_GITHUB']}"}
+    token = get_pat_github()
+    headers = {"Authorization": f"token {token}"}
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     return [release["tag_name"] for release in response.json()]
 
-prohibited_tag_list = ["main", "master", "stable", "dev", "test", "bug", "qa", "pypi", "lab", "prod"]
 def check_prohibited_tag(version):
     for bad in prohibited_tag_list:
         if bad.lower() in version.lower():
@@ -45,8 +58,9 @@ def check_prohibited_tag(version):
 def create_github_release(version, is_latest=False):
     check_prohibited_tag(version)
     url = f"{GITHUB_API}/repos/{REPO}/releases"
+    token = get_pat_github()
     headers = {
-        "Authorization": f"token {os.environ['GH_TOKEN']}",
+        "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json"
     }
 
@@ -75,7 +89,6 @@ def create_github_release(version, is_latest=False):
         print(f"❌ Unexpected error creating release {version}: {response.status_code}")
         print(response.json())
         response.raise_for_status()
-
 
 def main():
     pypi_versions = get_pypi_versions()
