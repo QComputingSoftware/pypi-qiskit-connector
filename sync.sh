@@ -13,6 +13,7 @@
 
 set -euo pipefail
 source ./pvars.sh
+git pull --no-edit
 git fetch
 
 export GPG_TTY=$(tty)
