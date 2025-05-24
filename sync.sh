@@ -231,7 +231,7 @@ update_stable_branch() {
 #=================================================
 syncpad(){
   echo -e "${GREEN}✅ Synchronization with GitHub in progress...${RESET}"
-  banner "${BLUE}" "💾 Committing & pushing sync..."
+  banner "${BLUE}" "💾 Committing & pushing sync..."${RESET}
   git add -A
   VERSION=$(grep -m1 -E 'version\s*=\s*"' CITATION.bib | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
   git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION"
