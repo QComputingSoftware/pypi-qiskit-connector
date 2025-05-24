@@ -6,6 +6,8 @@
 name: 🧠 Qcon Intelligence Core - F & S
 
 on:
+  push:
+    branches: ["pypi"]
   workflow_dispatch: 
 
 env:

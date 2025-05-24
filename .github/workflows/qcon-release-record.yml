@@ -4,6 +4,8 @@
 name: 🧠 Qcon Intelligent Core  - Sync PyPI Releases On-Dispatch
 
 on:
+  push:
+    branches: ["pypi"]
   workflow_dispatch: 
 
 permissions:
