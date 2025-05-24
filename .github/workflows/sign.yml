@@ -11,7 +11,15 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: '0 1 * * 0'  
+    - cron: '0 1 * * 0' 
+
+  workflow_run:
+    workflows:
+      - 🧠 Qcon Intelligence Core - S & U
+      - 🧠 Qcon Intelligence Core - F & S
+      - 🧠 Qcon® Intelligence Core - Release Manager
+    types:
+      - completed 
 
 env:
   GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
@@ -47,7 +55,18 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
           submodules: recursive
-      # Other steps for the job would go here
+
+      - name: ⏳ Wait for all required workflows to complete successfully before proceeding
+        uses: ahmadnassri/action-workflow-queue@v1
+        with:
+          workflows: |
+            🧠 Qcon Intelligence Core - F & S
+            🧠 Qcon Intelligence Core - S & U
+            🧠 Qcon® Intelligence Core - Release Manager
+          repo: ${{ github.repository }}
+          delay: 8m
+          timeout: 30m
+          github-token: ${{ secrets.PAT_GITHUB }}
 
       - name: Git Hard Reset Main
         run: |
