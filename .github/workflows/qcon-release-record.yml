@@ -63,7 +63,7 @@ jobs:
       - name: Sync PyPI releases to GitHub - Scriptorium
         id: sync-pypi-01
         env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+          PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
         run: |
           python .github/scripts/sync_pypi_releases.py
 
