@@ -32,7 +32,7 @@ else
   source "$PVARS"
 fi
 
-git reset --hard origin/main
+# git reset --hard origin/main
 git pull --no-edit
 git fetch
 
@@ -287,14 +287,6 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   else
    echo -e "${GREEN}✅ Syncpad update in progress...${RESET}"
    syncpad
+   echo -e "${GREEN}🔄 Syncpad done![D89-00] ${RESET}"
   fi
 fi
-
-
-# -----------------------------------------------------------------------------
-# Synchronize with GitHub
-# -----------------------------------------------------------------------------
-banner "${YELLOW}" "🔄 Synchronization done!"
-#--------------------------------------------------------------------------
-# End of script
-#--------------------------------------------------------------------------
