@@ -1,7 +1,7 @@
-# @Author: Dr. Jeffrey Chijioke-Uche
+# @Author: Dr. Jeffrey Chijioke-Uche, computer Scientist, and AI Researcher.
 # @Last Modified: 2025-05-10
 # @Purpose: Automatically sign all unsigned GitHub release tags/commits using GPG and verified secret identity.
-# @Signer: Dr. Jeffrey Chijioke-Uche
+# @Signer: Dr. Jeffrey Chijioke-Uche.
 #_______________________________________________________________________________________________________________
 
 name: 🧠 Qcon Intelligence Core - S & U
