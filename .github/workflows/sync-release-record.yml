@@ -61,6 +61,19 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
+      #[D0-1]
+      - name: 🧠 Pre Qcon Dispatch Qcon Find and Sign Commit
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-fsc.yml
+          token: ${{ secrets.PAT_GITHUB }}
+      #[D0-2]
+      - name: 🧠 Pre Qcon Dispatch Qcon Find and Sign Tags
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: qcon-fst.yml
+          token: ${{ secrets.PAT_GITHUB }}
+
   qcon-sync-pypi:
     needs: qcon-sync-entrypoint
     name: 🧠 Qcon Sync PyPI releases to GitHub
@@ -83,20 +96,21 @@ jobs:
     steps:
       - name: 🧠 Qcon Checkout repository
         uses: actions/checkout@v4
+      
       #[D1]
-      - name: 🧠 Qcon Dispatch Qcon Find and Sign Commit
+      - name: 🧠 Post Qcon Dispatch Qcon Find and Sign Commit
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: qcon-fsc.yml
           token: ${{ secrets.PAT_GITHUB }}
       #[D2]
-      - name: 🧠 Qcon Dispatch Qcon Find and Sign Tags
+      - name: 🧠 Post Qcon Dispatch Qcon Find and Sign Tags
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: qcon-fst.yml
           token: ${{ secrets.PAT_GITHUB }}
       #[D3]
-      - name: 🧠 Qcon Dispatch Qcon Intelligence Core - Release Manager
+      - name: 🧠 Post Qcon Dispatch Qcon Intelligence Core - Release Manager
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: qcon-intelligence-core.yml
