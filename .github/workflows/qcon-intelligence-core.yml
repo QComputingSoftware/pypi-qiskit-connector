@@ -8,7 +8,9 @@
 name: 🧠 Qcon® Intelligence Core - Release Manager
 
 on:
-  workflow_dispatch:
+  push:
+    branches: ["main"]
+  workflow_dispatch: 
 
 permissions:
   contents: write
