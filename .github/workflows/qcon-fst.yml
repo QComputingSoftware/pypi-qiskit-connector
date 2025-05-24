@@ -49,9 +49,9 @@ jobs:
 
       - name: Waiting 
         run: |
-          echo "Waiting for 3min as instructed, please wait..."
-          sleep 7m
-      
+          echo "Waiting for 30 as instructed, please wait..."
+          sleep 30
+
       - name: Git Hard Reset Main
         run: |
           git reset --hard origin/main
