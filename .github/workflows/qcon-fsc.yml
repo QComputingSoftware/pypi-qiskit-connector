@@ -10,6 +10,13 @@ on:
     branches: ["pypi"]
   workflow_dispatch: 
 
+  workflow_run:
+    workflows:
+      - 🧠 Qcon Intelligence Core - S & U
+      - 🧠 Qcon® Intelligence Core - Release Manager
+    types:
+      - completed
+
 env:
   GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
   GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
@@ -45,6 +52,16 @@ jobs:
           persist-credentials: true
           submodules: recursive
       
+      - name: ⏳ Wait for all required workflows to complete successfully before proceeding
+        uses: ahmadnassri/action-workflow-queue@v1
+        with:
+          workflows: |
+            🧠 Qcon Intelligence Core - S & U
+            🧠 Qcon® Intelligence Core - Release Manager
+          repo: ${{ github.repository }}
+          delay: 8m
+          timeout: 30m
+          github-token: ${{ secrets.PAT_GITHUB }}
 
       - name: Git Hard Reset Main
         run: |

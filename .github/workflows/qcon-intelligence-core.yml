@@ -9,7 +9,7 @@ name: 🧠 Qcon® Intelligence Core - Release Manager
 
 on:
   push:
-    branches: ["main"]
+    branches: ["pypi"]
   workflow_dispatch: 
 
 permissions:
