@@ -13,6 +13,7 @@
 
 set -euo pipefail
 source ./pvars.sh
+git reset --hard origin/main
 git pull --no-edit
 git fetch
 
