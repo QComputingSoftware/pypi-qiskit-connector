@@ -10,6 +10,7 @@ import requests
 import os
 import re
 import sys
+from datetime import datetime
 
 GITHUB_API = "https://api.github.com"
 REPO = "QComputingSoftware/pypi-qiskit-connector"
@@ -48,21 +49,22 @@ def create_github_release(version, is_latest=False):
         "Authorization": f"token {os.environ['GH_TOKEN']}",
         "Accept": "application/vnd.github.v3+json"
     }
-    body_html = QCON_NOTE.format(version=version)
-    body_header = f"Quantum Computing Qiskit Connector® For IBM Quantum Backend In Realtime.\n\n"
+
+    changelog_date = datetime.utcnow().strftime("%Y-%m-%d")
+    body_html = QCON_NOTE.format(version=version, changelog_date=changelog_date)
+    body_header = f"Quantum Computing Qiskit Connector® - Real-Time Connector for IBM Quantum Computing QPU.\n\n"
     prerelease = bool(re.search(r"-(rc|beta|alpha)[0-9]*$", version))
+
     data = {
         "tag_name": version,
         "name": f"Qiskit Connector {version}",
-        "body": body_header,
-        "body_html": body_html,
+        "body": f"{body_header}{body_html}",
         "draft": False,
         "generate_release_notes": False,
         "prerelease": prerelease
     }
 
     response = requests.post(url, headers=headers, json=data)
-
     if response.status_code == 201:
         print(f"✅ Created GitHub release for version {version}")
         if is_latest:

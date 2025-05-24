@@ -100,13 +100,16 @@ jobs:
         run: |
           python <<EOF
           import os
+          from datetime import datetime
 
           NOTE_FILE = os.path.join('.github', 'scripts', 'DESCRIPTOR.s')
           with open(NOTE_FILE, encoding="utf-8") as qcon:
               QCON_NOTE = qcon.read()
 
           version = os.environ.get("TAG", "unknown")
-          body_html = QCON_NOTE.format(version=version)
+          changelog_date = datetime.utcnow().strftime("%Y-%m-%d")
+
+          body_html = QCON_NOTE.format(version=version, changelog_date=changelog_date)
 
           # Write to GITHUB_ENV for subsequent steps
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as envf:
@@ -116,6 +119,7 @@ jobs:
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as outf:
               outf.write(f"QCON_NOTE<<EOF\n{body_html}\nEOF\n")
           EOF
+
 
       # - name: 🧠 Qcon® Software Descriptor
       #   id: qcon-software-descriptor
@@ -196,15 +200,14 @@ jobs:
             PAYLOAD=$(jq -n \
               --arg tag "$TAG" \
               --arg name "Qiskit Connector $TAG" \
-              --arg body_header "Quantum Computing Qiskit Connector® For IBM Quantum Backend In Realtime." \
+              --arg body_header "Quantum Computing Qiskit Connector® - Real-Time Connector for IBM Quantum Computing QPU." \
               --arg body_html "$QCON_NOTE" \
               '{
                 tag_name: $tag,
                 name: $name,
-                body: $body_header,
-                body_html: $body_html,
+                body: ($body_header + "\n\n" + $body_html),
                 draft: false,
-                generate_release_notes: true,
+                generate_release_notes: false,
                 prerelease: ($tag | test("-(rc|beta|alpha)[0-9]*$"))
               }'
             )
@@ -225,4 +228,3 @@ jobs:
               cat response.json
             fi
           done
-          exit 0

@@ -8,7 +8,14 @@ name: 🧠 Qcon Intelligent Core - Re-Sign C&T
 
 on:
   push:
-    branches: [ pypi ]
+    branches: ["pypi"]
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+.[0-9]'
+      - '[0-9]+.[0-9]+.[0-9]'
   workflow_dispatch:
   schedule:
     - cron: '0 1 * * 0'  
