@@ -8,7 +8,7 @@ name: 🧠 Qcon Intelligent Core - Re-Sign C&T
 
 on:
   push:
-    branches: ["main"]
+    branches: ["pypi"]
   workflow_dispatch:
   schedule:
     - cron: '0 1 * * 0' 
