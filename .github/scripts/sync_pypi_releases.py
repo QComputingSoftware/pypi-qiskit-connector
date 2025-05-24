@@ -1,9 +1,9 @@
-# @Author: Dr. Jeffrey Chijioke-Uche, Computer Scientist, Quantum Computing
+# @Author: Dr. Jeffrey Chijioke-Uche, Computer Scientist, Quantum Computing Engineer
 # @Date: 2023-10-01
 # @Last Modified by: Dr. Jeffrey Chijioke-Uche
 # @Last Modified time: 2025-05-22
 # @Description: This script syncs PyPI releases with GitHub releases for the Qiskit Connector project.
-# @Copyright ©2025 Qiskit Connector. All rights reserved.
+# It checks for any missing releases on GitHub and creates them if necessary.
 #-------------------------------------------------------------------------------------
 
 import requests
@@ -28,7 +28,7 @@ def get_pypi_versions():
 
 def get_github_releases():
     url = f"{GITHUB_API}/repos/{REPO}/releases"
-    headers = {"Authorization": f"token {os.environ['GH_TOKEN']}"}
+    headers = {"Authorization": f"token {os.environ['PAT_GITHUB']}"}
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     return [release["tag_name"] for release in response.json()]
