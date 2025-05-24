@@ -9,8 +9,8 @@
 #   Commit Code Update to Github
 # -----------------------------------------------------------------------------
 set -euo pipefail
-
 source ./pvars.sh
+git fetch
 
 
 export GPG_TTY=$(tty)

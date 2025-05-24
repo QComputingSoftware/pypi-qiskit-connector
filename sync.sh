@@ -12,9 +12,8 @@
 #_________________________________________________________________________________
 
 set -euo pipefail
-git pull
 source ./pvars.sh
-
+git fetch
 
 export GPG_TTY=$(tty)
 export GPG_AGENT_INFO=$(gpgconf --list-dirs agent-socket)
