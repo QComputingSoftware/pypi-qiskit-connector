@@ -5,7 +5,14 @@ name: 🧠 Qcon Intelligent Core  - Sync PyPI Releases → GitHub
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+.[0-9]'
+      - '[0-9]+.[0-9]+.[0-9]'
   workflow_dispatch: 
   schedule:
     - cron: '33 0 * * 6'   

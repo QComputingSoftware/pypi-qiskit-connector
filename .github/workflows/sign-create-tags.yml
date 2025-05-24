@@ -1,15 +1,20 @@
 # @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @last update: 2025-03-01 [].........[]
+# @Copyright © 2023-2025 Qcon® - Quantum Computing Connector®
+#===========================================================
 
 name: 🧠 Qcon Intelligent Core  - Sign & Create Tag →
 
 on:
   push:
-    branches:
-      - pypi
+    branches: ["pypi"]
     tags:
-      - 'v[0-9]*.[0-9]*.[0-9]*'
-      - '[0-9]*.[0-9]*.[0-9]*'
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+.[0-9]'
+      - '[0-9]+.[0-9]+.[0-9]'
   workflow_dispatch: 
   schedule:
     - cron: '0 10 * * 0'     
@@ -59,7 +64,11 @@ jobs:
           git config --global user.email "$GPG_NAME_EMAIL"
           git reset --hard origin/main
           git pull origin main
-     #_____________________________________________________
+     ######################################################################################################
+
+      #                            UTILITIES FOR GPG
+
+     #######################################################################################################
       - name: Install jq (JSON processor)
         run: sudo apt-get update && sudo apt-get install -y jq
 
@@ -179,9 +188,13 @@ jobs:
           git config --global commit.gpgsign true
 
           echo "✅ Git and GPG configured. Commits and tags will be signed using key."
-        #_____________________________________________________________________________
+        ####################################################################################################
+        
+
+       #                                     SIGN THE LATEST COMMIT
 
 
+       #####################################################################################################
       - name: 🖊️ Sign The Latest Commit
         run: |
           echo "🔍 Scanning all commits for unsigned or unverified signatures..."
@@ -220,9 +233,13 @@ jobs:
               echo "✅ Commit $commit already signed and verified. Skipping."
             fi
           done
+      #####################################################################################################
 
 
-      #==================================================================================
+      #                    SOFTWARE DESCRIPTOR FOR QCON INTELLIGENCE CORE
+
+
+      #####################################################################################################
       - name: 🧠 Qcon® Software Descriptor
         id: qcon-software-descriptor
         env:
@@ -246,9 +263,13 @@ jobs:
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as outf:
               outf.write(f"QCON_NOTE<<EOF\n{body_html}\nEOF\n")
           EOF
+      #############################################################################################
 
 
-      # ===============================================================================
+      #                    AUDIT RELEASE TAGS WITH QCON INTELLIGENCE CORE
+
+
+      #############################################################################################
       - name: 🧠 Qcon® Intelligence Core - Release Tag Audit (CRT)
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
@@ -292,7 +313,6 @@ jobs:
             VALID_TAGS+=("$TAG")
           done
 
-
           # Sign the Valid Tags with the GPG Key:
           for TAG in "${VALID_TAGS[@]}"; do
             if git tag -v "$TAG" 2>&1 | grep -q "$EXPECTED_GPG_KEY_ID"; then
@@ -308,15 +328,14 @@ jobs:
             PAYLOAD=$(jq -n \
               --arg tag "$TAG" \
               --arg name "Qiskit Connector $TAG" \
-              --arg body_header "Quantum Computing Qiskit Connector® For IBM Quantum Backend In Realtime." \
+              --arg body_header "Quantum Computing Qiskit Connector® - Real-Time Connector for IBM Quantum Computing QPU." \
               --arg body_html "$QCON_NOTE" \
               '{
                 tag_name: $tag,
                 name: $name,
-                body: $body_header,
-                body_html: $body_html,
+                body: ($body_header + "\n\n" + $body_html),
                 draft: false,
-                generate_release_notes: true,
+                generate_release_notes: false,
                 prerelease: ($tag | test("-(rc|beta|alpha)[0-9]*$"))
               }'
             )
@@ -338,13 +357,13 @@ jobs:
             fi
           done
           exit 0
-      #===================================================================
+      #################################################################################################
 
 
+      #                           DISPATCH QCON INTELLIGENCE CORE
 
 
-
-      #==================================================================================
+      ################################################################################################
       - name: 🧠 Qcon Intelligence Core Dispatch Activated
         shell: bash
         run: |
