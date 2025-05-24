@@ -60,7 +60,7 @@ def create_github_release(version, is_latest=False):
         "name": f"Qiskit Connector {version}",
         "body": f"{body_header}{body_html}",
         "draft": False,
-        "generate_release_notes": False,
+        "generate_release_notes": True,
         "prerelease": prerelease
     }
 

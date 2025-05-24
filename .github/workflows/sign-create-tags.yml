@@ -335,7 +335,7 @@ jobs:
                 name: $name,
                 body: ($body_header + "\n\n" + $body_html),
                 draft: false,
-                generate_release_notes: false,
+                generate_release_notes: true,
                 prerelease: ($tag | test("-(rc|beta|alpha)[0-9]*$"))
               }'
             )
