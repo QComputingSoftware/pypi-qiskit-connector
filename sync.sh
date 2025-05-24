@@ -18,7 +18,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PVARS="$SCRIPT_DIR/pvars.sh"
 if [[ ! -f "$PVARS" ]]; then
   echo "Warning: pvars may not be available from your location."
-  continue
 else
   echo "PVARS sourced successfully."
   source "$PVARS"
