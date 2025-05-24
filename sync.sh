@@ -224,8 +224,17 @@ update_stable_branch() {
 syncpad(){
   set -x
   git add -A
-  VERSION=$(grep -m1 -E 'version\s*=\s*"' CITATION.bib | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
-  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION"
+  VERSION=$(grep -m1 -E 'version\s*=\s*\{[0-9]+\.[0-9]+\.[0-9]+\}' CITATION.bib | sed -E 's/.*\{([0-9]+\.[0-9]+\.[0-9]+)\}.*/\1/')
+  if [[ -z "${VERSION}" ]]; then
+    echo "❌ Could not extract version from CITATION.bib! Check the file format."
+    exit 1
+  fi
+  if [[ -z "${GPG_KEY_ID:-}" ]]; then
+    echo "❌ GPG_KEY_ID not set! Commit will fail."
+  else
+    echo "Using GPG_KEY_ID: $GPG_KEY_ID"
+  fi
+  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION" || echo "No changes to commit, or commit failed."
   echo "Release Signed & Synced."
   git push
   git pull
@@ -234,6 +243,7 @@ syncpad(){
   banner "${GREEN}" "🎉 Release process complete!"
   set +x
 }
+
 
 
 # -----------------------------------------------------------------------------
