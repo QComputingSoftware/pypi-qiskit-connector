@@ -13,6 +13,15 @@
 
 set -euo pipefail
 
+# -----------------------------------------------------------------------------
+#  statuses
+main_release_status="off"
+update_stable_branch_status="off"
+citation_status="on"
+sync_status="on"
+# -----------------------------------------------------------------------------
+
+
 # Get the directory:
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PVARS="$SCRIPT_DIR/pvars.sh"
@@ -225,34 +234,43 @@ update_stable_branch() {
 }
 
 
-# -----------------------------------------------------------------------------
-#  statuses
-main_release_status="off"
-update_stable_branch_status="off"
-citation_status="on"
-# -----------------------------------------------------------------------------
-
+#=================================================
+# Sync Pad
+#=================================================
+syncpad(){
+  echo -e "${GREEN}✅ Synchronization with GitHub in progress...${RESET}"
+  banner "${BLUE}" "💾 Committing & pushing sync..."
+  git add -A
+  VERSION=$(grep -m1 -E 'version\s*=\s*"' CITATION.bib | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION"
+  echo "Release Signed & Synced."
+  git push
+  git pull
+  echo "Please wait while we synchronize with GitHub..."
+  sleep 15
+  banner "${GREEN}" "🎉 Release process complete!"
+}
 
 # -----------------------------------------------------------------------------
 # RELEASE SYNCHRONIZATION
 # -----------------------------------------------------------------------------
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 
-  if [[ "$main_release_status" == "on" ]]; then
-    echo "Starting release process..." 
-    release
-  else
-    echo "Release process is not enabled." 
+  if [[ "$main_release_status" == "off" ]]; then
+    echo -e "${YELLOW}⛔ Skipping main release process.${RESET}"
     echo "We are proceeding with synchronization only."
+  else
+    echo -e "${GREEN}🔖 Starting main release process...${RESET}"
+    release
   fi
 
 
-  if [[ "$citation_status" == "on" ]]; then
+  if [[ "$citation_status" == "off" ]]; then
+    echo -e "${YELLOW}⛔ Skipping CITATION.bib version bump.${RESET}"
+  else
     echo -e "${GREEN}🔖 Bumping CITATION.bib version...${RESET}"
     bump_version_citation
     git pull
-  else
-    echo -e "${YELLOW}⚠️ Skipping CITATION.bib version bump.${RESET}"
   fi
 
 
@@ -264,26 +282,19 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   fi
 
 
-#-------------------------------------------------------------------------------------------------
-  banner "${BLUE}" "💾 Committing & pushing sync..."
-  git add -A
-  VERSION=$(grep -m1 -E 'version\s*=\s*"' CITATION.bib | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
-  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION"
-  echo "Release Signed & Synced."
-  git push
-  git pull
-
-  echo "Please wait while we synchronize with GitHub..."
-  sleep 15
-  banner "${GREEN}" "🎉 Release process complete!"
+  if [[ "$sync_status" == "off" ]]; then
+   echo -e "${RED}⛔ Skipping synchronization - Syncpad Disabled.${RESET}"
+  else
+   echo -e "${GREEN}✅ Syncpad update in progress...${RESET}"
+   syncpad
+  fi
 fi
 
 
 # -----------------------------------------------------------------------------
 # Synchronize with GitHub
 # -----------------------------------------------------------------------------
-banner "${YELLOW}" "🔄 Synchronization complete!"
-exit 0
+banner "${YELLOW}" "🔄 Synchronization done!"
 #--------------------------------------------------------------------------
 # End of script
 #--------------------------------------------------------------------------
