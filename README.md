@@ -17,7 +17,7 @@ By eliminating manual configurations and connection complexities, Qiskit Connect
 - Detects your active plan (Open, Standard, Premium, Dedicated) and sets up the correct channel/instance.
 - It has (`qiskit_smart`) to establish connectivity, then to verify QPU resources using (`qpu_verify`), and retrieve a ready-to-use backend using (`connector()`). Presents you with the least-busy backend QPU to run your quantum application code in realtime.
 
-###### 🐍 Software built and maintained by ©2025 Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador & Research Scientist.
+###### 🧩 Software built by ©2025 Dr. Jeffrey Chijioke-Uche, IBM Computer Scientist & Quantum Ambassador.
 ---
 
 #### 📋 Built-in classes & functions
