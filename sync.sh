@@ -229,11 +229,14 @@ syncpad(){
     echo "❌ Could not extract version from CITATION.bib! Check the file format."
     exit 1
   fi
+
   if [[ -z "${GPG_KEY_ID:-}" ]]; then
     echo "❌ GPG_KEY_ID not set! Commit will fail."
   else
-    echo "Using GPG_KEY_ID: $GPG_KEY_ID"
+    MASKED_KEY=$(printf '%*s' "${#GPG_KEY_ID}" | tr ' ' 'X')
+    echo "Using GPG_KEY_ID: $MASKED_KEY"
   fi
+
   git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION" && git -f push || echo "No changes to commit, or commit failed."
   echo "Release Signed & Synced."
   git pull
