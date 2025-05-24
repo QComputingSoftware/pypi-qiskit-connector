@@ -9,7 +9,11 @@
 #   Commit Code Update to Github
 # -----------------------------------------------------------------------------
 set -euo pipefail
-source ./pvars.sh
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "$SCRIPT_DIR/pvars.sh"
+# git reset --hard origin/main
 git pull --no-edit
 git fetch
 
