@@ -4,7 +4,7 @@
 # @Usage: Triggered on schedule or manually; uses Pepy.tech Pro API securely.
 #_________________________________________________________________________________________________________
 
-name: 🧠 Qcon Intelligent Core --> M-CAL-Tracker
+name: 🧠 Qcon Intelligent Core --> iCAL
 
 on:
   push:
