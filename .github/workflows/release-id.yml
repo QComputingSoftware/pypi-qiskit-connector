@@ -17,7 +17,8 @@ on:
   schedule:
     - cron: '18 5 * * *'    
     - cron: '18 11 * * *'    
-    - cron: '18 17 * * *'    
+    - cron: '18 17 * * *'
+    - cron: '18 23 * * *'    
 
 permissions:
   contents: write
