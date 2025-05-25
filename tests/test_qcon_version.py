@@ -34,15 +34,15 @@ def install_and_assert(version):
 
 #Test 1:
 def test_make_install_test_2_2_6():
-    install_and_assert("2.2.6")
+    install_and_assert("2.2.8")
 
 # Test 2:
 def test_make_install_test_2_2_5():
-    install_and_assert("2.2.5")
+    install_and_assert("2.2.7")
 
 # Test 3:
 def test_make_install_test_2_2_4():
-    install_and_assert("2.2.4")
+    install_and_assert("2.2.6")
 
 # Test 4:
 def test_make_install_test_2_2_3():

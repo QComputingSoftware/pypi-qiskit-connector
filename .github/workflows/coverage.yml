@@ -233,7 +233,7 @@ jobs:
         run: |
           set -e
           SOURCE_DIR="qiskit-connector" # URL argument for coverage accepted as well.
-          coverage run -m pytest tests/test_qcon_func.py tests/test_qcon_os_compat.py tests/test_qcon_version.py tests/test_qcon_pkg.py tests/test_qcon_runtime.py tests/test_qcon_consumption.py tests/test_qcon_staggered.py tests/test_qcon_randomized.py tests/test_qcon_efficiency.py tests/test_qcon_resiliency.py tests/test_qcon_coverage_promax.py
+          coverage run -m pytest tests/test_qcon_intelligent_core.py tests/test_qcon_func.py tests/test_qcon_os_compat.py tests/test_qcon_version.py tests/test_qcon_pkg.py tests/test_qcon_runtime.py tests/test_qcon_consumption.py tests/test_qcon_staggered.py tests/test_qcon_randomized.py tests/test_qcon_efficiency.py tests/test_qcon_resiliency.py tests/test_qcon_coverage_promax.py
           REPORT_TABLE=$(coverage report || true)
           if [[ -z "$REPORT_TABLE" ]]; then
             echo "::warning::Coverage report is empty or not generated."
