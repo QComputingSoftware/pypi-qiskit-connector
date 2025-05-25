@@ -232,7 +232,7 @@ jobs:
       #                    SOFTWARE DESCRIPTOR FOR QCON INTELLIGENCE CORE
 
 
-      #####################################################################################################
+      ##############################################################################      
       - name: 🧠 Qcon® Software Descriptor
         id: qcon-software-descriptor
         env:
@@ -240,13 +240,16 @@ jobs:
         run: |
           python <<EOF
           import os
+          from datetime import datetime
 
           NOTE_FILE = os.path.join('.github', 'scripts', 'DESCRIPTOR.s')
           with open(NOTE_FILE, encoding="utf-8") as qcon:
               QCON_NOTE = qcon.read()
 
           version = os.environ.get("TAG", "unknown")
-          body_html = QCON_NOTE.format(version=version)
+          changelog_date = datetime.utcnow().strftime("%Y-%m-%d")
+
+          body_html = QCON_NOTE.format(version=version, changelog_date=changelog_date)
 
           # Write to GITHUB_ENV for subsequent steps
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as envf:
