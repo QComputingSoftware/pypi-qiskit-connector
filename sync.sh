@@ -222,7 +222,7 @@ update_stable_branch() {
 # Sync Pad:
 #=================================================
 syncpad(){
-  set -x
+  #set -x
   git add -A
   VERSION=$(grep -m1 -E 'version\s*=\s*\{[0-9]+\.[0-9]+\.[0-9]+\}' CITATION.bib | sed -E 's/.*\{([0-9]+\.[0-9]+\.[0-9]+)\}.*/\1/')
   if [[ -z "${VERSION}" ]]; then
@@ -230,14 +230,15 @@ syncpad(){
     exit 1
   fi
 
-  if [[ -z "${GPG_KEY_ID:-}" ]]; then
-    echo "❌ GPG_KEY_ID not set! Commit will fail."
-  else
-    MASKED_KEY=$(printf '%*s' "${#GPG_KEY_ID}" | tr ' ' 'X')
-    echo "Using GPG_KEY_ID: $MASKED_KEY"
-  fi
+  # if [[ -z "${GPG_KEY_ID:-}" ]]; then
+  #   echo "❌ GPG_KEY_ID not set! Commit will fail."
+  # else
+  #   MASKED_KEY=$(printf '%*s' "${#GPG_KEY_ID}" | tr ' ' 'X')
+  #   echo "Using GPG_KEY_ID: $MASKED_KEY"
+  # fi
 
-  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION" && git -f push || echo "No changes to commit, or commit failed."
+  git commit -S --gpg-sign="$GPG_KEY_ID" -m "Release $VERSION" 
+  git push origin main
   echo "Release Signed & Synced."
   git pull
   echo "Please wait while we synchronize with GitHub..."
