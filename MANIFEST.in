@@ -1,0 +1,10 @@
+include README.md
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+include SECURITY.md
+include CITATION.bib
+include LICENSE
+include setup.py
+recursive-include tests *
+include pyproject.toml
+recursive-include qiskit_connector *
