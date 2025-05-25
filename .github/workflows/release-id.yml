@@ -6,9 +6,18 @@ name: 🧠 Qcon Intelligent Core  - Latest Release
 on:
   push:
     branches: ["pypi"]
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+.[0-9]'
+      - '[0-9]+.[0-9]+.[0-9]'
   workflow_dispatch:  
   schedule:
-    - cron: '0 3 * * 1-7'   
+    - cron: '18 5 * * *'    
+    - cron: '18 11 * * *'    
+    - cron: '18 17 * * *'    
 
 permissions:
   contents: write
