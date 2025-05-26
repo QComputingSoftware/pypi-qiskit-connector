@@ -8,11 +8,10 @@ on:
     branches: [ "pypi" ]
   workflow_dispatch:  
   schedule:
-    - cron: '0 4 * * 1-5'    
-    - cron: '0 6 * * 1-5'    
-    - cron: '0 8 * * 1-5'   
-    - cron: '0 12 * * 1-5'   
-   
+    - cron: '25 4 * * 1-5'    
+    - cron: '25 6 * * 1-5'    
+    - cron: '25 8 * * 1-5'    
+    - cron: '25 12 * * 1-5'   
   
 permissions:
   contents: write
@@ -95,7 +94,7 @@ jobs:
             echo "✅ pytest passed."
           fi
 
-  generate-badge:
+  generate-verification:
     needs: compatibility
     runs-on: ubuntu-latest
 
@@ -254,7 +253,8 @@ jobs:
           git pull origin "$CURRENT_BRANCH" --rebase --autostash
 
           git add docs/badges/python.svg
-          git commit --gpg-sign="${GPG_KEY_ID}" -m "🔧 Qiskit Code Update - Inteli Check" || echo "⚠️ No changes to commit"
+          NOW="$(date '+%Y-%m-%d %H:%M')"
+          git commit --gpg-sign="${GPG_KEY_ID}" -m "🔧 Qiskit Connector Update - Inteli Check - ${NOW}" || echo "⚠️ No changes to commit"
           git push origin "$CURRENT_BRANCH" || echo "⚠️ Nothing to push"
 
 

@@ -59,7 +59,7 @@ env:
   EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
 
 jobs:
-  coverage-badge:
+  coverage:
     runs-on: ubuntu-latest
 
     steps:
@@ -400,7 +400,8 @@ jobs:
           git add docs/badges/coverage.svg || echo "⚠️ No changes in coverage badge to add"
 
           echo "Committing changes"
-          git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Code Update - Qcon Intelligence Core" || echo "⚠️ No changes to commit"
+          NOW="$(date '+%Y-%m-%d %H:%M')"
+          git commit --gpg-sign="${REAL_GPG_KEY_ID}" -m "🛡️ Qiskit Connector Update - Qcon Intelligence Core - ${NOW}" || echo "⚠️ No changes to commit"
           echo "✅ Changes committed successfully & signing stage completed."
 
           echo "Checking for changes..."
