@@ -210,7 +210,8 @@ jobs:
 
           git add docs/badges/license-badge.svg || echo "⚠️ No changes to add"
 
-          git commit --gpg-sign="$GPG_KEY_ID" -m "🔖 Quantum Computing Code Update Badge - Inteli Check" || echo "⚠️ No changes to commit"
+          NOW="$(date '+%Y-%m-%d %H:%M')"
+          git commit --gpg-sign="$GPG_KEY_ID" -m "🔖 Quantum Computing Update - Inteli Check - ${NOW}" || echo "⚠️ No changes to commit"
 
           git fetch origin main  || echo "⚠️ No changes to fetch"
 

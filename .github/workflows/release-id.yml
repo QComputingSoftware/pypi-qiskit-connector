@@ -224,16 +224,19 @@ jobs:
           git remote set-url origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" && echo "Origin URL set to use the Default Token!"
           git pull origin ${{ github.ref_name }} && echo "Pulled latest changes"
           git add docs/badges/release.svg && echo "Badge added to commit"
-          git commit --gpg-sign="$GPG_KEY_ID" -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
+          NOW="$(date '+%Y-%m-%d %H:%M')"
+          git commit --gpg-sign="$GPG_KEY_ID" -m "Qiskit Code Update - Inteli Check - ${NOW}" && echo "Commit successful" || echo "No changes to commit"
           git push -f origin HEAD:${{ github.ref_name }} && echo "Push successful" || echo "No changes to push"
       
-      - name: 🚀 Push badge to repo - (Optional)
+      - name: 🚀 Push badge to repo - (2nd Option - Disabled)
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
+          echo "Disabled: This step is not recommended for use unless needed."
           # git pull origin ${{ github.ref_name }} && echo "Pulled latest changes"
           # git add docs/badges/release.svg && echo "Badge added to commit"
-          # git commit -S -m "Qiskit Code Update - Inteli Check" && echo "Commit successful" || echo "No changes to commit"
+          # NOW="$(date '+%Y-%m-%d %H:%M')"
+          # git commit -S -m "Qiskit Connector Update - Inteli Check - ${NOW}" && echo "Commit successful" || echo "No changes to commit"
           # git remote set-url origin https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}
           # git push -f origin HEAD:${{ github.ref_name }} && echo "Push successful" || echo "No changes to push"
 

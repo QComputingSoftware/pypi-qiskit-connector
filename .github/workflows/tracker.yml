@@ -43,8 +43,8 @@ env:
   EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
 
 jobs:
-  build-monthly-downloads-badge:
-    name: 📊 Monthly Downloads from Pepy
+  monthly-downloads-api:
+    name: 📊 Monthly Downloads from Pepy Tech API
     runs-on: ubuntu-latest
     
     steps:
@@ -222,7 +222,8 @@ jobs:
 
           # Step 2: Rebase your local main branch's commits on top of the updated origin/main
           echo "Committing the changes"
-          git commit -m "🛡️ Qiskit Code Update - Inteli Check" --gpg-sign="$GPG_KEY_ID" || echo "⚠️ No changes to commit"
+          NOW="$(date '+%Y-%m-%d %H:%M')"
+          git commit -m "🛡️ Qiskit Connector Update - Inteli Check - ${NOW}" --gpg-sign="$GPG_KEY_ID" || echo "⚠️ No changes to commit"
 
           # Step 3: Now, fetch the latest changes from the remote main branch
           echo "Fetching latest changes from origin/main..."
