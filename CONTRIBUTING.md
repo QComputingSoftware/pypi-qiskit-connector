@@ -79,6 +79,7 @@ Takes 5mins
 - Releases are handled by maintainers and automated CI/CD workflows.
 - To propose a release, tag a maintainer or open an issue.
 - All PRs must pass automated checks before merging.
+- All commits must be digitally signed.
 
 ---
 
