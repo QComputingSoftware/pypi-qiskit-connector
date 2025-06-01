@@ -232,8 +232,23 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
           set -e
-          SOURCE_DIR="qiskit-connector" # URL argument for coverage accepted as well.
-          coverage run -m pytest tests/test_qcon_intelligent_core.py tests/test_qcon_func.py tests/test_qcon_os_compat.py tests/test_qcon_version.py tests/test_qcon_pkg.py tests/test_qcon_runtime.py tests/test_qcon_consumption.py tests/test_qcon_staggered.py tests/test_qcon_randomized.py tests/test_qcon_efficiency.py tests/test_qcon_resiliency.py tests/test_qcon_coverage_promax.py
+          SOURCE_DIR1="qiskit_connector"  
+          SOURCE_DIR2="tests"  
+          SOURCE_DIR3=".github/scripts/*.py"
+
+          # Check if SOURCE_DIR1 has a file named __init__.py 
+          if [[ ! -f "$SOURCE_DIR1/__init__.py" ]]; then
+            echo "::warning::Source directory '$SOURCE_DIR1' does not contain __init__.py. IP protection activated - Skipping."
+            SOURCE="$SOURCE_DIR2","$SOURCE_DIR3"
+            echo "Sources are: $SOURCE"
+          else
+            echo "Source directory '$SOURCE_DIR1' contains __init__.py. Proceeding with coverage testing."
+            SOURCE="$SOURCE_DIR1","$SOURCE_DIR2","$SOURCE_DIR3"
+            echo "Sources are: $SOURCE"
+          fi
+
+          coverage run --source=$SOURCE -m pytest 
+       
           REPORT_TABLE=$(coverage report || true)
           if [[ -z "$REPORT_TABLE" ]]; then
             echo "::warning::Coverage report is empty or not generated."
@@ -247,8 +262,6 @@ jobs:
             FAIL_ID=0
             coverage report || true
           fi
-
-          coverage report || true
 
           BENCHMARK="36"
           echo "Benchmark for Qiskit-connector coverage: $BENCHMARK%"
