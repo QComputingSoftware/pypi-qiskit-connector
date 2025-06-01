@@ -238,7 +238,7 @@ jobs:
 
           # Check if SOURCE_DIR1 has a file named __init__.py 
           if [[ ! -f "$SOURCE_DIR1/__init__.py" ]]; then
-            echo "::warning::Source directory '$SOURCE_DIR1' does not contain __init__.py. IP protection activated - Skipping."
+            echo "::notice::Source directory: '$SOURCE_DIR1' is IP & Copyright protected - Skipping."
             SOURCE="$SOURCE_DIR2","$SOURCE_DIR3"
             echo "Sources are: $SOURCE"
           else
@@ -364,12 +364,24 @@ jobs:
           COLOR_COVER: ${{ env.COLOR_COVER }}
         run: |
           if [[ "$COLOR_COVER" -lt 90 ]]; then
-              STATUS_COLOR="yellow" # Orange/Gold:#b7950b 
+              STATUS_COLOR="yellow" 
               echo "⚠️ Coverage is below 90%. Status color set to yellow."
               echo "🧪 Coverage: $COLOR_COVER% is below the threshold of 90%."
+          elif [[ "$COLOR_COVER" -le 60 ]]; then
+              STATUS_COLOR="red" # Red
+              echo "⚠️ Coverage is below 60%. Status color set to red."
+              echo "🧪 Coverage: $COLOR_COVER% is below the threshold of 60%."
+          elif [[ "$COLOR_COVER" -ge 100 ]]; then 
+              STATUS_COLOR="green" # Green
+              echo "✅ Coverage is at 100%. Status color set to green."
+              echo "🧪 Coverage: $COLOR_COVER% is at the threshold of 100%."
+          elif [[ "$COLOR_COVER" -ge 90 && "$COLOR_COVER" -lt 100 ]]; then
+              STATUS_COLOR="blue" 
+              echo "✅ Coverage is between 90% and 100%. Status color set to blue."
+              echo "🧪 Coverage: $COLOR_COVER% is between the thresholds of 90% and 100%."
           else
-              STATUS_COLOR="blue" # Blue
-              echo "✅ Coverage is above 90%. Status color set to blue."
+              STATUS_COLOR="brown"
+              echo "✅ Coverage is above 90%. Status color set to brown."
               echo "🧪 Coverage: $COLOR_COVER% is above the threshold of 90%."
           fi
           echo "status_color=$STATUS_COLOR" >> $GITHUB_OUTPUT
