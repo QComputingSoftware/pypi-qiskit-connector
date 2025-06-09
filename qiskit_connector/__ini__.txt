@@ -1,8 +1,8 @@
-                                   [ LEGAL ]
-                    INTELLECTUAL PROPERTY PROTECTION & SOFTWARE OWNERSHIP
+                                     [ LEGAL ]
+                    Intellectual Property Protection & Software Ownership
                     -----------------------------------------------------
                     Copyright Protection of Qiskit-Connector Software
-                              Jeffrey Chiijioke-Uche, Ph.D
+                              Dr. Jeffrey Chijioke-Uche
 
      This package (qiskit-connector) is an intellectual property protected under applicable United States and 
      International intellectual property laws, including but not limited to copyright, software protection, and 
@@ -15,13 +15,12 @@
                            https://pypi.org/project/qiskit-connector
    
                                  [Command to Install Software]
-                                  pip install qiskit-connector
+                                 pip install qiskit-connector
 
               [To cite the software in academic publication, use this APA or any style]
-Chijioke-uche, J. (2025). Quantum Computing Qiskit Connector (2.2.1). Zenodo. https://doi.org/10.5281/zenodo.15349641
-
+Chijioke-Uche, J. (2025). Quantum Computing Qiskit Connector (2.2.1). Zenodo. https://doi.org/10.5281/zenodo.15349641
 
                                    [Copyright & Ownership]
                           Copyrighted by U.S. Copyright Office, 2025
-                    Computer Program is Owned by Dr. Jeffrey Chijioke-Uche
-                     All Rights Reserved ©2025 Dr. Jeffrey Chijioke-Uche
+                    Computer Program IP is Owned by Dr. Jeffrey Chijioke-Uche
+                       All Rights Reserved ©2025 Dr. Jeffrey Chijioke-Uche
