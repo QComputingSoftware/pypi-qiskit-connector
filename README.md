@@ -206,9 +206,13 @@ else:
 🦾 Processor Revision: r3
 🦾 Processor status: 🟢 Online
 ```
- 
-![](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png) Eagle Quantum Processor
- 
+
+<div align="center">
+<img src="https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png" alt="Eagle Quantum Processor" width="150"/>
+<br>
+Eagle Quantum Processor
+</div>
+
 ```python
 ==================================================================================
 Your Plan: Open Plan
