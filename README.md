@@ -131,96 +131,172 @@ DEDICATED_PLAN="off"
 
 ---
 
-#### 👤 Usage
 
-###### 📦 With Open or Paid Plans
+#### 👤 Usage - With Qiskit 2.x Code Sample
+
+###### 📦 For Open or Paid Plans
 
 ```python
 
-from qiskit_ibm_runtime import SamplerV2 as Sampler, Session
+# After Pip install, Import Qiskit Connector:
 from qiskit_connector import QConnectorV2 as connector
 from qiskit_connector import QPlanV2 as plan
 
-# initialise the QConnector and check the current plan type:
+# Initialize Qiskit Connector::
 current = plan()
 backend = connector()
 
-if current == "Open Plan":  # session not supported.
-    sampler = Sampler(mode=backend)
+# ------------------------------ QISKIT 2.x CODE SAMPLE ---------------------------------------
+#     This code sample is using the Qiskit Connector to run with a real quantum backend.
+###############################################################################################
+# 🔍 This code sample demonstrates how to create a randomized circuit with depolarizing noise
+# ✅ QuantumCircuit(4, 4) — matches 4-qubit base circuit
+# ✅ Applies independent random Pauli gates per qubit before and after the base logic
+# ✅ Uses remove_final_measurements() to cleanly insert logic into the composed circuit
+# ✅ Re-applies measurements after twirling to preserve expected output
+################################################################################################
+import random
+import numpy as np
+from qiskit import QuantumCircuit, transpile
+from qiskit_ibm_runtime import SamplerV2 as Sampler, Session
+from datetime import datetime
+import time
+from collections import Counter
+from qiskit.visualization import circuit_drawer
+from IPython.display import display, Markdown
+from PIL import Image
+
+# Pauli gates
+paulis = ['I', 'X', 'Y', 'Z']
+pauli_gates = {
+    'I': lambda qc, q: None,
+    'X': lambda qc, q: qc.x(q),
+    'Y': lambda qc, q: qc.y(q),
+    'Z': lambda qc, q: qc.z(q)
+}
+
+# Check if running on Jupyter Notebook
+def in_jupyter():
+    try:
+        from IPython import get_ipython
+        shell = get_ipython().__class__.__name__
+        return shell in ('ZMQInteractiveShell',)  
+    except Exception:
+        return False
+       
+# 2-qubit base circuit
+def base_circuit():
+    qc = QuantumCircuit(2, 2)
+    for q in range(2):
+        qc.h(q)
+        qc.rx(0.5, q)
+        qc.rz(1.0, q)
+        qc.s(q)
+        qc.t(q)
+        qc.h(q)
+        qc.measure(q, q)
+    return qc
+
+#[C] Define randomized Pauli-wrapped circuit for depolarizing:
+def randomize_circuit(base_qc, p):
+    qc = QuantumCircuit(2, 2)
+
+    for q in range(2):
+        # [1] Random Pauli before::
+        pauli_before = random.choice(paulis[1:]) if np.random.rand() < p else 'I'
+        pauli_gates[pauli_before](qc, q)
+
+    # [2] Append core logic (excluding original measurement)
+    qc.compose(base_qc.remove_final_measurements(inplace=False), inplace=True)
+
+    for q in range(2):
+        # [3] Random Pauli after::
+        pauli_after = random.choice(paulis[1:]) if np.random.rand() < p else 'I'
+        pauli_gates[pauli_after](qc, q)
+
+        # [4] Final measurement
+        qc.measure(q, q)
+
+    return qc
+
+##################################
+# Shots & Probability settings::  
+###################################
+shots = 1024  
+p = 0.1 
+qc = base_circuit()
+circuits = [randomize_circuit(qc, p) for _ in range(shots)]
+
+# # Randomized circuit:
+render = "\n🔧 Randomized Circuit with Depolarizing Noise"
+def platform():
+    if in_jupyter():
+        cir = circuits[0].draw(output="mpl")
+        display(Markdown(render))
+        display(cir)
+    else:
+        title = render
+        circ = circuits[0].draw(output="text")
+        print(f"\n{title}\n")
+        print(circ)
+
+##########################################################################
+# This is a single job execution with Qiskit Connector initialized objects
+##########################################################################
+if current == "Open Plan":
+    platform()
+    sampler = Sampler(mode=backend)  # Session not allowed in Open Plan
+    # Transpile all circuits for the backend
+    circuits_t = [transpile(circ, backend=backend, optimization_level=3) for circ in circuits]
+    job = sampler.run(circuits_t, shots=1)  # each circuit is run per-shot in real backend, to match Qiskit 2.x 
     print("Your Plan:", current)
     print("Least Busy QPU:", backend.name)
-    if not backend.configuration().simulator:
-        print("This is a real & live QPU device")
-    else:
-        print("This is a simulator")
-    print(f"\n")
-
-elif current == "Paid Plan":  # session supported.
-    with Session(backend=backend) as session:
-        sampler = Sampler(mode=session)
+elif current == "Paid Plan":
+    with Session(backend=backend.name) as session:
+        platform()
+        sampler = Sampler(mode=session) # Session is allowed in Paid Plan
+        # Transpile all circuits for the backend
+        circuits_t = [transpile(circ, backend=backend, optimization_level=3) for circ in circuits]
+        job = sampler.run(circuits_t, shots=1)  # each circuit is run per-shot in real backend, to match Qiskit 2.x 
         print("Your Plan:", current)
         print("Least Busy QPU:", backend.name)
-        if not backend.configuration().simulator:
-            print("This is a real & live QPU device")
-        else:
-            print("This is a simulator")
-        print(f"\n")
 else:
     raise ValueError(f"Unknown plan type: {current}")
 
-# --- do other things below with backend, quantum circuit, sampler & transpilation ------
+# Submit the job::
+elapsed = 0
+print()
+try:
+    print(f"-- REAL BACKEND JOB INFORMATION --")
+    print(f"Assigned Backend QPU: {backend.name}")
+    print(f"Number of circuits submitted to backend job: {len(circuits)}")
+    print(f"Backend Job ID: {job.job_id()}")
+    while not job.done():
+        print(f"\r⏳ Job running... {elapsed} sec", end="", flush=True)
+        time.sleep(1)
+        elapsed += 1
+except KeyboardInterrupt:
+    print("\n⛔ Interrupted while waiting.")
+    exit(0)
+print("\r", end="", flush=True)
+
+# Retrieve and aggregate measurement counts across all circuits:
+result = job.result()
+counts_total = Counter()
+for pub0 in result:
+    counts = pub0.data.c.get_counts()
+    counts_total.update(counts)
+print("______________________________________________________________________________")
+print(f"✅ Job Result:")
+print(dict(counts_total))
 ```
 
 
 #### Output Sample
-```python
-
-==================================================================================
-   ____   ______                                  __
-  / __ \ / ____/____   ____   ____   ___   _____ / /_ ____   _____
- / / / // /    / __ \ / __ \ / __ \ / _ \ / ___// __// __ \ / ___/
-/ /_/ // /___ / /_/ // / / // / / //  __// /__ / /_ / /_/ // /
-\___\_\____/ \____//_/ /_//_/ /_/ \___/ \___/ \__/ \____//_/
-
-🧠 Qiskit Connector® for Quantum Backend Realtime Connection
-
-⚛️ Connecting (Open Plan) to least-busy QPU...
-----------------------------------------------------------------------------------
-⚛️ Connected [Open Plan] → Realtime Least Busy QPU:: [ibm_sherbrooke]
-- ibm_brisbane
-- ibm_sherbrooke
-- ibm_torino
-
-🖥️ Least Busy QPU Now: [ibm_sherbrooke]
-🖥️ Version: 2
-🖥️ Qubits Count: 127
-🖥️ Backend [ibm_sherbrooke] ready for use: ✔️ Yes
-🖥️ Operational: Open Plan
-==================================================================================
-
-⚛️ Getting (Open Plan) Least-busy QPU Processor Info...
-----------------------------------------------------------------------------------
-
---- 🔳  Processor Details for QConnector Least Busy Backend QPU: ibm_sherbrooke ---
-🦾 Processor Type: Eagle
-🦾 Processor Revision: r3
-🦾 Processor status: 🟢 Online
-```
 
 <div align="center">
-<img src="https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png" alt="Eagle Quantum Processor" width="110"/>
-<br>
-Eagle Quantum Processor
+<img src="https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/sample-output-0.png" alt="Qiskit Connector Sample Output"/>
 </div>
-
-```python
-==================================================================================
-Your Plan: Open Plan
-Least Busy QPU: ibm_sherbrooke
-
-#--------------------------------- remaining output below -------------------------
-```
-
 
 ---
 ####  📜 Citation
