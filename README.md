@@ -150,7 +150,7 @@ backend = connector()
 #     This code sample is using the Qiskit Connector to run with a real quantum backend.
 ###############################################################################################
 # 🔍 This code sample demonstrates how to create a randomized circuit with depolarizing noise
-# ✅ QuantumCircuit(4, 4) — matches 4-qubit base circuit
+# ✅ QuantumCircuit(2, 2) — matches 2-qubit base circuit
 # ✅ Applies independent random Pauli gates per qubit before and after the base logic
 # ✅ Uses remove_final_measurements() to cleanly insert logic into the composed circuit
 # ✅ Re-applies measurements after twirling to preserve expected output
