@@ -207,7 +207,7 @@ else:
 🦾 Processor status: 🟢 Online
 ```
  
-![](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png) Heron Quantum Processor
+![](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png) Eagle Quantum Processor
  
 ```python
 ==================================================================================
