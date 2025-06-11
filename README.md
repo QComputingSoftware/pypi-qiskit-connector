@@ -297,9 +297,8 @@ print(dict(counts_total))
 #### Output Sample
 
 <div align="center">
-<img src="https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/sample-output-0.png" alt="Qiskit Connector Sample Output"/>
+<img src="https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/sample-output-0.png" alt="Qiskit Connector Sample Output 0"/>![](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/sample-output-00.png)
 </div>
-
 
 
 
