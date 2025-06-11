@@ -206,10 +206,9 @@ else:
 🦾 Processor Revision: r3
 🦾 Processor status: 🟢 Online
 ```
-<center>
-![](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png)
-Heron Quantum Processor
-</center>
+ 
+![](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png) Heron Quantum Processor
+ 
 ```python
 ==================================================================================
 Your Plan: Open Plan
