@@ -206,11 +206,15 @@ else:
 🦾 Processor Revision: r3
 🦾 Processor status: 🟢 Online
 ```
+<center>
 ![](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png)
+Heron Quantum Processor
+</center>
 ```python
 ==================================================================================
 Your Plan: Open Plan
 Least Busy QPU: ibm_sherbrooke
+
 #-------- remaining output below ------
 ```
 
