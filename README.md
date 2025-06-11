@@ -238,13 +238,12 @@ else:
                                   Eagle Quantum Processor
 
 ==================================================================================
-
 Your Plan: Open Plan
 Least Busy QPU: ibm_sherbrooke
-
-
 #-------- remaining output below ------
 ```
+![](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png)
+
 
 
 
