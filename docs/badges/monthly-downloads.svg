@@ -1,5 +1,5 @@
-<svg width="189.4" height="20" viewBox="0 0 1894 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="monthly downloads: 32k/month">
-  <title>monthly downloads: 32k/month</title>
+<svg width="189.4" height="20" viewBox="0 0 1894 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="monthly downloads: 33k/month">
+  <title>monthly downloads: 33k/month</title>
   <g>
     <rect fill="#555" width="1179" height="200"/>
     <rect fill="#7DD71D" x="1179" width="715" height="200"/>
@@ -7,8 +7,8 @@
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
     <text x="60" y="148" textLength="1079" fill="#000" opacity="0.1">monthly downloads</text>
     <text x="50" y="138" textLength="1079">monthly downloads</text>
-    <text x="1234" y="148" textLength="615" fill="#000" opacity="0.1">32k/month</text>
-    <text x="1224" y="138" textLength="615">32k/month</text>
+    <text x="1234" y="148" textLength="615" fill="#000" opacity="0.1">33k/month</text>
+    <text x="1224" y="138" textLength="615">33k/month</text>
   </g>
   
 </svg>
