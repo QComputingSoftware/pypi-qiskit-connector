@@ -208,7 +208,7 @@ else:
 ```
 
 <div align="center">
-<img src="https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png" alt="Eagle Quantum Processor" width="150"/>
+<img src="https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/eagle-2021-removebg.png" alt="Eagle Quantum Processor" width="110"/>
 <br>
 Eagle Quantum Processor
 </div>
