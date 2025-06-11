@@ -132,6 +132,8 @@ DEDICATED_PLAN="off"
 ---
 
 
+
+
 #### 👤 Usage - With Qiskit 2.x Code Sample
 
 ###### 📦 For Open or Paid Plans
@@ -297,6 +299,9 @@ print(dict(counts_total))
 <div align="center">
 <img src="https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/media/sample-output-0.png" alt="Qiskit Connector Sample Output"/>
 </div>
+
+
+
 
 ---
 ####  📜 Citation
