@@ -218,7 +218,7 @@ Eagle Quantum Processor
 Your Plan: Open Plan
 Least Busy QPU: ibm_sherbrooke
 
-#-------- remaining output below ------
+#--------------------------------- remaining output below -------------------------
 ```
 
 
