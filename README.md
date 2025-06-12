@@ -148,7 +148,7 @@ from qiskit_connector import QPlanV2 as plan
 current = plan()
 backend = connector()
 
-# ------------------------------ QISKIT 2.x CODE SAMPLE ---------------------------------------
+# ------------------------------ QISKIT 2.x CODE SAMPLE -------------------------------------------------
 #     This code sample is using the Qiskit Connector to run with a real quantum backend.
 ###############################################################################################
 # 🔍 This code sample demonstrates how to create a randomized circuit with depolarizing noise
@@ -248,20 +248,16 @@ def platform():
 if current == "Open Plan":
     platform()
     sampler = Sampler(mode=backend)  # Session not allowed in Open Plan
-    # Transpile all circuits for the backend
+    # Transpile::
     circuits_t = [transpile(circ, backend=backend, optimization_level=3) for circ in circuits]
-    job = sampler.run(circuits_t, shots=1)  # each circuit is run per-shot in real backend, to match Qiskit 2.x 
-    print("Your Plan:", current)
-    print("Least Busy QPU:", backend.name)
+    job = sampler.run(circuits_t, shots=1)  # single run per-shot.
 elif current == "Paid Plan":
     with Session(backend=backend.name) as session:
         platform()
-        sampler = Sampler(mode=session) # Session is allowed in Paid Plan
-        # Transpile all circuits for the backend
+        sampler = Sampler(mode=session)  # Session is allowed in Paid Plan
+        # Transpile::
         circuits_t = [transpile(circ, backend=backend, optimization_level=3) for circ in circuits]
-        job = sampler.run(circuits_t, shots=1)  # each circuit is run per-shot in real backend, to match Qiskit 2.x 
-        print("Your Plan:", current)
-        print("Least Busy QPU:", backend.name)
+        job = sampler.run(circuits_t, shots=1)  # single run per-shot.
 else:
     raise ValueError(f"Unknown plan type: {current}")
 
@@ -282,7 +278,7 @@ except KeyboardInterrupt:
     exit(0)
 print("\r", end="", flush=True)
 
-# Retrieve and aggregate measurement counts across all circuits:
+# Measurement:::
 result = job.result()
 counts_total = Counter()
 for pub0 in result:
