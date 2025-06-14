@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         # os: [ubuntu-latest, ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest]
-        os: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04, macos-latest, macos-14, macos-13, windows-latest, windows-2022, windows-2019]
+        os: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04, macos-latest, macos-14, macos-13, windows-latest, windows-2022, windows-2019, ubuntu-latest, ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest]
     steps:
       - name: 🧾 Checkout
         uses: actions/checkout@v4
@@ -35,7 +35,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
 
-      - name: ✅ Run OS Compatibility Test via Pytest
+      - name: ✅ Run OS Compatibility Test for Qiskit Connector
         run: |
           # pytest tests/test_qcon_os_compat.py
+          pip install qiskit-connector
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.2.9
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.2.6
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.2.4
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.2.1
+          pip uninstall -y qiskit-connector
           pip install qiskit-connector
