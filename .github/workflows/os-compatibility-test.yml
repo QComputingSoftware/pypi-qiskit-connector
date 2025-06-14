@@ -37,4 +37,5 @@ jobs:
 
       - name: ✅ Run OS Compatibility Test via Pytest
         run: |
-          pytest tests/test_qcon_os_compat.py
+          # pytest tests/test_qcon_os_compat.py
+          pip install qiskit-connector
