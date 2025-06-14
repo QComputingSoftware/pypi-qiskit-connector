@@ -202,16 +202,16 @@ def job_sent():
 # Job Result::
 job_sent()
 result = job.result()
-counts_total = Counter()
-for pub0 in result:
-    counts = pub0.data.c.get_counts()
-    counts_total.update(counts)
+pubs_total = Counter()
+for pub in result:
+    pubs = pub.data.c.get_counts()
+    pubs_total.update(pubs)
 print("______________________________________________________________________________")
 print(f"✅ Job Result:")
-print(f"Result Data: {dict(counts_total)}")
+print(f"Result Data: {dict(pubs_total)}")
 if in_jupyter():
     display(Markdown("\n📊 **Histogram of Measurement**"))
-    display(plot_histogram(counts_total))
+    display(plot_histogram(pubs_total))
 else:
     print("\n📊 Histogram of Measurement")
-    console_histogram(counts_total)
+    console_histogram(pubs_total)

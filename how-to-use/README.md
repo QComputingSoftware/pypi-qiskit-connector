@@ -12,8 +12,8 @@
 This document provides curated sample codes demonstrating how to harness Qiskit Connector for creating entangled quantum circuits, applying noise models, executing jobs on real quantum processors, and efficiently retrieving and visualizing results.
 
 The samples in this directory are in two versions:
-- Raw Python sample  (sample.py)
-- Jupyter Notebook sample (sample.ipynb)
+- Raw Python sample  [sample.py](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample.py)
+- Raw Python sample  [sample.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample.ipynb)
 
 ######  Setup
 - [Install Qiskit Connector With PyPi](https://pypi.org/project/qiskit-connector)
