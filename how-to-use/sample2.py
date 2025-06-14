@@ -1,14 +1,20 @@
-# After Pip install, Import Qiskit Connector:
+# @Author: Qiskit Connector® Team
+# @Type: Quantum Software
+# @Original Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
+# @Platform: Quantum Computing
+# @License: Apache License 2.0 & Creative Commons Attribution-NonCommercial 4.0 International
+#-----------------------------------------------------------------------------------------------
+
+
+# After Qiskit Connector® pip install, Import Qiskit Connector®:
 from qiskit_connector import QConnectorV2 as connector
 from qiskit_connector import QPlanV2 as plan
 
-# Initialize Qiskit Connector::
+# Initialize Qiskit Connector®::
 current = plan()
 backend = connector()
 
-
 #-----------------------------------HOW TO USE QISKIT CONNECTOR--------------------------------
-
 
 
 # ------------------------------ QISKIT 2.x CODE SAMPLE ---------------------------------------
@@ -28,7 +34,7 @@ from datetime import datetime
 import time
 import sys
 from collections import Counter
-from qiskit.visualization import circuit_drawer, plot_histogram
+from qiskit.visualization import plot_histogram
 from IPython.display import display, Markdown
 
 ##############
@@ -94,9 +100,9 @@ def base_circuit():
     qc.measure([0, 1], [0, 1])
     return qc
 
-#############################################################
-# Randomized Pauli-wrapped circuit for depolarizing:
-#############################################################
+#########################################################################################
+# Randomized Pauli-wrapped circuit for depolarizing: [Pauli twirling: Depolarizing noise]
+#########################################################################################
 def randomize_circuit(base_qc, p):
     """
     Create a randomized circuit by applying Pauli gates before and after the base circuit.
@@ -186,9 +192,15 @@ def job_sent():
     elapsed = 0
     try:
         print(f"-- REAL BACKEND JOB INFORMATION --")
-        print(f"Assigned Backend QPU: {backend.name}")
-        print(f"Number of circuits submitted to backend job: {len(circuits)}")
         print(f"Backend Job ID: {job.job_id()}")
+        print(f"Assigned Backend QPU: {backend.name}")
+        print(f"Number of circuit pubs submitted to backend job: {len(circuits)}")
+        completion_status = job.status().capitalize()
+        if completion_status == "Done": 
+            job_status = "Completed"
+        else: 
+            job_status = "Pending"
+        print(f"Job Status: {job_status}")
         while not job.done():
             print(f"\r⏳ Job queue time... {elapsed} sec", end="", flush=True)
             time.sleep(1)
@@ -199,11 +211,12 @@ def job_sent():
         return
     print("\r", end="", flush=True)
 
+
 # Job Result::
 job_sent()
-result = job.result()
+results = job.result()
 pubs_total = Counter()
-for pub in result:
+for pub in results:
     pubs = pub.data.c.get_counts()
     pubs_total.update(pubs)
 print("______________________________________________________________________________")
@@ -215,3 +228,6 @@ if in_jupyter():
 else:
     print("\n📊 Histogram of Measurement")
     console_histogram(pubs_total)
+print()
+today = datetime.today().strftime("%B %d, %Y")
+print(f"\n📅 Data Date: {today}")
