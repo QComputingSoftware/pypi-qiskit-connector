@@ -10,8 +10,11 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: '27 7 * * 1-5'   
-    - cron: '27 9 * * 1-5'   
+    - cron: '27 3 * * *'
+    - cron: '27 7 * * *'
+    - cron: '27 11 * * *'
+    - cron: '27 15 * * *'
+    - cron: '27 19 * * *' 
 
 jobs:
   os-matrix-test:
@@ -33,10 +36,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pytest
+          pip install pillow
+          pip install ipython
 
       - name: ✅ Run OS Compatibility Test for Qiskit Connector
         run: |
-          # pytest tests/test_qcon_os_compat.py
+          pytest tests/test_qcon_os_compat.py
           pip install qiskit-connector
           pip uninstall -y qiskit-connector
           pip install qiskit-connector==2.2.9
