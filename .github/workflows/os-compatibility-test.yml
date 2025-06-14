@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04, macos-latest, macos-14, macos-13, windows-latest, windows-2022, ubuntu-latest, ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest, ubuntu-latest, ubuntu-24.04, ubuntu-22.04, macos-latest, macos-14, macos-13, windows-latest, windows-2022, ubuntu-latest, ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest]
+        os: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04, macos-latest, macos-14, macos-13, windows-latest, windows-2022, windows-2025, ubuntu-latest, ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest, ubuntu-latest, ubuntu-24.04, ubuntu-22.04, macos-latest, macos-14, macos-13, windows-latest, windows-2022, windows-2025, ubuntu-latest, ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest,ubuntu-latest]
     steps:
       - name: 🧾 Checkout
         uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
           pip install qiskit-connector==2.2.1
           pip uninstall -y qiskit-connector
           pip install qiskit-connector
-          pip list | grep qiskit-connector
+          pip list | grep qiskit
 
       # - name: 🧠 Qcon® Import Test
       #   run: |
