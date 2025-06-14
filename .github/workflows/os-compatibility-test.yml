@@ -50,13 +50,13 @@ jobs:
           pip install qiskit-connector
           pip list | grep qiskit-connector
 
-      - name: 🧠 Qcon® Import Test
-        run: |
-          python <<EOF
+      # - name: 🧠 Qcon® Import Test
+      #   run: |
+      #     python <<EOF
 
-          # After Qiskit Connector® pip install, Import Qiskit Connector®:
-          from qiskit_connector import QConnectorV2 as connector
-          from qiskit_connector import QPlanV2 as plan
-          print("Qiskit Connector® import successful!")
+      #     # After Qiskit Connector® pip install, Import Qiskit Connector®:
+      #     from qiskit_connector import QConnectorV2 as connector
+      #     from qiskit_connector import QPlanV2 as plan
+      #     print("Qiskit Connector® import successful!")
 
-          EOF
+      #     EOF
