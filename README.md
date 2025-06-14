@@ -140,172 +140,57 @@ DEDICATED_PLAN="off"
 
 ```python
 
-# After Pip install, Import Qiskit Connector:
 from qiskit_connector import QConnectorV2 as connector
 from qiskit_connector import QPlanV2 as plan
+from qiskit import QuantumCircuit, transpile
+from qiskit_ibm_runtime import SamplerV2 as Sampler, Session
 
-# Initialize Qiskit Connector::
+# Initialize connector and plan
 current = plan()
 backend = connector()
 
-# ------------------------------ QISKIT 2.x CODE SAMPLE -------------------------------------------------
-#     This code sample is using the Qiskit Connector to run with a real quantum backend.
-###############################################################################################
-# 🔍 This code sample demonstrates how to create a randomized circuit with depolarizing noise
-# ✅ QuantumCircuit(2, 2) — matches 2-qubit base circuit
-# ✅ Applies independent random Pauli gates per qubit before and after the base logic
-# ✅ Uses remove_final_measurements() to cleanly insert logic into the composed circuit
-# ✅ Re-applies measurements after twirling to preserve expected output
-################################################################################################
-import random
-import numpy as np
-from qiskit import QuantumCircuit, transpile
-from qiskit_ibm_runtime import SamplerV2 as Sampler, Session
-from datetime import datetime
-import time
-from collections import Counter
-from qiskit.visualization import circuit_drawer
-from IPython.display import display, Markdown
-from PIL import Image
-
-# Pauli gates
-paulis = ['I', 'X', 'Y', 'Z']
-pauli_gates = {
-    'I': lambda qc, q: None,
-    'X': lambda qc, q: qc.x(q),
-    'Y': lambda qc, q: qc.y(q),
-    'Z': lambda qc, q: qc.z(q)
-}
-
-# Check if running on Jupyter Notebook
-def in_jupyter():
-    try:
-        from IPython import get_ipython
-        shell = get_ipython().__class__.__name__
-        return shell in ('ZMQInteractiveShell',)  
-    except Exception:
-        return False
-       
-# 2-qubit base circuit
-def base_circuit_entangled():
-    """
-    Creates a 2-qubit quantum circuit with entanglement.
-    Applies gates H, RX, RZ, S, T, H on each qubit,
-    and inserts a CNOT gate to entangle qubits 0 and 1.
-    Measures each qubit into its corresponding classical bit.
-    """
+# Define entangled base circuit with superposition and CNOT entanglement
+def base_circuit():
     qc = QuantumCircuit(2, 2)
-    
-    # Apply initial Hadamard to qubit 0
-    qc.h(0)
-    
-    # Entangle qubit 0 and qubit 1 with CNOT
-    qc.cx(0, 1)
-    
-    # Continue gates on both qubits
     for q in range(2):
+        qc.h(q)
         qc.rx(0.5, q)
         qc.rz(1.0, q)
         qc.s(q)
         qc.t(q)
         qc.h(q)
-    
-    # Measurement:
-    for q in range(2):
-        qc.measure(q, q)
-    
+    qc.cx(0, 1)
+    qc.measure([0, 1], [0, 1])
     return qc
 
-
-#[C] Define randomized Pauli-wrapped circuit for depolarizing:
+# Create randomized circuits with depolarizing noise model
 def randomize_circuit(base_qc, p):
     qc = QuantumCircuit(2, 2)
-
-    for q in range(2):
-        # [1] Random Pauli before::
-        pauli_before = random.choice(paulis[1:]) if np.random.rand() < p else 'I'
-        pauli_gates[pauli_before](qc, q)
-
-    # [2] Append core logic (excluding original measurement)
-    qc.compose(base_qc.remove_final_measurements(inplace=False), inplace=True)
-
-    for q in range(2):
-        # [3] Random Pauli after::
-        pauli_after = random.choice(paulis[1:]) if np.random.rand() < p else 'I'
-        pauli_gates[pauli_after](qc, q)
-
-        # [4] Final measurement
-        qc.measure(q, q)
-
+    # Apply randomized Pauli gates before and after the base circuit
+    # ... [pauli gate application code here] ...
     return qc
 
-##################################
-# Shots & Probability settings::  
-###################################
-shots = 1024  
-p = 0.1 
-qc = base_circuit_entangled()  ######
-circuits = [randomize_circuit(qc, p) for _ in range(shots)]
+# Prepare circuits
+rand_range = 5
+p = 0.1
+qc = base_circuit()
+circuits = [randomize_circuit(qc, p) for _ in range(rand_range)]
 
-# # Randomized circuit:
-render = "\n🔧 Randomized Circuit with Depolarizing Noise"
-def platform():
-    if in_jupyter():
-        cir = circuits[0].draw(output="mpl")
-        display(Markdown(render))
-        display(cir)
-    else:
-        title = render
-        circ = circuits[0].draw(output="text")
-        print(f"\n{title}\n")
-        print(circ)
-
-##########################################################################
-# This is a single job execution with Qiskit Connector initialized objects
-##########################################################################
+# Transpile and submit jobs
+qc_t = [transpile(c, backend=backend, optimization_level=3) for c in circuits[:rand_range]]
 if current == "Open Plan":
-    platform()
-    sampler = Sampler(mode=backend)  # Session not allowed in Open Plan
-    # Transpile::
-    circuits_t = [transpile(circ, backend=backend, optimization_level=3) for circ in circuits]
-    job = sampler.run(circuits_t, shots=1)  # single run per-shot.
+    sampler = Sampler(mode=backend)
+    job = sampler.run(qc_t, shots=1)
 elif current == "Paid Plan":
     with Session(backend=backend.name) as session:
-        platform()
-        sampler = Sampler(mode=session)  # Session is allowed in Paid Plan
-        # Transpile::
-        circuits_t = [transpile(circ, backend=backend, optimization_level=3) for circ in circuits]
-        job = sampler.run(circuits_t, shots=1)  # single run per-shot.
-else:
-    raise ValueError(f"Unknown plan type: {current}")
+        sampler = Sampler(mode=session)
+        job = sampler.run(qc_t, shots=1)
 
-# Submit the job::
-elapsed = 0
-print()
-try:
-    print(f"-- REAL BACKEND JOB INFORMATION --")
-    print(f"Assigned Backend QPU: {backend.name}")
-    print(f"Number of circuits submitted to backend job: {len(circuits)}")
-    print(f"Backend Job ID: {job.job_id()}")
-    while not job.done():
-        print(f"\r⏳ Job running... {elapsed} sec", end="", flush=True)
-        time.sleep(1)
-        elapsed += 1
-except KeyboardInterrupt:
-    print("\n⛔ Interrupted while waiting.")
-    exit(0)
-print("\r", end="", flush=True)
-
-# Measurement:::
-result = job.result()
-counts_total = Counter()
-for pub0 in result:
-    counts = pub0.data.c.get_counts()
-    counts_total.update(counts)
-print("______________________________________________________________________________")
-print(f"✅ Job Result:")
-print(dict(counts_total))
+# Monitor job and retrieve results, then display histograms
+# ...
 ```
+[See full code sample here](https://github.com/QComputingSoftware/pypi-qiskit-connector/tree/main/how-to-use)
+
 
 
 #### Output Sample
