@@ -138,16 +138,31 @@ DEDICATED_PLAN="off"
 
 ###### 📦 For Open or Paid Plans
 
+
 ```python
 
+# After Qiskit Connector® pip install, Import Qiskit Connector®:
 from qiskit_connector import QConnectorV2 as connector
 from qiskit_connector import QPlanV2 as plan
-from qiskit import QuantumCircuit, transpile
-from qiskit_ibm_runtime import SamplerV2 as Sampler, Session
 
-# Initialize connector and plan
+# Initialize Qiskit Connector®::
 current = plan()
 backend = connector()
+
+#-----------------------------------HOW TO USE QISKIT CONNECTOR--------------------------------
+
+
+# ------------------------------ QISKIT 2.x CODE SAMPLE ---------------------------------------
+#     This code sample is using the Qiskit Connector to run with a real quantum backend.
+###############################################################################################
+# 🔍 This code sample demonstrates how to create a randomized circuit with depolarizing noise
+# ✅ QuantumCircuit(2, 2) — matches 2-qubit base circuit
+# ✅ Applies independent random Pauli gates per qubit before and after the base logic
+# ✅ Uses remove_final_measurements() to cleanly insert logic into the composed circuit
+# ✅ Re-applies measurements after twirling to preserve expected output
+################################################################################################
+from qiskit import QuantumCircuit, transpile
+from qiskit_ibm_runtime import SamplerV2 as Sampler, Session
 
 # Define entangled base circuit with superposition and CNOT entanglement
 def base_circuit():
