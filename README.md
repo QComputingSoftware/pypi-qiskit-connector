@@ -187,17 +187,35 @@ def in_jupyter():
         return False
        
 # 2-qubit base circuit
-def base_circuit():
+def base_circuit_entangled():
+    """
+    Creates a 2-qubit quantum circuit with entanglement.
+    Applies gates H, RX, RZ, S, T, H on each qubit,
+    and inserts a CNOT gate to entangle qubits 0 and 1.
+    Measures each qubit into its corresponding classical bit.
+    """
     qc = QuantumCircuit(2, 2)
+    
+    # Apply initial Hadamard to qubit 0
+    qc.h(0)
+    
+    # Entangle qubit 0 and qubit 1 with CNOT
+    qc.cx(0, 1)
+    
+    # Continue gates on both qubits
     for q in range(2):
-        qc.h(q)
         qc.rx(0.5, q)
         qc.rz(1.0, q)
         qc.s(q)
         qc.t(q)
         qc.h(q)
+    
+    # Measurement:
+    for q in range(2):
         qc.measure(q, q)
+    
     return qc
+
 
 #[C] Define randomized Pauli-wrapped circuit for depolarizing:
 def randomize_circuit(base_qc, p):
@@ -226,7 +244,7 @@ def randomize_circuit(base_qc, p):
 ###################################
 shots = 1024  
 p = 0.1 
-qc = base_circuit()
+qc = base_circuit_entangled()  ######
 circuits = [randomize_circuit(qc, p) for _ in range(shots)]
 
 # # Randomized circuit:
