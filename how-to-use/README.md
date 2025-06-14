@@ -13,7 +13,7 @@ This document provides curated sample codes demonstrating how to harness Qiskit 
 
 The samples in this directory are in two versions:
 - Raw Python sample  [sample.py](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample.py)
-- Raw Python sample  [sample.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample.ipynb)
+- Jupyter Notebook sample  [sample.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample.ipynb)
 
 ######  Setup
 - [Install Qiskit Connector With PyPi](https://pypi.org/project/qiskit-connector)
