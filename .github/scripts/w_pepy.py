@@ -80,7 +80,6 @@ def iCal_Monthly():
 try:
     if td is not None:
         print(f"✅ Monthly downloads successfully retrieved!")
-        # md = round(td * 0.4998)
         iCal_md = iCal_Monthly()
         md = round(iCal_md)         # Monthly downloads
         wd = round(md // 4)         # Weekly downloads
