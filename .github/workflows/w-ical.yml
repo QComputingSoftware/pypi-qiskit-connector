@@ -43,7 +43,7 @@ env:
   EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
 
 jobs:
-  Weekly-downloads-api:
+  weekly-downloads-api:
     name: 📊 Weekly Downloads from Pepy Tech API
     runs-on: ubuntu-latest
     
@@ -218,7 +218,7 @@ jobs:
           #______________________________________________________________________________
           # Step 1: Fetch the latest changes from the remote main branch
           echo "Adding the coverage badge to the commit"
-          git add docs/badges/Weekly-downloads.svg  || echo "⚠️ No changes in coverage badge to add"
+          git add docs/badges/weekly-downloads.svg  || echo "⚠️ No changes in coverage badge to add"
 
           # Step 2: Rebase your local main branch's commits on top of the updated origin/main
           echo "Committing the changes"
