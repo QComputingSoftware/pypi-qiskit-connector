@@ -4,17 +4,17 @@
 # @Usage: Triggered on schedule or manually; uses Pepy.tech Pro API securely.
 #_________________________________________________________________________________________________________
 
-name: 🧠 Qcon Intelligent Core --> iCAL
+name: 🧠 Qcon Intelligent Core --> iCAL Weekly
 
 on:
   push:
     branches: ["pypi"]
   workflow_dispatch:
   schedule:
-      - cron: '53 12 * * 1-6'    
-      - cron: '53 16 * * 1-6'   
-      - cron: '53 20 * * 1-6'   
-      - cron: '53 23 * * 1-6'   
+      - cron: '55 12 * * 1-6'    
+      - cron: '55 16 * * 1-6'    
+      - cron: '55 19 * * 1-6'    
+      - cron: '55 20 * * 1-6'    
 
 permissions:
   contents: write
@@ -75,17 +75,17 @@ jobs:
           PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
         run: |
           echo "🔍 Extracting download record..."
-          python .github/scripts/pepy.py
+          python .github/scripts/w_pepy.py
 
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
         with:
-          label: "monthly downloads"
+          label: "downloads/weekly"
           label-color: "555"
           status: "${{ steps.get_downloads.outputs.md }}"
           color: "7DD71D"
           style: "flat"
-          path: "docs/badges/monthly-downloads.svg"
+          path: "docs/badges/weekly-downloads.svg"
 
       #_____________________________________________________________________________
       - name: Install jq (JSON processor)

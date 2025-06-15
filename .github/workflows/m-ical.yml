@@ -1,0 +1,240 @@
+# @Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
+# @last update: 2025-05-04
+# @Description: This workflow scrapes public Pepy.tech stats for the Qiskit Connector package and updates the badge.
+# @Usage: Triggered on schedule or manually; uses Pepy.tech Pro API securely.
+#_________________________________________________________________________________________________________
+
+name: 🧠 Qcon Intelligent Core --> iCAL Monthly
+
+on:
+  push:
+    branches: ["pypi"]
+  workflow_dispatch:
+  schedule:
+      - cron: '53 12 * * 1-6'    
+      - cron: '53 16 * * 1-6'   
+      - cron: '53 20 * * 1-6'   
+      - cron: '53 23 * * 1-6'   
+
+permissions:
+  contents: write
+  id-token: write
+  actions: write
+  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  issues: write
+  discussions: write
+  pages: write
+  packages: write
+  security-events: write
+  repository-projects: write
+
+env:
+  GPG_NAME_REAL: ${{ secrets.GPG_NAME_REAL }}
+  GPG_NAME_EMAIL: ${{ secrets.GPG_NAME_EMAIL }}
+  GPG_NAME_COMMENT: ${{ secrets.GPG_NAME_COMMENT }}
+  GPG_GITHUB_OPERATOR: ${{ secrets.GPG_GITHUB_OPERATOR }}
+  EXPECTED_GPG_KEY_ID: ${{ secrets.EXPECTED_GPG_KEY_ID }}
+  UNAME_CONTRIBUTOR_09: ${{ secrets.UNAME_CONTRIBUTOR_09 }}
+  UNAME_CONTRIBUTOR_03: ${{ secrets.UNAME_CONTRIBUTOR_03 }}
+  EMAIL_CONTRIBUTOR_09: ${{ secrets.EMAIL_CONTRIBUTOR_09 }}
+  EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
+
+jobs:
+  monthly-downloads-api:
+    name: 📊 Monthly Downloads from Pepy Tech API
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📿 Git Repo Checkout
+        uses: actions/checkout@v4
+
+      - name: Git Hard Reset Main
+        run: |
+          git reset --hard origin/main
+          git pull origin main
+
+      - name: Qiskit Connector Active State
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          python .github/scripts/pkg_active_check.py
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install qiskit-connector
+          pip install requests
+
+     
+      - name: 🔍 Extract Downloads
+        id: get_downloads
+        env:
+          PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
+        run: |
+          echo "🔍 Extracting download record..."
+          python .github/scripts/m_pepy.py
+
+      - name: 🚰️ Generate Badge
+        uses: emibcn/badge-action@v2
+        with:
+          label: "downloads/monthly"
+          label-color: "555"
+          status: "${{ steps.get_downloads.outputs.md }}"
+          color: "7DD71D"
+          style: "flat"
+          path: "docs/badges/monthly-downloads.svg"
+
+      #_____________________________________________________________________________
+      - name: Install jq (JSON processor)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Fetch GitHub GPG Keys and Find Matching Key ID
+        id: find_key
+        run: |
+          # EXPECTED_GPG_KEY_ID from secrets should be the 16-character GPG Key ID.
+          echo "Searching for GPG key on GitHub with Key ID: $EXPECTED_GPG_KEY_ID"
+          
+          GPG_KEY_ID_MATCHED="" # Variable to store the matched API key_id
+          key_found=false
+
+          next_page_url="https://api.github.com/user/gpg_keys?per_page=100"
+
+          while [[ -n "$next_page_url" ]]; do
+              echo "Fetching GPG keys from: $next_page_url"
+              header_file=$(mktemp)
+
+              response_body=$(curl -s -L \
+                                   -H "Authorization: token $GPG_GITHUB_OPERATOR" \
+                                   -H "Accept: application/vnd.github+json" \
+                                   -H "X-GitHub-Api-Version: 2022-11-28" \
+                                   -D "$header_file" \
+                                   "$next_page_url")
+              curl_exit_status=$?
+
+              if [ $curl_exit_status -ne 0 ]; then
+                  echo "::error::Curl command failed with exit status $curl_exit_status for URL: $next_page_url"
+                  rm -f "$header_file"
+                  break
+              fi
+
+              if ! echo "$response_body" | jq -e '. | type == "array"' > /dev/null; then
+                  echo "::warning::Response from $next_page_url was not a JSON array or was empty. Body: $response_body"
+              fi
+
+              # The API's 'key_id' field provides a 16-character ID.
+              api_provided_key_ids=$(echo "$response_body" | jq -r '.[]? | .key_id // empty')
+
+              if [[ -n "$api_provided_key_ids" ]]; then
+                while IFS= read -r current_api_key_id; do # This is the 16-character ID from API
+                    if [[ -z "$current_api_key_id" ]]; then
+                        continue
+                    fi
+                    echo "Checking API provided key_id: $current_api_key_id"
+                    
+                    # Direct comparison: Does the API's 16-char key_id exactly match the 16-char EXPECTED_GPG_KEY_ID from secrets?
+                    if [[ "$current_api_key_id" == "$EXPECTED_GPG_KEY_ID" ]]; then
+                        echo "::notice::Match found! API Key ID '$current_api_key_id' matches Expected Key ID '$EXPECTED_GPG_KEY_ID'."
+                        GPG_KEY_ID_MATCHED="$current_api_key_id"
+                        key_found=true
+                        break 2 # Exit both loops
+                    fi
+                done <<< "$api_provided_key_ids"
+              fi
+
+              link_header=$(grep -i '^Link:' "$header_file")
+              if echo "$link_header" | grep -q 'rel="next"'; then
+                  next_page_url=$(echo "$link_header" | sed -n 's/.*<\([^>]*\)>; rel="next".*/\1/p')
+                  if [[ -z "$next_page_url" ]]; then
+                      echo "::debug::'rel=\"next\"' found, but sed failed to extract URL. Link: $link_header"
+                      next_page_url=""
+                  fi
+              else
+                  next_page_url=""
+              fi
+              rm -f "$header_file"
+          done
+
+          if [[ "$key_found" == "true" ]]; then
+            echo "Successfully matched API Key ID: $GPG_KEY_ID_MATCHED"
+            echo "GPG_KEY_ID=$GPG_KEY_ID_MATCHED" >> $GITHUB_ENV
+          else
+            # This error message now clearly states what was being looked for.
+            echo "::error::Expected GPG Key ID '$EXPECTED_GPG_KEY_ID' (from secrets) not found directly in any of the 'key_id' fields returned by the GitHub API after checking all pages."
+            exit 1
+          fi
+
+      - name: Verify Found Key ID in Environment
+        run: |
+          if [[ -z "$GPG_KEY_ID" ]]; then
+            echo "::error::GPG_KEY_ID environment variable was not set."
+            exit 1
+          else
+            echo "Verified: GPG Key ID '$GPG_KEY_ID'."
+            echo "GPG_KEY_ID is ready for use in subsequent GPG operations."
+          fi
+
+      - name: Import GPG Key, Configure Git, and Prepare for Signing
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "Setting GPG_TTY..."
+          export GPG_TTY=$(tty)
+
+          echo "Importing GPG key..."
+          echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import <(echo "${GPG_PRIVATE_KEY}")
+          if [ $? -ne 0 ]; then
+              echo "::error::GPG key import failed."
+              exit 1
+          fi
+          echo "✅ GPG key imported."
+
+          echo "Testing GPG key with a simple sign operation using GPG_KEY_ID: ${GPG_KEY_ID}"
+          echo "test data" | echo "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --clearsign --default-key "${GPG_KEY_ID}" > /dev/null
+          if [ $? -ne 0 ]; then
+              echo "::error::GPG sign test failed. Passphrase might not be available or key ID ('${GPG_KEY_ID}') is incorrect/ambiguous for GPG."
+              exit 1
+          fi
+          echo "✅ GPG key test successful."
+
+          echo "Configuring git with GPG key details..."
+          git config --global user.name "$GPG_NAME_REAL"
+          git config --global user.email "$GPG_NAME_EMAIL"
+          git config --global user.signingkey "$GPG_KEY_ID" 
+          git config --global commit.gpgsign true
+
+          echo "✅ Git and GPG configured. Commits and tags will be signed using key."
+      #_____________________________________________________________________________
+
+      - name: 🚀 Commit badge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+
+          #______________________________________________________________________________
+          # Step 1: Fetch the latest changes from the remote main branch
+          echo "Adding the coverage badge to the commit"
+          git add docs/badges/monthly-downloads.svg  || echo "⚠️ No changes in coverage badge to add"
+
+          # Step 2: Rebase your local main branch's commits on top of the updated origin/main
+          echo "Committing the changes"
+          NOW="$(date '+%Y-%m-%d %H:%M')"
+          git commit -m "🛡️ Qiskit Connector Update - Inteli Check - ${NOW}" --gpg-sign="$GPG_KEY_ID" || echo "⚠️ No changes to commit"
+
+          # Step 3: Now, fetch the latest changes from the remote main branch
+          echo "Fetching latest changes from origin/main..."
+          git fetch origin main || echo "⚠️ No changes to fetch"
+
+          # Step 4: Merge the changes from the remote main branch into your local main branch
+          echo "Merging changes from origin/main..."
+          git merge origin/main --no-edit --allow-unrelated-histories || echo "⚠️ No unrelated histories to merge"
+
+          # Step 5: Push 
+          echo "Pushing changes to origin/main..."
+          git push -f origin HEAD:${{ github.ref_name }}
+          #_____________________________________________________________________________
+          # end of script
