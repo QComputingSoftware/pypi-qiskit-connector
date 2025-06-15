@@ -80,22 +80,29 @@ def iCal_Monthly():
 try:
     if td is not None:
         print(f"✅ Monthly downloads successfully retrieved!")
-        md = round(td * 0.4998)
-
+        # md = round(td * 0.4998)
         iCal_md = iCal_Monthly()
-        print(f"Raw iCal Monthly Downloads: {iCal_md}")
-        print(f"Raw Monthly Downloads: {md}")
+        md = round(iCal_md)  # Monthly downloads
+        wd = md // 4         # Weekly downloads
+        dd = md // 30        # Daily downloads
 
-        dv = f"{md:,}"
+        mv = f"{md:,}"
+        wv = f"{wd:,}"
+        dv = f"{dd:,}"
         if md >= 1000:
-            dv = f"{md // 1000}k"
+            mv = f"{md // 1000}k"
+        if wd >= 1000:
+            wv = f"{wd // 1000}k"
+        if dd >= 1000:
+            dv = f"{dd // 1000}k"
 
         # Write: safely
         safe_path = os.environ.get("GITHUB_OUTPUT")
         try:
             if safe_path:
                 with open(safe_path, "a") as f:
-                    f.write(f"md={dv}/month\n")
+                    f.write(f"md={mv}/month\n")
+
             else:
                 raise ValueError("GITHUB_OUTPUT environment variable is not set in this parent base path or is empty.")
         except ValueError as e:
