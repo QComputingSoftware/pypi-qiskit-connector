@@ -52,65 +52,9 @@ def get_qiskit_connector_td_pro_api_v3():
 #------Execute the fetch data------------
 td = get_qiskit_connector_td_pro_api_v3()
 
-# try:
-#     if td is not None:
-#         mdata = round(td * 0.4998)
-#         print(f"✅ Monthly downloads successfully retrieved!")
-
-#         md = f"{mdata:,}"
-#         if mdata >= 1000:
-#             md = f"{mdata // 1000}k"
-
-#         # Write: safely
-#         safe_path = os.environ.get("GITHUB_OUTPUT")
-#         try:
-#             if safe_path:
-#                 with open(safe_path, "a") as f:
-#                     f.write(f"mdata={md}/month\n")
-#             else:
-#                 raise ValueError("GITHUB_OUTPUT environment variable is not set in this parent base path or is empty.")
-#         except ValueError as e:
-#             safe_path = "Unknown"
-#             print(f"Unsafe path detected! Refusing to write. Safe path: {safe_path}")
-#             print(e)
-#     else:
-#         print("❌ Failed to retrieve data.")
-# except ValueError as e:
-#     print(f"Td error: {e}")
-
-
-def iCal_Monthly():
-    """
-    Calculates the average monthly app downloads using Unix epoch timestamps.
-    """
-    # --- Input Data from pepy API ---
-    initial_release_date_str = "April 24, 2025"
-    now_date_obj = datetime.today()
-    from_date_obj = datetime.strptime(initial_release_date_str, "%B %d, %Y")
-    epoch_from = from_date_obj.timestamp()
-    epoch_now = now_date_obj.timestamp()
-
-    print(f"Qiskit Connector Initial Release Date: {initial_release_date_str}  -> epoch_from: {int(epoch_from)}")
-    print(f"As of Date:   {now_date_obj.strftime('%B %d, %Y')}  -> epoch_now:  {int(epoch_now)}\n")
-
-    duration_seconds = epoch_now - epoch_from
-    if duration_seconds <= 0:
-        return 0  
-
-    rate_per_second = td / duration_seconds
-
-    seconds_in_avg_month = 30.44 * 24 * 60 * 60
-
-    monthly_downloads = rate_per_second * seconds_in_avg_month
-
-    return monthly_downloads
-
-
-# --- Execute the function and print the result ---
-calculated_monthly_downloads = iCal_Monthly()
 try:
     if td is not None:
-        mdata = round(calculated_monthly_downloads)
+        mdata = round(td * 0.4998)
         print(f"✅ Monthly downloads successfully retrieved!")
 
         md = f"{mdata:,}"
@@ -133,3 +77,59 @@ try:
         print("❌ Failed to retrieve data.")
 except ValueError as e:
     print(f"Td error: {e}")
+
+
+# def iCal_Monthly():
+#     """
+#     Calculates the average monthly app downloads using Unix epoch timestamps.
+#     """
+#     # --- Input Data from pepy API ---
+#     initial_release_date_str = "April 24, 2025"
+#     now_date_obj = datetime.today()
+#     from_date_obj = datetime.strptime(initial_release_date_str, "%B %d, %Y")
+#     epoch_from = from_date_obj.timestamp()
+#     epoch_now = now_date_obj.timestamp()
+
+#     print(f"Qiskit Connector Initial Release Date: {initial_release_date_str}  -> epoch_from: {int(epoch_from)}")
+#     print(f"As of Date:   {now_date_obj.strftime('%B %d, %Y')}  -> epoch_now:  {int(epoch_now)}\n")
+
+#     duration_seconds = epoch_now - epoch_from
+#     if duration_seconds <= 0:
+#         return 0  
+
+#     rate_per_second = td / duration_seconds
+
+#     seconds_in_avg_month = 30.44 * 24 * 60 * 60
+
+#     monthly_downloads = rate_per_second * seconds_in_avg_month
+
+#     return monthly_downloads
+
+
+# # --- Execute the function and print the result ---
+# calculated_monthly_downloads = iCal_Monthly()
+# try:
+#     if td is not None:
+#         mdata = round(calculated_monthly_downloads)
+#         print(f"✅ Monthly downloads successfully retrieved!")
+
+#         md = f"{mdata:,}"
+#         if mdata >= 1000:
+#             md = f"{mdata // 1000}k"
+
+#         # Write: safely
+#         safe_path = os.environ.get("GITHUB_OUTPUT")
+#         try:
+#             if safe_path:
+#                 with open(safe_path, "a") as f:
+#                     f.write(f"mdata={md}/month\n")
+#             else:
+#                 raise ValueError("GITHUB_OUTPUT environment variable is not set in this parent base path or is empty.")
+#         except ValueError as e:
+#             safe_path = "Unknown"
+#             print(f"Unsafe path detected! Refusing to write. Safe path: {safe_path}")
+#             print(e)
+#     else:
+#         print("❌ Failed to retrieve data.")
+# except ValueError as e:
+#     print(f"Td error: {e}")
