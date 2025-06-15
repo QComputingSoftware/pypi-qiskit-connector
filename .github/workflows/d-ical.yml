@@ -4,17 +4,17 @@
 # @Usage: Triggered on schedule or manually; uses Pepy.tech Pro API securely.
 #_________________________________________________________________________________________________________
 
-name: 🧠 Qcon Intelligent Core --> iCAL Monthly
+name: 🧠 Qcon Intelligent Core --> iCAL Daily
 
 on:
   push:
     branches: ["pypi"]
   workflow_dispatch:
   schedule:
-      - cron: '53 12 * * 1-6'    
-      - cron: '53 16 * * 1-6'   
-      - cron: '53 20 * * 1-6'   
-      - cron: '53 23 * * 1-6'   
+      - cron: '57 12 * * 1-6'    
+      - cron: '57 16 * * 1-6'    
+      - cron: '57 19 * * 1-6'    
+      - cron: '57 20 * * 1-6'    
 
 permissions:
   contents: write
@@ -43,8 +43,8 @@ env:
   EMAIL_CONTRIBUTOR_03: ${{ secrets.EMAIL_CONTRIBUTOR_03 }}
 
 jobs:
-  monthly-downloads-api:
-    name: 📊 Monthly Downloads from Pepy Tech API
+  Weekly-downloads-api:
+    name: 📊 Weekly Downloads from Pepy Tech API
     runs-on: ubuntu-latest
     
     steps:
@@ -75,17 +75,17 @@ jobs:
           PEPY_API_TOKEN: ${{ secrets.PEPY_API_TOKEN }}
         run: |
           echo "🔍 Extracting download record..."
-          python .github/scripts/m_pepy.py
+          python .github/scripts/d_pepy.py
 
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
         with:
-          label: "downloads last month"
+          label: "downloads last day"
           label-color: "555"
-          status: "${{ steps.get_downloads.outputs.md }}"
+          status: "${{ steps.get_downloads.outputs.dd }}"
           color: "7DD71D"
           style: "flat"
-          path: "docs/badges/monthly-downloads.svg"
+          path: "docs/badges/daily-downloads.svg"
 
       #_____________________________________________________________________________
       - name: Install jq (JSON processor)
@@ -218,7 +218,7 @@ jobs:
           #______________________________________________________________________________
           # Step 1: Fetch the latest changes from the remote main branch
           echo "Adding the coverage badge to the commit"
-          git add docs/badges/monthly-downloads.svg  || echo "⚠️ No changes in coverage badge to add"
+          git add docs/badges/Weekly-downloads.svg  || echo "⚠️ No changes in coverage badge to add"
 
           # Step 2: Rebase your local main branch's commits on top of the updated origin/main
           echo "Committing the changes"

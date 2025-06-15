@@ -80,9 +80,9 @@ jobs:
       - name: 🚰️ Generate Badge
         uses: emibcn/badge-action@v2
         with:
-          label: "downloads/weekly"
+          label: "downloads last week"
           label-color: "555"
-          status: "${{ steps.get_downloads.outputs.md }}"
+          status: "${{ steps.get_downloads.outputs.wd }}"
           color: "7DD71D"
           style: "flat"
           path: "docs/badges/weekly-downloads.svg"

@@ -83,8 +83,8 @@ try:
         # md = round(td * 0.4998)
         iCal_md = iCal_Monthly()
         md = round(iCal_md)         # Monthly downloads
-        wd = round(md // 4)         # Weekly downloads
-        dd = round(md // 30)        # Daily downloads
+        wd = round(md) // 4         # Weekly downloads
+        dd = round(md) // 30        # Daily downloads
 
         mv = f"{md:,}"
         wv = f"{wd:,}"
@@ -101,7 +101,7 @@ try:
         try:
             if safe_path:
                 with open(safe_path, "a") as f:
-                    f.write(f"wd={wv}/week\n")
+                    f.write(f"dd={dv}/day\n")
 
             else:
                 raise ValueError("GITHUB_OUTPUT environment variable is not set in this parent base path or is empty.")

@@ -82,9 +82,9 @@ try:
         print(f"✅ Monthly downloads successfully retrieved!")
         # md = round(td * 0.4998)
         iCal_md = iCal_Monthly()
-        md = round(iCal_md)  # Monthly downloads
-        wd = md // 4         # Weekly downloads
-        dd = md // 30        # Daily downloads
+        md = round(iCal_md)         # Monthly downloads
+        wd = round(md) // 4         # Weekly downloads
+        dd = round(md) // 30        # Daily downloads
 
         mv = f"{md:,}"
         wv = f"{wd:,}"
