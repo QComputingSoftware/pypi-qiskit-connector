@@ -100,7 +100,7 @@ try:
         try:
             if safe_path:
                 with open(safe_path, "a") as f:
-                    f.write(f"dd={dv}/day\n")
+                    f.write(f"dd={dv}\n")
 
             else:
                 raise ValueError("GITHUB_OUTPUT environment variable is not set in this parent base path or is empty.")

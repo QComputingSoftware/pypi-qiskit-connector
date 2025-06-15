@@ -9,13 +9,14 @@
 
 **Qiskit Connector** is a cutting-edge Python library designed to seamlessly bridge quantum algorithm development with real quantum hardware backends. Tailored for production environments and enterprise-grade quantum computing applications, it empowers developers and researchers to rapidly prototype, test, and deploy quantum circuits workloads using the latest IBM Quantum backends with minimal overhead.
 
-This document provides curated sample codes demonstrating how to harness Qiskit Connector for creating entangled quantum circuits, applying noise models, executing jobs on real quantum processors, and efficiently retrieving and visualizing results.
+This document provides curated sample codes demonstrating how to harness Qiskit Connector for quantum computing application development for scientific & engineering purposes required in research & technology advancement designs by applying noise models, executing quantum computing jobs on real IBM quantum backend processors, and efficiently retrieving data from backend QPU and visualizing results for scientific analysis.
 
-The samples in this directory are in multiple versions:
+The samples in this directory are in multiple versions for different use cases:
 - [sample1.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample1.ipynb)
 - [sample2.py](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample2.py)
 - [sample3.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample3.ipynb)
 - [sample4.py](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample4.py)
+- [sample5.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample5.ipynb)
 
 ######  Setup
 - [Install Qiskit Connector With PyPi](https://pypi.org/project/qiskit-connector)

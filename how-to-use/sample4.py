@@ -132,11 +132,10 @@ def console_histogram(count_data, max_width=50):
         bar = '█' * int(count * scale)
         print(f"{bitstring:>5} | {bar} {count}")
 
-##################################
-# Shots & Probability settings::  
-##################################
-rand_range = 5  
-p = 0.1 
+##############  Shots & Probability settings::  ##################################
+rand_range = 5
+shots = 1024
+p = 0.1
 qc = base_circuit()
 circuits = [randomize_circuit(qc, p) for _ in range(rand_range)]
 
@@ -162,14 +161,14 @@ try:
         qc_t = [transpile(c, backend=backend, optimization_level=3) for c in circuits[:rand_range]]
         if current == "Open Plan":
             sampler = Sampler(mode=backend)  # Session not allowed in Open Plan
-            job = sampler.run(qc_t, shots=1)
+            job = sampler.run(qc_t, shots=shots)
             platform(circuits)
             print("ok")
             job_inprogress()
         elif current == "Paid Plan":
             with Session(backend=backend.name) as session:
                 sampler = Sampler(mode=session) # Session allowed in Paid Plan
-                job = sampler.run(qc_t, shots=1)
+                job = sampler.run(qc_t, shots=shots)
                 platform(circuits)
                 print("ok")
                 job_inprogress()

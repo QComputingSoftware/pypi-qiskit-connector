@@ -1,4 +1,3 @@
-# @Author: Qiskit Connector® Team
 # @Type: Quantum Software
 # @Original Author: Dr. Jeffrey Chijioke-Uche, IBM Quantum Ambassador
 # @Platform: Quantum Computing
@@ -15,6 +14,7 @@ current = plan()
 backend = connector()
 
 #-----------------------------------HOW TO USE QISKIT CONNECTOR--------------------------------
+
 
 
 # ------------------------------ QISKIT 2.x CODE SAMPLE ---------------------------------------
@@ -34,11 +34,12 @@ from datetime import datetime
 import time
 import sys
 from collections import Counter
-from qiskit.visualization import plot_histogram
+from qiskit.visualization import circuit_drawer, plot_histogram
 from IPython.display import display, Markdown
+import matplotlib.pyplot as plt
 
 ##############
-# Pauli Gates
+# Pauli Gates 
 ##############
 paulis = ['I', 'X', 'Y', 'Z']
 pauli_gates = {
@@ -82,6 +83,32 @@ def job_inprogress():
     job_clear() 
     print("✅ Job successfully processed!           ")
 
+def plot_pie_chart(counts):
+    labels = list(counts.keys())
+    sizes = list(counts.values())
+
+    plt.figure(figsize=(7,7))
+    plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+    plt.title("Quantum Data Pie Chart")
+    plt.axis('equal')  # Equal aspect ratio ensures pie is circular.
+    plt.tight_layout()
+    plt.show()
+
+def plot_scatter_plot(counts):
+    bitstrings = list(counts.keys())
+    frequencies = list(counts.values())
+    indices = range(len(bitstrings))
+
+    plt.figure(figsize=(12, 5))
+    plt.scatter(indices, frequencies, color='blue')
+    plt.title("Quantum Data Scatter Graph")
+    plt.xlabel("Bitstrings (indexed)")
+    plt.ylabel("Counts")
+    plt.xticks(indices, bitstrings, rotation=45)
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+    
 #############################################################################
 # 2-qubit base circuit with entanglement and measurement:
 #############################################################################
@@ -89,13 +116,14 @@ def base_circuit():
     qc = QuantumCircuit(2, 2)
     # Apply initial gates to both qubits
     for q in range(2):
-        qc.h(q)   # <-- Hadamard gate: creates superposition.
+        qc.h(q)
         qc.rx(0.5, q)
         qc.rz(1.0, q)
         qc.s(q)
         qc.t(q)
         qc.h(q)
-    qc.cx(0, 1)   # <-- Entanglement: CNOT with control qubit 0, target qubit 1.
+    # ENTANGLING operation: CNOT with control qubit 0, target qubit 1
+    qc.cx(0, 1)
     # Measurement of both qubits
     qc.measure([0, 1], [0, 1])
     return qc
@@ -135,11 +163,12 @@ def console_histogram(count_data, max_width=50):
         bar = '█' * int(count * scale)
         print(f"{bitstring:>5} | {bar} {count}")
 
-##################################
-# Shots & Probability settings::  
-##################################
-rand_range = 5  
-p = 0.1 
+##################################################################################
+# Shots, Range & Probability settings::  
+##################################################################################
+rand_range = 4  # Number of randomized circuits to generate - minimum is 3.
+shots = 4096    # The more the shots, the better the statistics of data. 
+p = 0.1         # Probability of applying a non-identity Pauli gate.(Pauli twirling)
 qc = base_circuit()
 circuits = [randomize_circuit(qc, p) for _ in range(rand_range)]
 
@@ -148,7 +177,7 @@ circuits = [randomize_circuit(qc, p) for _ in range(rand_range)]
 ######################
 def platform(circuit_list):
     for i, circ in enumerate(circuit_list):
-        render = f"\n🔧 Entangled Randomized Circuit with Depolarizing Noise & Pauli Gates: Circuit {i+1}"
+        render = f"\n🔧 Entangled Randomized Circuit with Depolarizing Noise & Pauli Gates: Circuit Pub {i+1}"
         if in_jupyter():
             display(Markdown(f"{render}"))
             display(circ.draw(output="mpl"))
@@ -165,14 +194,14 @@ try:
         qc_t = [transpile(c, backend=backend, optimization_level=3) for c in circuits[:rand_range]]
         if current == "Open Plan":
             sampler = Sampler(mode=backend)  # Session not allowed in Open Plan
-            job = sampler.run(qc_t, shots=1)
+            job = sampler.run(qc_t, shots=shots)
             platform(circuits)
             print("ok")
             job_inprogress()
         elif current == "Paid Plan":
             with Session(backend=backend.name) as session:
                 sampler = Sampler(mode=session) # Session allowed in Paid Plan
-                job = sampler.run(qc_t, shots=1)
+                job = sampler.run(qc_t, shots=shots)
                 platform(circuits)
                 print("ok")
                 job_inprogress()
@@ -225,9 +254,10 @@ print(f"Result Data: {dict(pubs_total)}")
 if in_jupyter():
     display(Markdown("\n📊 **Histogram of Measurement**"))
     display(plot_histogram(pubs_total))
+    plot_pie_chart(pubs_total)
+    plot_scatter_plot(pubs_total)
 else:
     print("\n📊 Histogram of Measurement")
     console_histogram(pubs_total)
-print()
 today = datetime.today().strftime("%B %d, %Y")
 print(f"\n📅 Data Date: {today}")
