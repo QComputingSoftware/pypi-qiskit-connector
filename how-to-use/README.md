@@ -17,6 +17,10 @@ The samples in this directory are in multiple versions for different use cases:
 - [sample3.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample3.ipynb)
 - [sample4.py](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample4.py)
 - [sample5.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample5.ipynb)
+- [sample6.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample6.ipynb)
+- [sample7.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample7.ipynb)
+- [sample8.ipynb](https://github.com/QComputingSoftware/pypi-qiskit-connector/blob/main/how-to-use/sample8.ipynb)
+
 
 ######  Setup
 - [Install Qiskit Connector With PyPi](https://pypi.org/project/qiskit-connector)
