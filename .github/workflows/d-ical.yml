@@ -11,10 +11,7 @@ on:
     branches: ["pypi"]
   workflow_dispatch:
   schedule:
-      - cron: '57 12 * * 1-6'    
-      - cron: '57 16 * * 1-6'    
-      - cron: '57 19 * * 1-6'    
-      - cron: '57 20 * * 1-6'    
+    - cron: '10 10 * * *'    
 
 permissions:
   contents: write
