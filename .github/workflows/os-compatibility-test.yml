@@ -10,11 +10,7 @@ on:
     branches: ["main"]
   workflow_dispatch:
   schedule:
-    - cron: '27 3 * * *'
-    - cron: '27 7 * * *'
-    - cron: '27 11 * * *'
-    - cron: '27 15 * * *'
-    - cron: '27 19 * * *' 
+    - cron: '15 10 * * *' 
 
 jobs:
   os-matrix-test:
@@ -38,30 +34,67 @@ jobs:
           pip install pytest
           pip install pillow
           pip install ipython
+          pip install requests
 
       - name: ✅ Run OS Compatibility Test for Qiskit Connector
         run: |
+          #####################################[BATCH TEST 1]
           pytest tests/test_qcon_os_compat.py
           pip install qiskit-connector
           pip uninstall -y qiskit-connector
-          pip install qiskit-connector==2.2.9
+          pip install qiskit-connector==2.3.2
           pip uninstall -y qiskit-connector
-          pip install qiskit-connector==2.2.6
+          pip install qiskit-connector==2.3.1
           pip uninstall -y qiskit-connector
-          pip install qiskit-connector==2.2.4
-          pip uninstall -y qiskit-connector
-          pip install qiskit-connector==2.2.1
+          pip install qiskit-connector==2.3.0
           pip uninstall -y qiskit-connector
           pip install qiskit-connector
-          pip list | grep qiskit
-
-      # - name: 🧠 Qcon® Import Test
-      #   run: |
-      #     python <<EOF
-
-      #     # After Qiskit Connector® pip install, Import Qiskit Connector®:
-      #     from qiskit_connector import QConnectorV2 as connector
-      #     from qiskit_connector import QPlanV2 as plan
-      #     print("Qiskit Connector® import successful!")
-
-      #     EOF
+          pip uninstall -y qiskit-connector
+          #####################################[BATCH TEST 2]
+          pytest tests/test_qcon_os_compat.py
+          pip install qiskit-connector
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.2
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.1
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.0
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector
+          pip uninstall -y qiskit-connector
+          #####################################[BATCH TEST 3]
+          pytest tests/test_qcon_os_compat.py
+          pip install qiskit-connector
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.2
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.1
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.0
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector
+          pip uninstall -y qiskit-connector
+          #####################################[BATCH TEST 4]
+          pytest tests/test_qcon_os_compat.py
+          pip install qiskit-connector
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.2
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.1
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.0
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector
+          pip uninstall -y qiskit-connector
+          #####################################[BATCH TEST 5]
+          pytest tests/test_qcon_os_compat.py
+          pip install qiskit-connector
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.2
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.1
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector==2.3.0
+          pip uninstall -y qiskit-connector
+          pip install qiskit-connector
+          pip uninstall -y qiskit-connector
