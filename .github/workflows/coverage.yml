@@ -222,6 +222,7 @@ jobs:
           pip install pytest-html
           pip install requests 
           pip install ipython
+          pip install pillow
           pip install beautifulsoup4
           pip install --upgrade qiskit-connector
           pip list | grep qiskit
