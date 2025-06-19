@@ -13,8 +13,8 @@ from PIL import Image
 
 ##########################################################################
 
-from qiskit_connector import QConnectorV2 as connector
-from qiskit_connector import QPlanV2 as plan
+# from qiskit_connector import QConnectorV2 as connector
+# from qiskit_connector import QPlanV2 as plan
 
 ############################################################################
 
