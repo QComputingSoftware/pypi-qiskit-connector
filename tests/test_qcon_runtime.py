@@ -8,7 +8,8 @@
 import subprocess
 import sys
 import pytest
-
+from IPython.display import display, Markdown
+from PIL import Image
 
 ##########################################################################
 
