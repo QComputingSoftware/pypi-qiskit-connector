@@ -215,6 +215,7 @@ jobs:
 
       - name: 📦 Install dependencies
         run: |
+          pip install pytest
           pip install --upgrade pip setuptools wheel
           pip install pytest
           pip install coverage
@@ -224,8 +225,8 @@ jobs:
           pip install ipython
           pip install pillow
           pip install beautifulsoup4
-          pip install --upgrade qiskit-connector
-          pip list | grep qiskit
+          pip install qiskit-connector
+          pip list
           echo "✅ Qiskit connector packages listed."
 
 
@@ -245,7 +246,7 @@ jobs:
             echo "Sources are: $SOURCE"
           else
             echo "Source directory '$SOURCE_DIR1' contains __init__.py. Proceeding with coverage testing."
-            SOURCE="$SOURCE_DIR1","$SOURCE_DIR2","$SOURCE_DIR3"
+            SOURCE="$SOURCE_DIR2","$SOURCE_DIR3"
             echo "Sources are: $SOURCE"
           fi
 
