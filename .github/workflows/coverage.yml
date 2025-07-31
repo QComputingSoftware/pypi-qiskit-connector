@@ -242,11 +242,11 @@ jobs:
           # Check if SOURCE_DIR1 has a file named __init__.py 
           if [[ ! -f "$SOURCE_DIR1/__init__.py" ]]; then
             echo "::notice::Source directory: '$SOURCE_DIR1' is IP & Copyright protected - Skipping."
-            SOURCE="$SOURCE_DIR2","$SOURCE_DIR3"
+            SOURCE="$SOURCE_DIR2"
             echo "Sources are: $SOURCE"
           else
             echo "Source directory '$SOURCE_DIR1' contains __init__.py. Proceeding with coverage testing."
-            SOURCE="$SOURCE_DIR2","$SOURCE_DIR3"
+            SOURCE="$SOURCE_DIR2"
             echo "Sources are: $SOURCE"
           fi
 
