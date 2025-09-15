@@ -1,5 +1,5 @@
-<svg width="139.4" height="20" viewBox="0 0 1394 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="downloads last day: 4k">
-  <title>downloads last day: 4k</title>
+<svg width="139.4" height="20" viewBox="0 0 1394 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="downloads last day: 3k">
+  <title>downloads last day: 3k</title>
   <g>
     <rect fill="#555" width="1159" height="200"/>
     <rect fill="#7DD71D" x="1159" width="235" height="200"/>
@@ -7,8 +7,8 @@
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
     <text x="60" y="148" textLength="1059" fill="#000" opacity="0.1">downloads last day</text>
     <text x="50" y="138" textLength="1059">downloads last day</text>
-    <text x="1214" y="148" textLength="135" fill="#000" opacity="0.1">4k</text>
-    <text x="1204" y="138" textLength="135">4k</text>
+    <text x="1214" y="148" textLength="135" fill="#000" opacity="0.1">3k</text>
+    <text x="1204" y="138" textLength="135">3k</text>
   </g>
   
 </svg>
