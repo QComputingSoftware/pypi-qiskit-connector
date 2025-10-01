@@ -1,14 +1,14 @@
-<svg width="169.4" height="20" viewBox="0 0 1694 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="downloads last month: 134k">
-  <title>downloads last month: 134k</title>
+<svg width="162.4" height="20" viewBox="0 0 1624 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="downloads last month: 93k">
+  <title>downloads last month: 93k</title>
   <g>
     <rect fill="#555" width="1319" height="200"/>
-    <rect fill="#7DD71D" x="1319" width="375" height="200"/>
+    <rect fill="#7DD71D" x="1319" width="305" height="200"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
     <text x="60" y="148" textLength="1219" fill="#000" opacity="0.1">downloads last month</text>
     <text x="50" y="138" textLength="1219">downloads last month</text>
-    <text x="1374" y="148" textLength="275" fill="#000" opacity="0.1">134k</text>
-    <text x="1364" y="138" textLength="275">134k</text>
+    <text x="1374" y="148" textLength="205" fill="#000" opacity="0.1">93k</text>
+    <text x="1364" y="138" textLength="205">93k</text>
   </g>
   
 </svg>
