@@ -11,7 +11,7 @@ import platform
 import subprocess
 import sys
 
-os_types = ["ubuntu-latest", "ubuntu-24.04", "ubuntu-22.04", "macos-latest", "macos-14", "macos-13", "windows-latest", "windows-2022", "windows-2019"]
+os_types = ["ubuntu-latest", "ubuntu-24.04", "ubuntu-22.04", "macos-latest", "macos-14", "macos-15", "windows-latest", "windows-2022", "windows-2019"]
 
 # Test 1:
 def test_install_qiskit_connector_on_os_consume_v1():
